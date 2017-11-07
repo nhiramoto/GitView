@@ -1,0 +1,40 @@
+@import 'colors';
+
+.description {
+    position: absolute;
+    box-sizing: border-box;
+    border: 1px solid $lightBorder;
+    border-radius: 3px;
+    top: 10px;
+    left: 10px;
+    width: 50%;
+    height: 90%;
+    padding: 10px;
+    padding-left: 20px;
+}
+
+.box {
+    position: absolute;
+    box-sizing: border-box;
+    // border: 1px solid $lightBorder;
+    border-radius: 5px;
+    padding: 0;
+    left: 60%;
+    top: 50%;
+    width: 35%;
+    height: 400px;
+    margin-top: -200px;
+    table {
+        width: 100%;
+        th {
+            color: $headerColor;
+            background-color: $headerBackground;
+        }
+        #openRepo {
+            width: 100%;
+        }
+        #submit {
+            width: 100%;
+        }
+    }
+}

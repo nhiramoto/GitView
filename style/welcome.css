@@ -1,0 +1,33 @@
+.description {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1px solid #DDD;
+  border-radius: 3px;
+  top: 10px;
+  left: 10px;
+  width: 50%;
+  height: 90%;
+  padding: 10px;
+  padding-left: 20px; }
+
+.box {
+  position: absolute;
+  box-sizing: border-box;
+  border-radius: 5px;
+  padding: 0;
+  left: 60%;
+  top: 50%;
+  width: 35%;
+  height: 400px;
+  margin-top: -200px; }
+  .box table {
+    width: 100%; }
+    .box table th {
+      color: #38558e;
+      background-color: #f4f4f4; }
+    .box table #openRepo {
+      width: 100%; }
+    .box table #submit {
+      width: 100%; }
+
+/*# sourceMappingURL=welcome.css.map */

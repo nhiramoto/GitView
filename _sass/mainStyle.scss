@@ -1,0 +1,187 @@
+@import 'colors';
+
+* {
+    outline-color: lightblue;
+}
+
+body {
+    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+}
+
+.box {
+    padding: 10px;
+    // box-shadow: 0 2px 3px gray;
+    border-radius: 2px;
+}
+
+table {
+    border-collapse: collapse;
+    th, td {
+        padding: 8px;
+        border: 1px solid $lightBorder;
+    }
+    th {
+        height: 30px;
+    }
+}
+
+table.rounded {
+    border-collapse: separate;
+    border-spacing: 0;
+    th, td {
+        border: 0;
+        border-left: 1px solid $lightBorder;
+        border-top: 1px solid $lightBorder;
+    }
+    th:last-child, td:last-child {
+        border-right: 1px solid $lightBorder;
+    }
+    tr:first-child {
+        th:first-child, td:first-child {
+            border-radius: 5px 0 0 0;
+        }
+        th:last-child, td:last-child {
+            border-radius: 0 5px 0 0;
+        }
+        th:only-child, td:only-child {
+            border-radius: 5px 5px 0 0;
+        }
+    }
+    tr:last-child {
+        td {
+            border-bottom: 1px solid $lightBorder;
+        }
+        th:first-child, td:first-child {
+            border-radius: 0 0 0 5px;
+        }
+        th:last-child, td:last-child {
+            border-radius: 0 0 5px 0;
+        }
+        th:only-child, td:only-child {
+            border-radius: 0 0 5px 5px;
+        }
+    }
+    tr:only-child {
+        th:first-child, td:first-child {
+            border-radius: 5px 0 0 5px;
+        }
+        th:last-child, td:last-child {
+            border-radius: 0 5px 5px 0;
+        }
+        th:only-child, td:only-child {
+            border-radius: 5px;
+        }
+    }
+}
+
+input.invalidInput {
+    background-color: red;
+    color: white;
+}
+
+input[type="text"], input[type="url"] {
+    padding: 5px;
+    border-radius: 3px;
+    border: 1px solid $lightBorder;
+    width: 95%;
+    height: 20px;
+    &:focus {
+        box-shadow: 0 0 5px rgba(0, 0, 255, 0.8);
+        border: 1px solid blue;
+    }
+}
+
+input[type="submit"], input[type="reset"], input[type="button"] {
+    min-width: 50px;
+    font-weight: bold;
+    border: 1px solid $lightBorder;
+    border-radius: 2px;
+    // box-shadow: 0 2px 3px gray;
+    padding: 6px;
+    background: -webkit-linear-gradient(top, rgb(240, 240, 240), lightgray);
+    -webkit-transition: all .3s ease-out;
+    cursor: pointer;
+    &:active {
+        box-shadow: inset 0 3px 8px $buttonInset;
+        text-shadow: 0 3px 4px $buttonInset;
+        background: -webkit-linear-gradient(top, lightgray, rgb(240, 240, 240));
+        -webkit-transition: all .3s ease-out;
+    }
+    &:hover {
+        // background: -webkit-linear-gradient(top, rgb(200, 200, 200), rgb(170, 170, 170));
+        border: 1px solid $darkenBorder;
+        -webkit-transition: all .3s ease-out;
+    }
+}
+
+input[type="submit"] {
+    background: -webkit-linear-gradient(top, #46c164, #2bb84c);
+    color: white;
+    border: 1px solid $lightBorder;
+    -webkit-transition: all .5s ease-out;
+    &:active {
+        box-shadow: inset 0 3px 3px $buttonInset;
+        text-shadow: 0 3px 4px $buttonInset;
+        background: -webkit-linear-gradient(top, #2BBC4D, #269F42);
+        -webkit-transition: all .3s ease-out;
+    }
+    &:hover {
+        border: 1px solid darkgreen;
+        -webkit-transition: all .3s ease-out;
+    }
+}
+
+input[type="button"].red {
+    background: -webkit-linear-gradient(top, rgb(240, 240, 240), lightgray);
+    color: #CB2431;
+    -webkit-transition: all .5s ease-out;
+    &:active {
+        box-shadow: inset 0 3px 8px $buttonInset;
+        text-shadow: 0 3px 4px $buttonInset;
+        background: -webkit-linear-gradient(top, #D83B46, #CB2431);
+        -webkit-transition: all .3s ease-out;
+    }
+    &:hover {
+        background: -webkit-linear-gradient(top, #D83B46, #CB2431);
+        color: white;
+        border: 1px solid darkred;
+        -webkit-transition: all .3s ease-out;
+    }
+}
+
+#message {
+    background-color: $messageBackground;
+    color: $messageTextColor;
+    border-radius: 0 0 5px 5px;
+    // opacity: .9;
+    position: fixed;
+    box-shadow: 0 3px 8px darken($messageBackground, 10%);
+    width: 200px;
+    top: 0;
+    left: 50%;
+    margin-left: -100px;
+    padding: 20px;
+    z-index: 10;
+    transform: translateY(-110%);
+    transition: transform .5s ease-out;
+
+    &.error #msgtitle {
+        color: red;
+    }
+
+    #msgtitle {
+        font-weight: bold;
+        font-size: 16px;
+    }
+    br {
+        line-height: 30px;
+    }
+    #msgbody {
+        font-size: 14px;
+    }
+}
+
+#message.visible {
+    transform: translateY(0%);
+    transition: transform .1s linear;
+}

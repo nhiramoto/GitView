@@ -1,0 +1,27 @@
+{
+  "name": "gitvision",
+  "version": "1.0.0",
+  "description": "Módulo de visualização do projeto de pesquisa (TCC).",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nhtoshiaki/GitVision.git"
+  },
+  "author": "nhtoshiaki <nh_toshi.94@hotmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nhtoshiaki/GitVision/issues"
+  },
+  "homepage": "https://github.com/nhtoshiaki/GitVision#readme",
+  "dependencies": {
+    "d3": "^4.11.0",
+    "jquery": "^3.2.1"
+  },
+  "devDependencies": {
+    "grunt": "^1.0.1"
+  }
+}

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome</title>
+    <link rel="stylesheet" href="../style/mainStyle.css">
+    <link rel="stylesheet" href="../style/welcome.css">
+    <script>
+        require('../script/welcome.js');
+    </script>
+</head>
+<body>
+    <div id="message">
+        <span id="msgtitle">Título</span><br>
+        <span id="msgbody">Corpo da mensagem.</span>
+    </div>
+    <div class="background">
+        <div class="description">
+            <h2>GitVision</h2>
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eligendi, aliquid repudiandae illo cum architecto laboriosam iusto porro, ducimus temporibus consequatur libero nostrum hic repellendus veritatis esse. Incidunt ipsam praesentium accusantium?</p>
+        </div>
+        <div class="box">
+            <form id="openRepositoryForm">
+                <table class="rounded">
+                    <tr>
+                        <th colspan="2">Repositório Git</th>
+                    </tr>
+                    <tr>
+                        <td><input type="url" name="repoPath" id="repoPath" placeholder="Caminho do repositório local."></td>
+                        <td><input type="button" name="openRepo" id="openRepo" value="..."></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><input type="submit" name="submit" id="submit" value="Abrir"></td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>
