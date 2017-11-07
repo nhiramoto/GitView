@@ -115,6 +115,7 @@ JSONDatabase.prototype.addDiff = function (diffRec) {
     } else return false;
 };
 
+// TODO: Use commits id (composited primaryKey) to remove diff record.
 JSONDatabase.prototype.deleteDiff = function (diffId) {
     let foundDiff = this.diffs.find((diff) => diff.id === diffId);
     if (foundDiff != undefined) {

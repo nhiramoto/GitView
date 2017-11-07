@@ -4,6 +4,9 @@ const url = require('url');
 
 let mainWindow = null;
 
+console.log('app:', app);
+console.log('BrowserWindow:', BrowserWindow);
+
 var loadHtmlFile = function (filepath) {
     if (mainWindow != null) {
         mainWindow.loadURL(url.format({

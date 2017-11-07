@@ -16,13 +16,14 @@
   "bugs": {
     "url": "https://github.com/nhtoshiaki/GitVision/issues"
   },
-  "homepage": "https://github.com/nhtoshiaki/GitVision#readme",
+  "homepage": "https://github.com/nhtoshiaki/GitVision/Source#readme",
   "dependencies": {
     "d3": "^4.11.0",
     "jquery": "^3.2.1",
     "nodegit": "^0.20.3"
   },
   "devDependencies": {
+    "electron": "1.7.9",
     "grunt": "^1.0.1"
   }
 }
