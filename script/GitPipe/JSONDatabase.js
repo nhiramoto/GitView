@@ -14,7 +14,6 @@ function JSONDatabase (rootPath) {
     this.authors = [];
     this.dirs = [];
     this.files = [];
-    this.numEntries = 0;
     this.saved = true;
     fs.mkdir(this.rootPath, (err) => {});
 }
@@ -250,7 +249,7 @@ JSONDatabase.prototype.AuthorRecord = function (authorSign) {
  * @param {JSONDatabase.ENTRYTYPE} type
  */
 JSONDatabase.prototype.EntryRecord = function (type) {
-    this.id = JSONDatabase.numEntries++;
+    this.id = null;
     this.name = null;
     this.path = null;
     this.type = type;
