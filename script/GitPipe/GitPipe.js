@@ -15,28 +15,28 @@ function GitPipe() {
 /**
  * Analisa o objeto patch.
  * @param  {NodeGit.ConvenientPatch} patch Objeto patch a ser analisado.
- * @return {Promise(JSONDatabase.FileRecord)} Um promise que retorna um JSONDatabase.FileRecord.
+ * @return {Promise(JSONDatabase.FileRecord)} Um promise que retorna um JSONDatabase.FileJSONDatabase.
  */
 GitPipe.prototype.parsePatch = function (patch) {
     console.log('parsePatch() >');
     console.log('patch:', patch, Object.getOwnPropertyNames(patch));
     let oldFilePath = patch.oldFile().path();
     let newFilePath = patch.newFile().path();
-    let fileRec = new Record.FileRecord();
+    let fileRec = new JSONDatabase.FileRecord();
     fileRec.id = patch.newFile().id().toString();
     fileRec.idOldFile = patch.oldFile().id().toString();
     fileRec.path = newFilePath;
     fileRec.name = path.basename(newFilePath);
     if (oldFilePath === newFilePath) {
         if (patch.isAdded()) {
-            fileRec.status = Record.FILESTATUS.ADDED;
+            fileRec.status = JSONDatabase.FILESTATUS.ADDED;
         } else if (patch.isDeleted()) {
-            fileRec.status = Record.FILESTATUS.DELETED;
+            fileRec.status = JSONDatabase.FILESTATUS.DELETED;
         } else if (patch.isModified()) {
-            fileRec.status = Record.FILESTATUS.MODIFIED;
+            fileRec.status = JSONDatabase.FILESTATUS.MODIFIED;
         }
     } else {
-        fileRec.status = Record.FILESTATUS.MOVED;
+        fileRec.status = JSONDatabase.FILESTATUS.MOVED;
     }
     console.log('parsePatch() <');
     return patch.hunks().then((hunks) => {
@@ -47,14 +47,14 @@ GitPipe.prototype.parsePatch = function (patch) {
         return Promise.all(hunkPromises);
     }).then((linesList) => {
         linesList.forEach((lines) => lines.forEach((line) => {
-            let lineRec = new Record.LineRecord();
+            let lineRec = new JSONDatabase.LineRecord();
             lineRec.oldLineNum = line.oldLineno();
             lineRec.newLineNum = line.newLineno();
             let sign = String.fromCharCode(line.origin());
             if (sign == '+') {
-                lineRec.status = Record.LINESTATUS.ADDED;
+                lineRec.status = JSONDatabase.LINESTATUS.ADDED;
             } else if (sign == '-') {
-                lineRec.status = Record.LINESTATUS.DELETED;
+                lineRec.status = JSONDatabase.LINESTATUS.DELETED;
             }
             fileRec.modifiedLines.push(lineRec);
         }));
@@ -62,7 +62,7 @@ GitPipe.prototype.parsePatch = function (patch) {
     });
 };
 
-GitPipe.prototype.parseDiff = function (diff) {
+GitPipe.prototype.parseDiff = function (diff) { // TODO: Create diff record.
     return diff.patches().then((patches) => {
         let patchPromises = [];
         patches.forEach((patch) => patchPromises.push(this.parsePatch(patch)));
@@ -71,7 +71,7 @@ GitPipe.prototype.parseDiff = function (diff) {
 };
 
 GitPipe.prototype.diffCommits = function (oldCommit, recentCommit) {
-    let diffRec = new Record.DiffRecord();
+    let diffRec = new JSONDatabase.DiffRecord();
     diffRec.idCommit1 = oldCommit.sha();
     diffRec.idCommit2 = recentCommit.sha();
     let tree1, tree2;
@@ -101,7 +101,7 @@ GitPipe.prototype.diffCommits = function (oldCommit, recentCommit) {
                     let treeId = tree.id().toString();
                     let foundDirRec = this.db.findDirectory(treeId);
                     if (foundDirRec == undefined) {
-                        let newDirRec = new Record.DirectoryRecord();
+                        let newDirRec = new JSONDatabase.DirectoryRecord();
                         newDirRec.id = treeId;
                         newDirRec.path = tree.path();
                         newDirRec.name = path.basename(newDirRec.path);
@@ -127,7 +127,7 @@ GitPipe.prototype.diffCommits = function (oldCommit, recentCommit) {
 
 GitPipe.prototype.parseCommit = function (commit) {
     console.log('parseCommit() >');
-    let commitRec = new Record.CommitRecord(commit);
+    let commitRec = new JSONDatabase.CommitRecord(commit);
     console.log('   commit:', commitRec.id);
     if (this.commits.find((commit) => commit.id === commitRec.id) != undefined) {
         console.log('   * já existe commit!');
@@ -136,7 +136,7 @@ GitPipe.prototype.parseCommit = function (commit) {
         console.log('   * não existe commit ainda!');
         this.db.addCommit(commitRec);
 
-        let authorRec = new Record.AuthorRecord(commit.author());
+        let authorRec = new JSONDatabase.AuthorRecord(commit.author());
         this.db.addAuthor(authorRec);
         console.log('parseCommit() <');
         return commit.getParents().then((parents) => {
@@ -169,7 +169,7 @@ GitPipe.prototype.parseRepo = function (repositoryPath) {
     let repoRec = null;
     nodegit.Repository.open(pathToRepo).then((repository) => {
         this.repository = repository;
-        repoRec = new Record.RepositoryRecord(repository);
+        repoRec = new JSONDatabase.RepositoryRecord(repository);
         fs.mkdir('./data');
         this.db = new Database('./data/' + this.repoRec.name);
         return this.repository.head();
