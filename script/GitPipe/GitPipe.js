@@ -126,28 +126,44 @@ GitPipe.prototype.diffCommits = function (oldCommit, recentCommit) {
 };
 
 GitPipe.prototype.parseCommit = function (commit) {
-    console.log('parseCommit() >');
     let commitRec = new JSONDatabase.CommitRecord(commit);
-    console.log('   commit:', commitRec.id);
-    if (this.commits.find((commit) => commit.id === commitRec.id) != undefined) {
-        console.log('   * já existe commit!');
-        return null;
-    } else {
-        console.log('   * não existe commit ainda!');
-        this.db.addCommit(commitRec);
-
-        let authorRec = new JSONDatabase.AuthorRecord(commit.author());
-        this.db.addAuthor(authorRec);
-        console.log('parseCommit() <');
-        return commit.getParents().then((parents) => {
-            let diffPromises = [];
-            parents.forEach((parent) => {
-                let p = this.diffCommits(commit, parent);
-                if (p != null) diffPromises.push(p);
-            });
-            return Promise.all(diffPromises);
+    this.db.addCommit(commitRec);
+    let authorSign = commit.author();
+    let authorRec = new JSONDatabase.AuthorRecord(authorSign);
+    this.db.addAuthor(authorRec);
+    return commit.getParents().then((parents) => {
+        let parseParentPromises = [];
+        parents.forEach((parent) => {
+            let prom = this.parseCommit(parent);
+            if (prom != null) {
+                parseParentPromises.push(prom);
+            }
         });
-    }
+        return Promise.all(parseParentPromises);
+    });
+};
+
+GitPipe.prototype.parseCommitsHistory = function () {
+    return this.repository.getReferences().then((references) => {
+        let getCommitPromises = [];
+        references.forEach((reference) => {
+            let commitId = reference.target();
+            let savedCommit = this.db.findCommit(commitId);
+            if (savedCommit == undefined) {
+                getCommitPromises.push(this.repository.getCommit(commitId));
+            }
+        });
+        return Promise.all(getCommitPromises);
+    }).then((commits) => {
+        let parseCommitPromises = [];
+        commits.forEach((commit) => {
+            let prom = this.parseCommit(commit);
+            if (prom != null) {
+                parseCommitPromises.push(prom);
+            }
+        });
+        return Promise.all(parseCommitPromises);
+    });
 };
 
 GitPipe.prototype.parseReference = function (reference) {
@@ -171,7 +187,7 @@ GitPipe.prototype.parseRepo = function (repositoryPath) {
         this.repository = repository;
         repoRec = new JSONDatabase.RepositoryRecord(repository);
         fs.mkdir('./data');
-        this.db = new Database('./data/' + this.repoRec.name);
+        this.db = new JSONDatabase('./data/' + this.repoRec.name);
         return this.repository.head();
     }).then((head) => {
         repoRec.head = '' + head.target();
@@ -204,6 +220,29 @@ GitPipe.prototype.parseRepo = function (repositoryPath) {
 
     }).catch((err) => {
         if (err) console.error('Error:', err);
+    });
+};
+
+/**
+ * Abre o repositório usando nodegit.
+ * @param {String} repositoryPath - Caminho do repositório.
+ */
+GitPipe.prototype.openRepository = function (repositoryPath) {
+    let pathToRepo = path.resolve(repositoryPath);
+    let repoRec = null;
+    let dbPath = null;
+    return nodegit.Repository.open(pathToRepo).then((repository) => {
+        this.repository = repository;
+        fs.mkdir('./data');
+        return this.repository.head();
+    }).then((head) => {
+        let headCommitId = '' + head.target();
+        repoRec = new JSONDatabase.RepositoryRecord(this.repository);
+        repoRec.head = headCommitId;
+        dbPath = './data/' + repoRec.name
+        this.db = new JSONDatabase(dbPath);
+        this.db.setRepository(repoRec);
+        return dbPath;
     });
 };
 

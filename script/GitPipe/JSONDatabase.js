@@ -88,7 +88,7 @@ JSONDatabase.prototype.getRepository = function () {
 };
 
 JSONDatabase.prototype.addCommit = function (commitRec) {
-    let foundCommit = this.commits.find((commit) => commit.id === commitRec.id);
+    let foundCommit = this.findCommit(commitRec.id);
     if (foundCommit == undefined) {
         this.commits.push(commitRec);
         this.saved = false;
@@ -96,9 +96,13 @@ JSONDatabase.prototype.addCommit = function (commitRec) {
     } else return false;
 };
 
+JSONDatabse.prototype.findCommit = function (commitId) {
+    return this.commits.find((commit) => commit.id === commitId);
+};
+
 JSONDatabase.prototype.deleteCommit = function (commitId) {
-    let foundCommit = this.commits.find((commit) => commit.id === commitId);
-    if (foundCommit != undefined) {
+    let foundCommit = this.findCommit(commitId);
+    if (foundCommit != null) {
         this.commits.splice(this.commits.indexOf(foundCommit), 1);
         this.saved = false;
         return foundCommit;
@@ -106,7 +110,7 @@ JSONDatabase.prototype.deleteCommit = function (commitId) {
 };
 
 JSONDatabase.prototype.addDiff = function (diffRec) {
-    let foundDiff = this.diffs.find((diff) => diff.id === diffRec.id);
+    let foundDiff = this.findDiff(diffRec.idCommit1, diffRec.idCommit2);
     if (foundDiff == undefined) {
         this.diffs.push(diffRec);
         this.saved = false;
@@ -114,9 +118,13 @@ JSONDatabase.prototype.addDiff = function (diffRec) {
     } else return false;
 };
 
-// TODO: Use commits id (composited primaryKey) to remove diff record.
-JSONDatabase.prototype.deleteDiff = function (diffId) {
-    let foundDiff = this.diffs.find((diff) => diff.id === diffId);
+JSONDatabase.prototype.findDiff = function (idCommit1, idCommit2) {
+    return this.diffs.find((diff) =>
+        diff.idCommit1 === idCommit1 && diff.idCommit2 === idCommit2);
+};
+
+JSONDatabase.prototype.deleteDiff = function (idCommit1, idCommit2) {
+    let foundDiff = this.findDiff(idCommit1, idCommit2);
     if (foundDiff != undefined) {
         this.diffs.splice(this.diffs.indexOf(foundDiff), 1);
         this.saved = false;
@@ -125,7 +133,7 @@ JSONDatabase.prototype.deleteDiff = function (diffId) {
 };
 
 JSONDatabase.prototype.addAuthor = function (authorRec) {
-    let foundAuthor = this.authors.find((author) => author.email === authorRec.email);
+    let foundAuthor = this.findAuthor(authorRec.email);
     if (foundAuthor == undefined) {
         this.authors.push(authorRec);
         this.saved = false;
@@ -133,8 +141,12 @@ JSONDatabase.prototype.addAuthor = function (authorRec) {
     } else return false;
 };
 
+JSONDatabase.prototype.findAuthor = function (authorEmail) {
+    return this.authors.find((author) => author.email === authorEmail);
+};
+
 JSONDatabase.prototype.deleteAuthor = function (authorEmail) {
-    let foundAuthor = this.authors.find((author) => author.email === authorEmail);
+    let foundAuthor = this.findAuthor(authorEmail);
     if (foundAuthor != undefined) {
         this.authors.splice(this.authors.indexOf(foundAuthor), 1);
         this.saved = false;
@@ -143,7 +155,7 @@ JSONDatabase.prototype.deleteAuthor = function (authorEmail) {
 };
 
 JSONDatabase.prototype.addDirectory = function (directoryRec) {
-    let foundDir = this.dirs.find((dir) => dir.id === directoryRec.id);
+    let foundDir = this.findDirectory(directoryRec.id);
     if (foundDir == undefined) {
         this.dirs.push(directoryRec);
         this.saved = false;
@@ -152,8 +164,7 @@ JSONDatabase.prototype.addDirectory = function (directoryRec) {
 };
 
 JSONDatabase.prototype.findDirectory = function (directoryId) {
-    let foundDir = this.dirs.find((dir) => dir.id === directoryId);
-    return foundDir;
+    return this.dirs.find((dir) => dir.id === directoryId);
 };
 
 JSONDatabase.prototype.deleteDirectory = function (directoryId) {
@@ -166,7 +177,7 @@ JSONDatabase.prototype.deleteDirectory = function (directoryId) {
 };
 
 JSONDatabase.prototype.addFile = function (fileRec) {
-    let foundFile = this.files.find((file) => file.id === fileRec.id);
+    let foundFile = this.findFile(fileRec.id);
     if (foundFile == undefined) {
         this.files.push(fileRec);
         this.saved = false;
@@ -174,8 +185,12 @@ JSONDatabase.prototype.addFile = function (fileRec) {
     } else return false;
 };
 
+JSONDatabase.prototype.findFile = function (fileId) {
+    return this.files.find((file) => file.id === fileId);
+};
+
 JSONDatabase.prototype.deleteFile = function (fileId) {
-    let foundFile = this.files.find((file) => file.id === fileId);
+    let foundFile = this.findFile(fileId);
     if (foundFile != undefined) {
         this.files.splice(this.files.indexOf(foundFile), 1);
         this.saved = false;
