@@ -10,6 +10,8 @@ const Database = require('./JSONDatabase');
 function GitPipe() {
     this.repository = null;
     this.db = null;
+    this.diffRecs = [];
+    this.diffs = [];
 }
 
 /**
@@ -19,25 +21,28 @@ function GitPipe() {
  */
 GitPipe.prototype.parsePatch = function (patch) {
     console.log('parsePatch() >');
-    console.log('patch:', patch, Object.getOwnPropertyNames(patch));
-    let oldFilePath = patch.oldFile().path();
+    let newFileId = patch.newfile().id().toString();
     let newFilePath = patch.newFile().path();
-    let fileRec = new JSONDatabase.FileRecord();
-    fileRec.id = patch.newFile().id().toString();
-    fileRec.idOldFile = patch.oldFile().id().toString();
-    fileRec.path = newFilePath;
-    fileRec.name = path.basename(newFilePath);
+    let newFileName = path.basename(newFilePath);
+    let oldFileId = patch.oldFile().id().toString();
+    let patchStatus = null;
     if (oldFilePath === newFilePath) {
         if (patch.isAdded()) {
-            fileRec.status = JSONDatabase.FILESTATUS.ADDED;
+            patchStatus = JSONDatabase.FILESTATUS.ADDED;
         } else if (patch.isDeleted()) {
-            fileRec.status = JSONDatabase.FILESTATUS.DELETED;
+            patchStatus = JSONDatabase.FILESTATUS.DELETED;
         } else if (patch.isModified()) {
-            fileRec.status = JSONDatabase.FILESTATUS.MODIFIED;
+            patchStatus = JSONDatabase.FILESTATUS.MODIFIED;
         }
     } else {
-        fileRec.status = JSONDatabase.FILESTATUS.MOVED;
+        patchStatus = JSONDatabase.FILESTATUS.MOVED;
     }
+    let fileRec = new JSONDatabase.FileRecord();
+    fileRec.id = newFileId;
+    fileRec.name = newFileName;
+    fileRec.path = newFilePath;
+    fileRec.idOldFile = oldFileId;
+    fileRec.status = patchStatus;
     console.log('parsePatch() <');
     return patch.hunks().then((hunks) => {
         let hunkPromises = [];
@@ -62,12 +67,23 @@ GitPipe.prototype.parsePatch = function (patch) {
     });
 };
 
-GitPipe.prototype.parseDiff = function (diff) {
-    return diff.patches().then((patches) => {
-        let patchPromises = [];
-        patches.forEach((patch) => patchPromises.push(this.parsePatch(patch)));
-        return Promise.all(patchPromises);
-    });
+GitPipe.prototype.parseDiffs = function () {
+    let patchesPromises = [];
+    for (let i = 0; i < this.diffs.length; i++) {
+        let diff = this.diffs[i];
+        let prom = diff.patches().then((patches) => {
+            let patchPromises = [];
+            patches.forEach((patch) => {
+                let patchProm = this.parsePatch(patch);
+                if (patchProm != null) {
+                    patchPromises.push(patchProm);
+                }
+            });
+            return Promise.all(patchPromises);
+        });
+        patchesPromises.push(prom);
+    }
+    return Promise.all(patchesPromises);
 };
 
 GitPipe.prototype.diffCommits = function (oldCommit, recentCommit) {
@@ -125,8 +141,35 @@ GitPipe.prototype.diffCommits = function (oldCommit, recentCommit) {
     });
 };
 
-GitPipe.prototype.diffCommitsHistory = function () {
+GitPipe.prototype.diffCommitWithParents = function (commit) {
+    let commitId = commit.sha();
+    let parentTree = null;
+    return commit.getTree().then((commitTree) => {
+        return commit.getParents();
+    }).then((parents) => {
+        let parentsPromises = [];
+        parents.forEach((parent) => {
+            let parentId = parent.sha();
+            let diffRec = new JSONDatabase.DiffRecord();
+            diffRec.idOldCommit = parentId;
+            diffRec.idRecentCommit = commitId;
+            this.diffRecs.push(diffRec);
+            let prom = parent.getTree().then((parentTree) => {
+                let diff = nodegit.Diff.treeToTree(parentTree, commitTree);
+                this.diffs.push(diff);
+                return diffCommitWithParents(parent);
+            });
+            parentsPromises.push(prom);
+        });
+        return Promise.all(parentsPromises);
+    });
+};
 
+GitPipe.prototype.diffCommitsHistory = function () {
+    let repoRec = this.db.getRepository();
+    let headCommitId = repoRec.head;
+    let commit = this.db.findCommit(headCommitId);
+    diffCommitWithParents(commit);
 };
 
 GitPipe.prototype.parseCommit = function (commit) {
