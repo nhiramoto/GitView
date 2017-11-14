@@ -62,7 +62,7 @@ GitPipe.prototype.parsePatch = function (patch) {
     });
 };
 
-GitPipe.prototype.parseDiff = function (diff) { // TODO: Create diff record.
+GitPipe.prototype.parseDiff = function (diff) {
     return diff.patches().then((patches) => {
         let patchPromises = [];
         patches.forEach((patch) => patchPromises.push(this.parsePatch(patch)));
@@ -123,6 +123,10 @@ GitPipe.prototype.diffCommits = function (oldCommit, recentCommit) {
             this.db.addDiff(diffRec);
         });
     });
+};
+
+GitPipe.prototype.diffCommitsHistory = function () {
+
 };
 
 GitPipe.prototype.parseCommit = function (commit) {
