@@ -96,7 +96,7 @@ JSONDatabase.prototype.addCommit = function (commitRec) {
     } else return false;
 };
 
-JSONDatabse.prototype.findCommit = function (commitId) {
+JSONDatabase.prototype.findCommit = function (commitId) {
     return this.commits.find((commit) => commit.id === commitId);
 };
 
@@ -118,13 +118,13 @@ JSONDatabase.prototype.addDiff = function (diffRec) {
     } else return false;
 };
 
-JSONDatabase.prototype.findDiff = function (idCommit1, idCommit2) {
+JSONDatabase.prototype.findDiff = function (oldCommitId, recentCommitId) {
     return this.diffs.find((diff) =>
-        diff.idCommit1 === idCommit1 && diff.idCommit2 === idCommit2);
+        diff.oldCommitId === oldCommitId && diff.recentCommitId === recentCommitId);
 };
 
-JSONDatabase.prototype.deleteDiff = function (idCommit1, idCommit2) {
-    let foundDiff = this.findDiff(idCommit1, idCommit2);
+JSONDatabase.prototype.deleteDiff = function (oldCommitId, recentCommitId) {
+    let foundDiff = this.findDiff(oldCommitId, recentCommitId);
     if (foundDiff != undefined) {
         this.diffs.splice(this.diffs.indexOf(foundDiff), 1);
         this.saved = false;
@@ -261,50 +261,50 @@ JSONDatabase.prototype.AuthorRecord = function (authorSign) {
 
 /**
  * Registro do tipo de entrada para o diretório.
- * @param {JSONDatabase.ENTRYTYPE} type
+ * @param {JSONDatabase.DIFFENTRYTYPE} type
  */
-JSONDatabase.prototype.EntryRecord = function (type) {
+JSONDatabase.prototype.DiffEntryRecord = function (type) {
     this.id = null;
     this.name = null;
     this.path = null;
     this.type = type;
 };
 
-JSONDatabase.prototype.DirectoryRecord = function () {
-    JSONDatabase.prototype.EntryJSONDatabase.call(this, JSONDatabase.ENTRYTYPE.DIRECTORY);
+JSONDatabase.prototype.DiffDirectoryRecord = function () {
+    JSONDatabase.prototype.DiffEntryRecord.call(this, JSONDatabase.DIFFENTRYTYPE.DIRECTORY);
     this.entries = [];
 };
-JSONDatabase.prototype.DirectoryJSONDatabase.prototype = Object.create(JSONDatabase.prototype.EntryJSONDatabase.prototype);
-JSONDatabase.prototype.DirectoryJSONDatabase.constructor = JSONDatabase.prototype.DirectoryRecord;
+JSONDatabase.prototype.DiffDirectoryRecord.prototype = Object.create(JSONDatabase.prototype.DiffEntryRecord.prototype);
+JSONDatabase.prototype.DiffDirectoryRecord.constructor = JSONDatabase.prototype.DiffDirectoryRecord;
 
-JSONDatabase.prototype.FileRecord = function () {
-    JSONDatabase.prototype.EntryJSONDatabase.call(this, JSONDatabase.ENTRYTYPE.FILE);
-    this.idOldFile = null;
+JSONDatabase.prototype.DiffFileRecord = function () {
+    JSONDatabase.prototype.DiffEntryRecord.call(this, JSONDatabase.DIFFENTRYTYPE.FILE);
+    this.oldFileId = null;
     this.status = -1;
     this.modifiedLines = [];
 };
-JSONDatabase.prototype.FileJSONDatabase.prototype = Object.create(JSONDatabase.prototype.EntryJSONDatabase.prototype);
-JSONDatabase.prototype.FileJSONDatabase.constructor = JSONDatabase.prototype.FileRecord;
+JSONDatabase.prototype.DiffFileRecord.prototype = Object.create(JSONDatabase.prototype.DiffEntryRecord.prototype);
+JSONDatabase.prototype.DiffFileRecord.constructor = JSONDatabase.prototype.DiffFileRecord;
 
-JSONDatabase.prototype.LineRecord = function () {
+JSONDatabase.prototype.DiffLineRecord = function () {
     this.oldLineNum = -1;
     this.newLineNum = -1;
     this.status = -1;
 };
 
-JSONDatabase.prototype.ENTRYTYPE = {
+JSONDatabase.prototype.DIFFENTRYTYPE = {
     FILE: 0,
     DIRECTORY: 1
 };
 
-JSONDatabase.prototype.FILESTATUS = {
+JSONDatabase.prototype.DIFFFILESTATUS = {
     ADDED: 0,
     DELETED: 1,
     MODIFIED: 2,
     MOVED: 3
 };
 
-JSONDatabase.prototype.LINESTATUS = {
+JSONDatabase.prototype.DIFFLINESTATUS = {
     ADDED: 0,
     DELETED: 1,
     MODIFIED: 2
