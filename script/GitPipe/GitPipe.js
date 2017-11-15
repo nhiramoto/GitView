@@ -52,15 +52,19 @@ GitPipe.prototype.parsePatch = function (patch) {
         return Promise.all(hunkPromises);
     }).then((linesList) => {
         linesList.forEach((lines) => lines.forEach((line) => {
+            let oldLineNum = line.oldLineno();
+            let newLineNum = line.newLineno();
+            let lineStatus;
             let lineRec = new JSONDatabase.LineRecord();
-            lineRec.oldLineNum = line.oldLineno();
-            lineRec.newLineNum = line.newLineno();
             let sign = String.fromCharCode(line.origin());
             if (sign == '+') {
-                lineRec.status = JSONDatabase.LINESTATUS.ADDED;
+                lineStatus = JSONDatabase.LINESTATUS.ADDED;
             } else if (sign == '-') {
-                lineRec.status = JSONDatabase.LINESTATUS.DELETED;
+                lineStatus = JSONDatabase.LINESTATUS.DELETED;
             }
+            lineRec.oldLineNum = oldLineNum;
+            lineRec.newLineNum = newLineNum;
+            lineRec.status = lineStatus;
             fileRec.modifiedLines.push(lineRec);
         }));
         return fileRec;
@@ -71,90 +75,46 @@ GitPipe.prototype.parseDiffs = function () {
     let patchesPromises = [];
     for (let i = 0; i < this.diffs.length; i++) {
         let diff = this.diffs[i];
-        let prom = diff.patches().then((patches) => {
+        let prom1 = diff.patches().then((patches) => {
             let patchPromises = [];
             patches.forEach((patch) => {
-                let patchProm = this.parsePatch(patch);
-                if (patchProm != null) {
-                    patchPromises.push(patchProm);
+                let prom2 = this.parsePatch(patch);
+                if (prom2 != null) {
+                    patchPromises.push(prom2);
                 }
             });
             return Promise.all(patchPromises);
+        }).then((fileRec) => {
+            let diffFilePath = fileRec.path;
+            let rootDirId = createDiffDirectories(filePath);
+            let diffRec = this.diffRecs[i];
+            diffRec.rootDirId = rootDirId;
+            this.db.addDiff(diffRec);
         });
-        patchesPromises.push(prom);
+        patchesPromises.push(prom1);
     }
     return Promise.all(patchesPromises);
 };
 
-GitPipe.prototype.diffCommits = function (oldCommit, recentCommit) {
-    let diffRec = new JSONDatabase.DiffRecord();
-    diffRec.idCommit1 = oldCommit.sha();
-    diffRec.idCommit2 = recentCommit.sha();
-    let tree1, tree2;
-    return oldCommit.getTree().then((t1) => {
-        tree1 = t1;
-        return recentCommit.getTree();
-    }).then((t2) => {
-        tree2 = t2;
-        return nodegit.Diff.treeToTree(this.repository, tree1, tree2);
-    }).then((diff) => {
-        return diff.patches();
-    }).then((patches) => {
-        let patchPromises = [];
-        patches.forEach((patch) => patchPromises.push(this.parsePatch(patch)));
-        return Promise.all(patchPromises);
-    }).then((filesRec) => {
-        let entryPromises = [];
-        let idRootDir = null;
-        filesRec.forEach((fileRec) => {
-            this.db.addFile(fileRec);
-            let dirPath = path.dirname(fileRec.path);
-            while (dirPath.length > 0) {
-                let p = recentCommit.getEntry(dirPath).then((treeEntry) => {
-                    console.assert(treeEntry.isTree(), 'diffCommits(): treeEntry is not a tree.');
-                    return treeEntry.getTree();
-                }).then((tree) => {
-                    let treeId = tree.id().toString();
-                    let foundDirRec = this.db.findDirectory(treeId);
-                    if (foundDirRec == undefined) {
-                        let newDirRec = new JSONDatabase.DirectoryRecord();
-                        newDirRec.id = treeId;
-                        newDirRec.path = tree.path();
-                        newDirRec.name = path.basename(newDirRec.path);
-                        newDirRec.entries.push(fileRec.id);
-                        this.db.addDirectory(newDirRec);
-                        idRootDir = newDirRec.id;
-                    } else {
-                        console.assert(foundDirRec.path === dirPath, 'diffCommits(): Different paths.');
-                        foundDirRec.entries.push(fileRec.id);
-                        idRootDir = foundDirRec.id;
-                    }
-                });
-                entryPromises.push(p);
-                dirPath = path.dirname(dirPath);
-            }
-        });
-        return Promise.all(entryPromises).then(() => {
-            diffRec.idRootDir = idRootDir;
-            this.db.addDiff(diffRec);
-        });
-    });
-};
-
 GitPipe.prototype.diffCommitWithParents = function (commit) {
     let commitId = commit.sha();
+    let commitTree = null;
+    let parentId = null;
     let parentTree = null;
-    return commit.getTree().then((commitTree) => {
+    let diffRec = null;
+    return commit.getTree().then((tree1) => {
+        commitTree = tree1;
         return commit.getParents();
     }).then((parents) => {
         let parentsPromises = [];
         parents.forEach((parent) => {
-            let parentId = parent.sha();
-            let diffRec = new JSONDatabase.DiffRecord();
+            parentId = parent.sha();
+            diffRec = new JSONDatabase.DiffRecord();
             diffRec.idOldCommit = parentId;
             diffRec.idRecentCommit = commitId;
             this.diffRecs.push(diffRec);
-            let prom = parent.getTree().then((parentTree) => {
+            let prom = parent.getTree().then((tree2) => {
+                parentTree = tree2;
                 let diff = nodegit.Diff.treeToTree(parentTree, commitTree);
                 this.diffs.push(diff);
                 return diffCommitWithParents(parent);
@@ -194,9 +154,8 @@ GitPipe.prototype.parseCommitsHistory = function () {
     return this.repository.getReferences().then((references) => {
         let getCommitPromises = [];
         references.forEach((reference) => {
-            let commitId = reference.target();
-            let savedCommit = this.db.findCommit(commitId);
-            if (savedCommit == undefined) {
+            if (reference.isBranch()) {
+                let commitId = reference.target();
                 getCommitPromises.push(this.repository.getCommit(commitId));
             }
         });
@@ -213,66 +172,10 @@ GitPipe.prototype.parseCommitsHistory = function () {
     });
 };
 
-GitPipe.prototype.parseReference = function (reference) {
-    console.log('parseReference() >');
-    if (reference.isBranch()) {
-        var commitSha = '' + reference.target();
-        console.log('   reference: ' + reference.toString() + ' -> ' + commitSha);
-        console.log('parseReference() <');
-        return this.repository.getCommit(commitSha);
-    } else {
-        console.log('   *não é branch!');
-        console.log('parseReference() <');
-        return null;
-    }
-};
-
-GitPipe.prototype.parseRepo = function (repositoryPath) {
-    let pathToRepo = path.resolve(repositoryPath);
-    let repoRec = null;
-    nodegit.Repository.open(pathToRepo).then((repository) => {
-        this.repository = repository;
-        repoRec = new JSONDatabase.RepositoryRecord(repository);
-        fs.mkdir('./data');
-        this.db = new JSONDatabase('./data/' + this.repoRec.name);
-        return this.repository.head();
-    }).then((head) => {
-        repoRec.head = '' + head.target();
-        console.log('repository:', repoRec);
-        this.db.setRepository(repoRec);
-        return this.repository.getReferences(nodegit.Reference.TYPE.OID);
-    }).then((references) => {
-        let getCommitPromises = [];
-        references.forEach((reference) => {
-            let res = this.parseReference(reference);
-            if (res) getCommitPromises.push(res);
-        });
-        return Promise.all(getCommitPromises);
-    }).then((commits) => {
-        commits.forEach((commit) => {
-            console.log('first commit:', commit.sha());
-            let history = commit.history();
-            let commitPromises = [];
-            history.on('commit', (commit) => {
-                console.log('  commit step:', commit.sha());
-                commitPromises.push(this.parseCommit(commit));
-            });
-            history.on('error', (err) => {
-                if (err) console.error('Error:', err);
-            });
-            history.start();
-        });
-        return Promise.all(commitPromises);
-    }).then(() => {
-
-    }).catch((err) => {
-        if (err) console.error('Error:', err);
-    });
-};
-
 /**
- * Abre o repositório usando nodegit.
+ * Abre o repositório usando nodegit e salva na base de dados.
  * @param {String} repositoryPath - Caminho do repositório.
+ * @return {Promise} Promise que retorna o caminho da base de dados.
  */
 GitPipe.prototype.openRepository = function (repositoryPath) {
     let pathToRepo = path.resolve(repositoryPath);
@@ -280,6 +183,7 @@ GitPipe.prototype.openRepository = function (repositoryPath) {
     let dbPath = null;
     return nodegit.Repository.open(pathToRepo).then((repository) => {
         this.repository = repository;
+        // Subdiretório onde todas as bases de dados são salvas (uma para cada repositório)
         fs.mkdir('./data');
         return this.repository.head();
     }).then((head) => {

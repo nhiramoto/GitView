@@ -240,9 +240,9 @@ JSONDatabase.prototype.CommitRecord = function (commit) {
 };
 
 JSONDatabase.prototype.DiffRecord = function () {
-    this.idOldCommit = null;
-    this.idRecentCommit = null;
-    this.idRootDir = null;
+    this.oldCommitId = null;
+    this.recentCommitId = null;
+    this.rootDirId = null;
 };
 
 /**
