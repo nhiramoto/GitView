@@ -23,6 +23,10 @@ var loadDashboard = function () {
     loadHtmlFile('html/dashboard.html');
 };
 
+var loadWelcome = function () {
+    loadHtmlFile('html/welcome.html')
+};
+
 app.on('ready', () => {
     mainWindow = new BrowserWindow({
         backgroundColor: '#fff',
@@ -34,8 +38,9 @@ app.on('ready', () => {
         show: false
     });
     // loadHtmlFile('html/welcome.html');
+    loadWelcome();
     // Testing dashboard
-    loadDashboard();
+    //loadDashboard();
     // mainWindow.webContents.openDevTools();
     mainWindow.on('ready-to-show', () => {
         mainWindow.show();

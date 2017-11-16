@@ -1,6 +1,7 @@
 const $ = require('jquery');
 const {dialog} = require('electron').remote;
 const url = require('url');
+const fs = require('fs');
 const globals = require('./globals');
 const remote = require('electron').remote;
 const main = remote.require('./main');
@@ -29,15 +30,23 @@ $(document).ready(() => {
         console.log('repoPath:', repoPath);
         if (repoPath != null && repoPath.length == 0) {
             console.log('Empty path!!!');
-            globals.showMessage('Abrir Repositório', 'Especifique o local do repositório.');
+            globals.showMessage('Erro', 'Especifique o local do repositório.');
         } else {
-            console.log('Opening repository...');
-            globals.showMessage('Abrir Repositório', 'Abrindo repositório: ' + repoPath);
-            setTimeout(() => {
-                $('.background').fadeOut('slow', () => {
-                    main.loadDashboard();
-                });
-            }, 2000);
+            fs.stat(repoPath + '/.git', (err, stats) => {
+                if (err || !stats.isDirectory()) {
+                    console.log('stat:', stats)
+                    console.error('Error: Folder is not a git repository.');
+                    globals.showMessage('Erro', 'O diretório especificado não é um repositório git.')
+                } else {
+                    console.log('Opening repository...');
+                    globals.showMessage('Abrir Repositório', 'Abrindo repositório: ' + repoPath);
+                    setTimeout(() => {
+                        $('.background').fadeOut('slow', () => {
+                            main.loadDashboard();
+                        });
+                    }, 2000);
+                }
+            });
         }
     });
 });
