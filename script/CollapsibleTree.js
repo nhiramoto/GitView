@@ -95,3 +95,5 @@ CollapsibleTree.prototype.update = function () {
         .on('click', this.click)
         .call(this.force.drag);
 };
+
+module.exports = CollapsibleTree;

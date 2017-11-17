@@ -5,6 +5,7 @@ const remote = require('electron').remote;
 const main = remote.require('./main');
 const globals = require('./globals');
 const CollapsibleTree = require('./CollapsibleTree');
+const Graph = require('./Graph.js');
 
 $(document).ready(() => {
     $('body').fadeIn('slow');
@@ -13,10 +14,9 @@ $(document).ready(() => {
     let svg = d3.select('#sidebar').append('svg')
         .attr('width', svgWidth)
         .attr('height', svgHeight);
-    let ctree = new CollapsibleTree(svg, svgWidth, svgHeight);
-    d3.json('test.json', (err, json) => {
-        if (err) console.error(err);
-        ctree.root = json;
-        ctree.update();
+    let graph = new Graph(svg, svgWidth, svgHeight);
+    d3.json('test.json', function (err, json) {
+        if (err) throw err;
+        graph.init(json);
     });
 });
