@@ -38,9 +38,9 @@ app.on('ready', () => {
         show: false
     });
     // loadHtmlFile('html/welcome.html');
-    loadWelcome();
+    //loadWelcome();
     // Testing dashboard
-    //loadDashboard();
+    loadDashboard();
     // mainWindow.webContents.openDevTools();
     mainWindow.on('ready-to-show', () => {
         mainWindow.show();

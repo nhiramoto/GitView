@@ -16,12 +16,12 @@ $(document).ready(() => {
     $('#openRepo').click((event) => {
         console.log('click!');
         var paths = dialog.showOpenDialog({properties: ['openDirectory']});
-        var repoUrl = url.format({
-            pathname: paths[0],
-            protocol: 'file:',
-            slashes: true
-        });
-        $('#repoPath').val(repoUrl);
+//        var repoUrl = url.format({
+//            pathname: paths[0],
+//            protocol: 'file:',
+//            slashes: true
+//        });
+        $('#repoPath').val(paths[0]);
     });
     $('#openRepositoryForm').submit((event) => {
         event.preventDefault();
@@ -32,7 +32,9 @@ $(document).ready(() => {
             console.log('Empty path!!!');
             globals.showMessage('Erro', 'Especifique o local do repositório.');
         } else {
-            fs.stat(repoPath + '/.git', (err, stats) => {
+            let gitpath = repoPath + '/.git';
+            console.log('gitpath:', gitpath);
+            fs.stat(gitpath, (err, stats) => {
                 if (err || !stats.isDirectory()) {
                     console.log('stat:', stats)
                     console.error('Error: Folder is not a git repository.');
