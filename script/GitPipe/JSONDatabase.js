@@ -198,11 +198,13 @@ JSONDatabase.prototype.deleteFile = function (fileId) {
     } else return null;
 };
 
+//-------------------------------- Records --------------------------------
 /**
  * Registro do repositório.
+ * @constructor
  * @param {NodeGit.Repository} repository - Objeto com os dados do repositório.
  */
-JSONDatabase.prototype.RepositoryRecord = function (repository) {
+JSONDatabase.RepositoryRecord = function (repository) {
     if (repository != null) {
         this.isBare = repository.isBare();
         this.path = repository.path();
@@ -217,9 +219,10 @@ JSONDatabase.prototype.RepositoryRecord = function (repository) {
 
 /**
  * Registro do commit.
+ * @constructor
  * @param {NodeGit.Commit} commit - Objeto com os dados do commit.
  */
-JSONDatabase.prototype.CommitRecord = function (commit) {
+JSONDatabase.CommitRecord = function (commit) {
     if (commit != null) {
         this.id = commit.sha();
         this.message = commit.message();
@@ -239,7 +242,11 @@ JSONDatabase.prototype.CommitRecord = function (commit) {
     }
 };
 
-JSONDatabase.prototype.DiffRecord = function () {
+/**
+ * Registro do diff.
+ * @constructor
+ */
+JSONDatabase.DiffRecord = function () {
     this.oldCommitId = null;
     this.recentCommitId = null;
     this.rootDirId = null;
@@ -248,8 +255,9 @@ JSONDatabase.prototype.DiffRecord = function () {
 /**
  * Registro do autor.
  * @param {NodeGit.Signature} authorSign
+ * @constructor
  */
-JSONDatabase.prototype.AuthorRecord = function (authorSign) {
+JSONDatabase.AuthorRecord = function (authorSign) {
     if (authorSign != null) {
         this.name = authorSign.name();
         this.email = authorSign.email();
@@ -261,50 +269,75 @@ JSONDatabase.prototype.AuthorRecord = function (authorSign) {
 
 /**
  * Registro do tipo de entrada para o diretório.
- * @param {JSONDatabase.DIFFENTRYTYPE} type
+ * @constructor
+ * @param {JSONDatabase.DIFFENTRYTYPE} type - Tipo de entrada (diretório ou arquivo).
  */
-JSONDatabase.prototype.DiffEntryRecord = function (type) {
+JSONDatabase.DiffEntryRecord = function (type) {
     this.id = null;
     this.name = null;
     this.path = null;
     this.type = type;
 };
 
-JSONDatabase.prototype.DiffDirectoryRecord = function () {
-    JSONDatabase.prototype.DiffEntryRecord.call(this, JSONDatabase.DIFFENTRYTYPE.DIRECTORY);
+/**
+ * Registro do diff diretório.
+ * @constructor
+ */
+JSONDatabase.DiffDirectoryRecord = function () {
+    JSONDatabase.DiffEntryRecord.call(this, JSONDatabase.DIFFENTRYTYPE.DIRECTORY);
     this.entries = [];
 };
-JSONDatabase.prototype.DiffDirectoryRecord.prototype = Object.create(JSONDatabase.prototype.DiffEntryRecord.prototype);
-JSONDatabase.prototype.DiffDirectoryRecord.constructor = JSONDatabase.prototype.DiffDirectoryRecord;
+JSONDatabase.DiffDirectoryRecord.prototype = Object.create(JSONDatabase.DiffEntryRecord.prototype);
+JSONDatabase.DiffDirectoryRecord.constructor = JSONDatabase.DiffDirectoryRecord;
 
-JSONDatabase.prototype.DiffFileRecord = function () {
-    JSONDatabase.prototype.DiffEntryRecord.call(this, JSONDatabase.DIFFENTRYTYPE.FILE);
+/**
+ * Registro do diff arquivo.
+ * @constructor
+ */
+JSONDatabase.DiffFileRecord = function () {
+    JSONDatabase.DiffEntryRecord.call(this, JSONDatabase.DIFFENTRYTYPE.FILE);
     this.oldFileId = null;
     this.status = -1;
     this.modifiedLines = [];
 };
-JSONDatabase.prototype.DiffFileRecord.prototype = Object.create(JSONDatabase.prototype.DiffEntryRecord.prototype);
-JSONDatabase.prototype.DiffFileRecord.constructor = JSONDatabase.prototype.DiffFileRecord;
+JSONDatabase.DiffFileRecord.prototype = Object.create(JSONDatabase.DiffEntryRecord.prototype);
+JSONDatabase.DiffFileRecord.constructor = JSONDatabase.DiffFileRecord;
 
-JSONDatabase.prototype.DiffLineRecord = function () {
+/**
+ * Registro da diff linha.
+ * @constructor
+ */
+JSONDatabase.DiffLineRecord = function () {
     this.oldLineNum = -1;
     this.newLineNum = -1;
     this.status = -1;
 };
 
-JSONDatabase.prototype.DIFFENTRYTYPE = {
+/**
+ * Tipo de entrada para diff diretório.
+ * @enum
+ */
+JSONDatabase.DIFFENTRYTYPE = {
     FILE: 0,
     DIRECTORY: 1
 };
 
-JSONDatabase.prototype.DIFFFILESTATUS = {
+/**
+ * Status do diff arquivo.
+ * @enum
+ */
+JSONDatabase.DIFFFILESTATUS = {
     ADDED: 0,
     DELETED: 1,
     MODIFIED: 2,
     MOVED: 3
 };
 
-JSONDatabase.prototype.DIFFLINESTATUS = {
+/**
+ * Status da diff linha.
+ * @enum
+ */
+JSONDatabase.DIFFLINESTATUS = {
     ADDED: 0,
     DELETED: 1,
     MODIFIED: 2

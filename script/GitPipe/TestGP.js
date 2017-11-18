@@ -1,6 +1,9 @@
 var GitPipe = require('./GitPipe');
 
 var pipe = new GitPipe();
-pipe.openRepo('../../../Tests/git/simplegit-progit');
-console.log('repoRec:', pipe.db.getRepository());
+pipe.openRepository('../../../Tests/git/simplegit-progit').then(() => {
+    console.log('db:', pipe.getDb())
+    console.log('repoRec:', pipe.getDb().getRepository());
+    console.log('end!');
+});
 
