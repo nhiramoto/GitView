@@ -4,19 +4,15 @@ const {dialog} = require('electron').remote;
 const remote = require('electron').remote;
 const main = remote.require('./main');
 const globals = require('./globals');
-const CollapsibleTree = require('./CollapsibleTree');
+// const CollapsibleTree = require('./CollapsibleTree');
 const Graph = require('./Graph.js');
+const fs = require('fs');
 
 $(document).ready(() => {
     $('body').fadeIn('slow');
 
-    let svgWidth = 400, svgHeight = 400;
-    let svg = d3.select('#sidebar').append('svg')
-        .attr('width', svgWidth)
-        .attr('height', svgHeight);
-    let graph = new Graph(svg, svgWidth, svgHeight);
-    d3.json('test.json', function (err, json) {
-        if (err) throw err;
-        graph.init(json);
-    });
+    let svgWidth = 500, svgHeight = 500;
+    let container = d3.select('#view');
+    let graph = new Graph(container, svgWidth, svgHeight);
+    graph.load('script/test.json');
 });

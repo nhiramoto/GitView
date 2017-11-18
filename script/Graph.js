@@ -1,78 +1,104 @@
 const d3 = require('d3');
+const fs = require('fs');
 
-function Graph(svg, width, height) {
-    this.svg = svg;
+function Graph(container, width, height) {
     this.width = width;
     this.height = height;
+    this.svg = container.append('svg')
+        .attr('width', this.width)
+        .attr('height', this.height)
+        .attr('class', 'viewSvg')
+        .append('g')
+        .attr('transform', 'translate(' + this.width / 2 + ',' + this.height / 2 + ')');
     this.color = d3.scaleOrdinal(d3.schemeCategory20);
     this.simulation = null;
     this.link = null;
     this.node = null;
 }
 
-Graph.prototype.init = function (data) {
-    this.simulation = d3.forceSimulation()
-        .force('link', d3.forceLink().id((d) => d.id))
-        .force('charge', d3.forceManyBody)
-        .force('center', d3.forceCenter(this.width / 2, this.height / 2));
+Graph.prototype.load = function (dataPath) {
+    //d3.json(dataPath, (err, data) => {
+    fs.readFile(dataPath, (err, contentBuffer) => {
+        if (err) throw err;
+        console.log('d3:', d3)
 
-    this.link = this.svg.append('g')
-        .attr('class', 'links')
-        .selectAll('line')
-        .data(data.links)
-        .enter().append('line')
-        .attr('stroke-width', (d) => Math.sqrt(d.value));
+        var data = JSON.parse(contentBuffer.toString());
+        
+        var radius = 8;
 
-    this.node = this.svg.append('g')
-        .attr('class', 'nodes')
-        .selectAll('circle')
-        .data(data.nodes)
-        .enter().append('circle')
-            .attr('r', 5)
-            .attr('fill', (d) => this.color(d.group))
-            .call(d3.drag()
-                .on('start', this.dragstarted))
-                .on('drag', this.dragged)
-                .on('end', this.dragended);
+        var ticked = () => {
+            this.link
+                .attr("x1", function(d) { return d.source.x; })
+                .attr("y1", function(d) { return d.source.y; })
+                .attr("x2", function(d) { return d.target.x; })
+                .attr("y2", function(d) { return d.target.y; });
 
-    this.node.append('title')
-        .text((d) => d.id);
+            this.node
+                .attr("cx", function(d) { return d.x; })
+                .attr("cy", function(d) { return d.y; });
+        }
 
-    this.simulation
-        .nodes(data.nodes)
-        .on('tick', ticked);
+        var dragstarted = (d) => {
+          if (!d3.event.active) this.simulation.alphaTarget(0.3).restart();
+          d.fx = d.x;
+          d.fy = d.y;
+        }
 
-    this.simulation.force('link')
-        .links(data.links);
+        var dragged = (d) => {
+          d.fx = d3.event.x;
+          d.fy = d3.event.y;
+        }
 
-    function ticked() {
-        link
-            .attr("x1", function(d) { return d.source.x; })
-            .attr("y1", function(d) { return d.source.y; })
-            .attr("x2", function(d) { return d.target.x; })
-            .attr("y2", function(d) { return d.target.y; });
+        var dragended = (d) => {
+          if (!d3.event.active) this.simulation.alphaTarget(0);
+          d.fx = null;
+          d.fy = null;
+        }
 
-        node
-            .attr("cx", function(d) { return d.x; })
-            .attr("cy", function(d) { return d.y; });
-    }
+        this.simulation = d3.forceSimulation()
+            .force('charge', d3.forceManyBody())
+            .force('center', d3.forceCenter())
+            //.force('x', d3.forceX().strength(0.05))
+            //.force('y', d3.forceY().strength(0.05))
+            .force('link', d3.forceLink().id((d) => d.id))
+            .force('collide', d3.forceCollide(radius + 1))
+            ;
+
+        this.link = this.svg.append('g')
+            .attr('class', 'links')
+            .selectAll('line')
+            .data(data.links)
+            .enter().append('line')
+            //.attr('stroke-width', 2)
+            .attr('stroke', '#ACACAC')
+            .attr('stroke-width', (d) => Math.sqrt(d.value))
+            ;
+
+        this.node = this.svg.append('g')
+            .attr('class', 'nodes')
+            .selectAll('circle')
+            .data(data.nodes)
+            .enter().append('circle')
+                .attr('r', radius)
+                .attr('fill', (d) => this.color(d.group))
+                .on('click', (d) => console.log(d.id))
+                .call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended));
+
+        this.node.append('title')
+            .text((d) => d.id);
+
+        this.simulation
+            .nodes(data.nodes)
+            .on('tick', ticked);
+
+        this.simulation.force('link')
+            .links(data.links);
+
+    });
 };
 
-var dragstarted = function (d) {
-  if (!d3.event.active) this.simulation.alphaTarget(0.3).restart();
-  d.fx = d.x;
-  d.fy = d.y;
-}
-
-var dragged = function (d) {
-  d.fx = d3.event.x;
-  d.fy = d3.event.y;
-}
-
-var dragended = function (d) {
-  if (!d3.event.active) this.simulation.alphaTarget(0);
-  d.fx = null;
-  d.fy = null;
-}
 
 module.exports = Graph;
