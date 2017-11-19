@@ -8,7 +8,8 @@
   width: 50%;
   height: 90%;
   padding: 10px;
-  padding-left: 20px; }
+  padding-left: 20px;
+}
 
 .box {
   position: absolute;
@@ -19,15 +20,20 @@
   top: 50%;
   width: 35%;
   height: 400px;
-  margin-top: -200px; }
-  .box table {
-    width: 100%; }
-    .box table th {
-      color: #38558e;
-      background-color: #f4f4f4; }
-    .box table #openRepo {
-      width: 100%; }
-    .box table #submit {
-      width: 100%; }
+  margin-top: -200px;
+}
+.box table {
+  width: 100%;
+}
+.box table th {
+  color: #38558e;
+  background-color: #f4f4f4;
+}
+.box table #openRepo {
+  width: 100%;
+}
+.box table #submit {
+  width: 100%;
+}
 
 /*# sourceMappingURL=welcome.css.map */

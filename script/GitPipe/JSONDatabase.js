@@ -240,6 +240,7 @@ JSONDatabase.CommitRecord = function (commit) {
         this.patches = [];
         this.parents = [];
     }
+    this.authorEmail = null;
 };
 
 /**
