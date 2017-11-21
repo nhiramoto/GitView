@@ -87,6 +87,10 @@ JSONDatabase.prototype.getRepository = function () {
     return this.repository;
 };
 
+JSONDatabase.prototype.getCommits = function () {
+    return this.commits;
+};
+
 JSONDatabase.prototype.addCommit = function (commitRec) {
     let foundCommit = this.findCommit(commitRec.id);
     if (foundCommit == undefined) {
@@ -228,7 +232,6 @@ JSONDatabase.CommitRecord = function (commit) {
         this.message = commit.message();
         this.date = commit.date();
         this.snapshotId = commit.treeId().toString();
-        this.patches = [];
         this.parents = [];
         var parentsOid = commit.parents();
         parentsOid.forEach((oid) => this.parents.push(oid.toString()));
@@ -237,7 +240,6 @@ JSONDatabase.CommitRecord = function (commit) {
         this.message = null;
         this.date = null;
         this.snapshotId = null;
-        this.patches = [];
         this.parents = [];
     }
     this.authorEmail = null;

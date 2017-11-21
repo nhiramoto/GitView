@@ -155,73 +155,60 @@ GitPipe.prototype.parseDiffs = function () {
     return Promise.all(patchesPromises);
 };
 
-GitPipe.prototype.diffCommitWithParents = function (commit) {
+/**
+ * Cria registro do diff com commits pai.
+ * @param {JSONDatabase.CommitRecord} commitRec
+ */
+GitPipe.prototype.diffCommitWithParents = function (commitRec) {
     console.log('> diffCommitWithParents...');
-    console.log('commit:', commit);
-    let commitId = commit.sha();
-    let commitTree = null;
-    let parentId = null;
-    let parentTree = null;
-    let diffRec = null;
-    return commit.getTree().then((tree1) => {
-        commitTree = tree1;
-        return commit.getParents();
-    }).then((parents) => {
-        console.log('  parents:', parents);
-        let parentsPromises = [];
-        parents.forEach((parent) => {
-            parentId = parent.sha();
-            console.log('    parentId:', parentId);
-            let foundDiff = this.diffRecs.find((diffRec) =>
-                diffRec.oldCommitId === parentId && diffRec.recentCommitId === commitId);
-            if (foundDiff == undefined) {
-                diffRec = new JSONDatabase.DiffRecord();
-                diffRec.oldCommitId = parentId;
-                diffRec.recentCommitId = commitId;
-                console.log('    diffRec:', diffRec);
-                this.diffRecs.push(diffRec);
-                let prom = parent.getTree().then((tree2) => {
-                    parentTree = tree2;
-                    return nodegit.Diff
-                        .treeToTree(this.nodegitRepository, parentTree, commitTree)
-                }).then((diff) => {
-                    console.log('      diff:', diff);
+    console.log('commitRec:', commitRec);
+    let commitId = commitRec.id;
+    let commitSnapshotId = commitRec.snapshotId;
+    let parentIds = commitRec.parents;
+    parentIds.forEach((parentId) => {
+        let foundDiff = this.diffRecs.find((diffRec) =>
+            diffRec.oldCommitId === parentId && diffRec.recentCommitId === commitId);
+        if (foundDiff == undefined) {
+            let parentRec = this.db.findCommit(parentId);
+            let parentSnapshotId = parentRec.snapshotId;
+            let diffRec = new JSONDatabase.DiffRecord();
+            diffRec.oldCommitId = parentId;
+            diffRec.recentCommitId = commitId;
+            this.diffRecs.push(diffRec);
+            let prom = (function (parentSnapshotId, commitSnapshotId) {
+                let parentTree, commitTree;
+                return this.nodegitRepository.getTree(parentSnapshotId).then((tree1) => {
+                    parentTree = tree1;
+                    return this.nodegitRepository.getTree(commitSnapshotId);
+                }).then((tree2) => {
+                    commitTree = tree2;
+                    let diff = nodegit.Diff.treeToTree(this.nodegitRepository, parentTree, commitTree);
                     this.diffs.push(diff);
-                    return this.diffCommitWithParents(parent);
                 });
-                parentsPromises.push(prom);
-            }
-        });
-        console.log('< diffCommitWithParents');
-        return Promise.all(parentsPromises);
+            })(parentSnapshotId, commitSnapshotId);
+        }
     });
 };
 
+/**
+ * Percorre os commits salvos e cria diffs de cada commit com o commit pai.
+ */
 GitPipe.prototype.diffCommitsHistory = function () {
-    console.log('> diffCommitsHistory');
-    return this.nodegitRepository.getReferences(nodegit.Reference.TYPE.OID).then((references) => {
-        console.log('  * references:', references);
-        let getCommitPromises = [];
-        references.forEach((reference) => {
-            let isbranch = reference.isBranch();
-            if (isbranch) {
-                let commitId = reference.target();
-                let prom = this.nodegitRepository.getCommit(commitId);
-                if (prom != null) getCommitPromises.push(prom);
-            }
-        });
-        return Promise.all(getCommitPromises);
-    }).then((commits) => {
-        console.log('  * commits:', commits);
-        let diffCommitsPromises = [];
-        commits.forEach((commit) => {
-            let prom = this.diffCommitWithParents(commit);
-            if (prom != null) diffCommitsPromises.push(prom);
-        });
-        return Promise.all(diffCommitsPromises);
+    let commitRecs = this.db.getCommits();
+    let diffCommitsPromises = [];
+    commitRecs.forEach((commitRec) => {
+        let prom = this.diffCommitWithParents(commitRec);
+        if (prom != null) {
+            diffCommitsPromises.push(prom);
+        }
     });
+    return Promise.all(diffCommitsPromises);
 };
 
+/**
+ * Cria registro do commit.
+ * @param {NodeGit.Commit} commit - Commit a ser analisado.
+ */
 GitPipe.prototype.parseCommit = function (commit) {
     let commitRec = new JSONDatabase.CommitRecord(commit);
     let authorSign = commit.author();
@@ -243,12 +230,12 @@ GitPipe.prototype.parseCommit = function (commit) {
 };
 
 GitPipe.prototype.parseCommitsHistory = function () {
-    console.log('> parseCommitsHistory');
     return this.nodegitRepository.getReferences(nodegit.Reference.TYPE.OID).then((references) => {
         let getCommitPromises = [];
         references.forEach((reference) => {
-            if (reference.isBranch()) {
-                let commitId = reference.target();
+            let isbranch = reference.isBranch();
+            if (isbranch) {
+                let commitId = reference.target().toString();
                 getCommitPromises.push(this.nodegitRepository.getCommit(commitId));
             }
         });
@@ -280,7 +267,7 @@ GitPipe.prototype.openRepository = function (repositoryPath) {
         fs.mkdir('./data', (err) => {});
         return this.nodegitRepository.head();
     }).then((head) => {
-        let headCommitId = '' + head.target();
+        let headCommitId = head.target().toString();
         repoRec = new JSONDatabase.RepositoryRecord(this.nodegitRepository);
         repoRec.head = headCommitId;
         dbPath = './data/' + repoRec.name;
