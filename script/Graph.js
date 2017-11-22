@@ -20,7 +20,7 @@ Graph.prototype.load = function (dataPath) {
     //d3.json(dataPath, (err, data) => {
     fs.readFile(dataPath, (err, contentBuffer) => {
         if (err) throw err;
-        console.log('d3:', d3)
+        console.log('d3:', d3);
 
         var data = JSON.parse(contentBuffer.toString());
         
@@ -36,24 +36,24 @@ Graph.prototype.load = function (dataPath) {
             this.node
                 .attr("cx", function(d) { return d.x; })
                 .attr("cy", function(d) { return d.y; });
-        }
+        };
 
         var dragstarted = (d) => {
           if (!d3.event.active) this.simulation.alphaTarget(0.3).restart();
           d.fx = d.x;
           d.fy = d.y;
-        }
+        };
 
         var dragged = (d) => {
           d.fx = d3.event.x;
           d.fy = d3.event.y;
-        }
+        };
 
         var dragended = (d) => {
           if (!d3.event.active) this.simulation.alphaTarget(0);
           d.fx = null;
           d.fy = null;
-        }
+        };
 
         this.simulation = d3.forceSimulation()
             .force('charge', d3.forceManyBody())

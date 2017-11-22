@@ -9,9 +9,11 @@ function Tree(container, width, height) {
         .attr('width', this.width)
         .attr('height', this.height)
         .attr('class', 'viewSvg')
-        .call(d3.zoom().scaleExtent([1 / 2, 8]).on("zoom", () => this.zoomed()))
-      .append('g')
-        .attr('transform', 'translate(' + this.width / 2 + ',' + this.height / 2 + ')');
+        .call(d3.zoom().scaleExtent([1 / 2, 8]).on("zoom", () => this.zoomed()));
+      //.append('g')
+        //.attr('transform', 'translate(' + this.width / 2 + ',' + this.height / 2 + ')');
+    this.linkLayer = this.svg.append('g');
+    this.nodeLayer = this.svg.append('g');
     this.simulation = d3.forceSimulation();
     this.links = null;
     this.linkSvg = null;
@@ -27,7 +29,11 @@ Tree.prototype.zoomed = function () {
 };
 
 Tree.prototype.color = function (d) {
-    return d._children ? "#3182bd" : d.children ? "#c6dbef" : "#fd8d3c";
+    return d._children != null ? "#3182bd" : d.children != null ? "#c6dbef" : "#fd8d3c";
+};
+
+Tree.prototype.radius = function (d) {
+    return Math.sqrt(d.data.size) / 10 || 4.5;
 };
 
 Tree.prototype.ticked = function () {
@@ -48,12 +54,14 @@ Tree.prototype.click = function (d) {
     if (d.children) {
         d._children = d.children;
         d.children = null;
-    } else {
+    } else if (d._children) {
         d.children = d._children;
         d._children = null;
+    } else {
+        console.log('d:', d.data);
     }
     this.update();
-    // this.simulation.restart();
+    this.simulation.restart();
 };
 
 Tree.prototype.flatten = function (root) {
@@ -89,7 +97,7 @@ Tree.prototype.load = function (dataPath) {
     //d3.json(dataPath, (err, data) => {
     fs.readFile(dataPath, (err, contentBuffer) => {
         if (err) throw err;
-        console.log('d3:', d3)
+        console.log('d3:', d3);
         console.log('this:', this);
 
         this.root = JSON.parse(contentBuffer.toString());
@@ -97,9 +105,10 @@ Tree.prototype.load = function (dataPath) {
         this.root = d3.hierarchy(this.root);
 
         this.simulation
-            .force('link', d3.forceLink().id((d) => d.id))
-            .force('charge', d3.forceManyBody())
-            .force('center', d3.forceCenter())
+            .force('link', d3.forceLink().strength(1).id((d) => d.id))
+            .force('charge', d3.forceManyBody().strength(-30).distanceMax(100).distanceMin(30))
+            .force('center', d3.forceCenter(this.width / 2, this.height / 2))
+            .force('collide', d3.forceCollide().radius((d) => this.radius(d) - 2))
             .on('tick', () => this.ticked());
         
         this.update();
@@ -116,18 +125,34 @@ Tree.prototype.update = function () {
     this.nodes = this.flatten(this.root);
     this.links = this.root.links();
 
-    this.linkSvg = this.svg.selectAll('.link')
+    this.linkSvg = this.linkLayer.selectAll('.link')
         .data(this.links, (d) => d.target.id);
-    this.linkSvg.exit().remove();
+    this.linkSvg.exit()
+        .transition()
+            .duration(100)
+            .style('opacity', 0)
+            .remove();
 
     this.linkEnter = this.linkSvg.enter()
         .append('line')
         .attr('class', 'link');
+    this.linkEnter
+        .style('opacity', 0)
+        .transition()
+            .duration(100)
+            .style('opacity', 1);
+
     this.linkSvg = this.linkEnter.merge(this.linkSvg);
 
-    this.nodeSvg = this.svg.selectAll('.node')
+    this.nodeSvg = this.nodeLayer.selectAll('.node')
         .data(this.nodes, (d) => d.id);
-    this.nodeSvg.exit().remove();
+    this.nodeSvg.selectAll('circle')
+        .style('fill', (d) => this.color(d));
+    this.nodeSvg.exit()
+        .transition()
+            .duration(100)
+            .style('opacity', 0)
+            .remove();
 
     this.nodeEnter = this.nodeSvg.enter()
         .append('g')
@@ -135,8 +160,13 @@ Tree.prototype.update = function () {
             .on('click', (d) => this.click(d))
             .call(drag);
     this.nodeEnter.append('circle')
-        .attr('r', (d) => (Math.sqrt(d.size) / 10 || 4.5))
-        .attr('fill', (d) => this.color(d));
+        .attr('r', (d) => this.radius(d))
+        //.attr('r', this.nodeRadius)
+        .style('fill', (d) => this.color(d))
+        .style('opacity', 0)
+        .transition()
+            .duration(100)
+            .style('opacity', 1);
     
     this.nodeSvg = this.nodeEnter.merge(this.nodeSvg);
 
@@ -144,7 +174,7 @@ Tree.prototype.update = function () {
         .nodes(this.nodes);
 
     this.simulation.force('link')
-        .links(this.links)
+        .links(this.links);
 };
 
 module.exports = Tree;
