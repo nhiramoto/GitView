@@ -2,6 +2,7 @@
   "esversion": 6,
     "undef": true,
     "unused": true,
-    "eqnull": true,
+    "eqnull": false,
+    "eqeqeq": false,
     "node": true
 }

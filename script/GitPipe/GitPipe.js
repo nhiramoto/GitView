@@ -25,6 +25,7 @@ GitPipe.prototype.parsePatch = function (patch) {
     let newFilePath = patch.newFile().path();
     let newFileName = path.basename(newFilePath);
     let oldFileId = patch.oldFile().id().toString();
+    let oldFilePath = patch.oldFile().path();
     let patchStatus = null;
     if (oldFilePath === newFilePath) {
         if (patch.isAdded()) {
@@ -37,12 +38,12 @@ GitPipe.prototype.parsePatch = function (patch) {
     } else {
         patchStatus = JSONDatabase.DIFFFILESTATUS.MOVED;
     }
-    let fileRec = new JSONDatabase.DiffFileRecord();
-    fileRec.id = newFileId;
-    fileRec.name = newFileName;
-    fileRec.path = newFilePath;
-    fileRec.oldFileId = oldFileId;
-    fileRec.status = patchStatus;
+    let diffFileRec = new JSONDatabase.DiffFileRecord();
+    diffFileRec.id = newFileId;
+    diffFileRec.name = newFileName;
+    diffFileRec.path = newFilePath;
+    diffFileRec.oldFileId = oldFileId;
+    diffFileRec.status = patchStatus;
     console.log('parsePatch() <');
     return patch.hunks().then((hunks) => {
         let hunkPromises = [];
@@ -55,19 +56,19 @@ GitPipe.prototype.parsePatch = function (patch) {
             let oldLineNum = line.oldLineno();
             let newLineNum = line.newLineno();
             let lineStatus;
-            let lineRec = new JSONDatabase.LineRecord();
+            let diffLineRec= new JSONDatabase.LineRecord();
             let sign = String.fromCharCode(line.origin());
             if (sign == '+') {
                 lineStatus = JSONDatabase.LINESTATUS.ADDED;
             } else if (sign == '-') {
                 lineStatus = JSONDatabase.LINESTATUS.DELETED;
             }
-            lineRec.oldLineNum = oldLineNum;
-            lineRec.newLineNum = newLineNum;
-            lineRec.status = lineStatus;
-            fileRec.modifiedLines.push(lineRec);
+            diffLineRec.oldLineNum = oldLineNum;
+            diffLineRec.newLineNum = newLineNum;
+            diffLineRec.status = lineStatus;
+            diffFileRec.modifiedLines.push(diffLineRec);
         }));
-        return fileRec;
+        return diffFileRec;
     });
 };
 
@@ -141,7 +142,7 @@ GitPipe.prototype.parseDiffs = function () {
                 listDiffFileRec.forEach((diffFileRec) => {
                     let diffFilePath = diffFileRec.path;
                     let commit = self.repository.getCommit(diffRec.recentCommitId);
-                    let rootDirId = createDiffDirectories(diffFilePath, commit, diffFileRec.id);
+                    let rootDirId = this.createDiffDirectories(diffFilePath, commit, diffFileRec.id);
                     let diffRec = self.diffRecs[i];
                     diffRec.rootDirId = rootDirId;
                     self.db.addDiff(diffRec);
