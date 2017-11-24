@@ -15,7 +15,7 @@ function JSONDatabase (rootPath) {
     this.dirs = [];
     this.files = [];
     this.saved = true;
-    fs.mkdir(this.rootPath, (err) => {});
+    fs.mkdir(this.rootPath, () => {});
 }
 
 JSONDatabase.prototype.saveToDisk = function () {

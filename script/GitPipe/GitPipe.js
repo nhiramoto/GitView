@@ -264,7 +264,7 @@ GitPipe.prototype.openRepository = function (repositoryPath) {
     return nodegit.Repository.open(pathToRepo).then((repository) => {
         this.nodegitRepository = repository;
         // Subdiretório onde todas as bases de dados são salvas (uma para cada repositório)
-        fs.mkdir('./data', (err) => {});
+        fs.mkdir('./data', () => {});
         return this.nodegitRepository.head();
     }).then((head) => {
         let headCommitId = head.target().toString();
