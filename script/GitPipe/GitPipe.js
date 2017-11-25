@@ -72,37 +72,11 @@ GitPipe.prototype.parsePatch = function (patch) {
     });
 };
 
-GitPipe.prototype.createDiffDirectories = function (filePath, commit, childId) {
-    if (!fs.lstatSync(filePath).isDirectory()) {
-        filePath = path.dirname(filePath);
-    }
-    let createDiffDirectoryPromises = [];
-    childId = null;
-    while (filePath.length > 0) {
-        let name = path.basename(filePath);
-        let prom = (function (self, filePath, name, childId) {
-            return commit.getEntry(name).then((entry) => {
-                console.assert(entry.isTree(), 'GitPipe#createDiffDirectories: entry is not a tree.');
-                return entry.getTree();
-            }).then((tree) => {
-                let treeId = tree.id().toString();
-                let foundDir = self.db.findDirectory(treeId);
-                if (foundDir == undefined) {
-
-                } else {
-                }
-            });
-        })(this, filePath, name, childId);
-        createDiffDirectoryPromises.push(prom);
-    }
-    return Promise.all(createDiffDirectoryPromises);
-};
-
-GitPipe.prototype.createDiffDirectories = function (commit, filePath, childId) {
+GitPipe.prototype.createDiffDirectories = function (commit, filePath, child) {
     if (filePath.length === 0) {
         return null;
     } else if (!fs.lstatSync(filePath).isDirectory()) {
-        return this.createDiffDirectories(commit, path.dirname(filePath), childId);
+        return this.createDiffDirectories(commit, path.dirname(filePath), child);
     } else {
         return commit.getEntry(name).then((entry) => {
             console.assert(entry.isTree(), 'GitPipe#createDiffDirectories: entry is not a tree.');
@@ -115,17 +89,19 @@ GitPipe.prototype.createDiffDirectories = function (commit, filePath, childId) {
                 newDiffDir.id = treeId;
                 newDiffDir.name = path.basename(filePath);
                 newDiffDir.path = filePath;
-                newDiffDir.entries.push(childId);
+                newDiffDir.entries.push(child);
+                return this.createDiffDirectories(commit, path.dirname(filePath), newDiffDir);
             } else {
-                foundDiffDir.entries.push(childId);
+                foundDiffDir.entries.push(child);
+                return this.createDiffDirectories(commit, path.dirname(filePath), foundDiffDir);
             }
-            return this.createDiffDirectories(commit, path.dirname(filePath), treeId);
         });
     }
 };
 
 GitPipe.prototype.parseDiffs = function () {
     let patchesPromises = [];
+    console.assert(this.diffs.length === this.diffRecs.length, 'Error: diffs length is not equal to diffRecs length.');
     for (let i = 0; i < this.diffs.length; i++) {
         let diff = this.diffs[i];
         let prom1 = (function (self, i, diff) {
@@ -140,9 +116,9 @@ GitPipe.prototype.parseDiffs = function () {
                 return Promise.all(patchPromises);
             }).then((listDiffFileRec) => {
                 listDiffFileRec.forEach((diffFileRec) => {
-                    let diffFilePath = diffFileRec.path;
-                    let commit = self.repository.getCommit(diffRec.recentCommitId);
-                    let rootDirId = this.createDiffDirectories(diffFilePath, commit, diffFileRec.id);
+                    let filePath = diffFileRec.path;
+                    let commit = self.nodegitRepository.getCommit(diffRec.recentCommitId);
+                    let rootDirId = self.createDiffDirectories(commit, filePath, diffFileRec);
                     let diffRec = self.diffRecs[i];
                     diffRec.rootDirId = rootDirId;
                     self.db.addDiff(diffRec);
