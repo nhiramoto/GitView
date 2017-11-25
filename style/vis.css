@@ -4,13 +4,19 @@
 
 .node {
   cursor: pointer;
-  stroke: #3182bd;
+  stroke: #505050;
   stroke-width: 1.5px;
+  -webkit-transition: all .3s ease;
+}
+.node:hover {
+  stroke: steelblue;
+  stroke-width: 2.5px;
+  -webkit-transition: all .5s ease;
 }
 
 .link {
   fill: none;
-  stroke: #9ecae1;
+  stroke: #505050;
   stroke-width: 1.5px;
 }
 

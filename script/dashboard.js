@@ -11,5 +11,5 @@ $(document).ready(() => {
     let svgWidth = 500, svgHeight = 500;
     let container = d3.select('#view');
     let tree = new Tree(container, svgWidth, svgHeight);
-    tree.load('script/datatree.json');
+    tree.load('data/testGitDiff.json');
 });

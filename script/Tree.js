@@ -1,5 +1,8 @@
 const d3 = require('d3');
 const fs = require('fs');
+const JSONDatabase = require('./GitPipe/JSONDatabase');
+
+console.log('Tree->JSONDatabase.DIFFFILESTATUS:', JSONDatabase.DIFFFILESTATUS);
 
 function Tree(container, width, height) {
     this.width = width;
@@ -29,7 +32,27 @@ Tree.prototype.zoomed = function () {
 };
 
 Tree.prototype.color = function (d) {
-    return d._children != null ? "#3182bd" : d.children != null ? "#c6dbef" : "#fd8d3c";
+    if (d.parent == null) { // Root node
+        if (d.children != null) {
+            return "#808080";
+        } else if (d._children) {
+            return "#505050"
+        }
+    } else if (d._children != null) { // Collapsed node
+        return "#3182bd";
+    } else if (d.children != null) { // Inner node
+        return "white";
+    } else { // Leaf node
+        if (d.data.status == JSONDatabase.DIFFFILESTATUS.ADDED) {
+            return "#2fe2a1";
+        } else if (d.data.status == JSONDatabase.DIFFFILESTATUS.DELETED) {
+            return "#d15375";
+        } else if (d.data.status == JSONDatabase.DIFFFILESTATUS.MODIFIED) {
+            return "#dbd825";
+        } else {
+            return "#7f58d3";
+        }
+    }
 };
 
 Tree.prototype.radius = function (d) {
@@ -102,7 +125,7 @@ Tree.prototype.load = function (dataPath) {
 
         this.root = JSON.parse(contentBuffer.toString());
 
-        this.root = d3.hierarchy(this.root);
+        this.root = d3.hierarchy(this.root, (d) => d.entries);
 
         this.simulation
             .force('link', d3.forceLink().strength(1).id((d) => d.id))
@@ -124,6 +147,12 @@ Tree.prototype.update = function () {
 
     this.nodes = this.flatten(this.root);
     this.links = this.root.links();
+
+    this.simulation
+        .nodes(this.nodes);
+
+    this.simulation.force('link')
+        .links(this.links);
 
     this.linkSvg = this.linkLayer.selectAll('.link')
         .data(this.links, (d) => d.target.id);
@@ -169,12 +198,6 @@ Tree.prototype.update = function () {
             .style('opacity', 1);
     
     this.nodeSvg = this.nodeEnter.merge(this.nodeSvg);
-
-    this.simulation
-        .nodes(this.nodes);
-
-    this.simulation.force('link')
-        .links(this.links);
 };
 
 module.exports = Tree;

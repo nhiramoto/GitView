@@ -43,9 +43,9 @@ var loadDashboard = function () {
 app.on('ready', () => {
     initWindow();
     // loadHtmlFile('html/welcome.html');
-    loadWelcome();
+    //loadWelcome();
     // Testing dashboard
-    //loadDashboard();
+    loadDashboard();
 });
 
 app.on('window-all-closed', () => {
