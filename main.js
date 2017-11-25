@@ -4,8 +4,21 @@ const url = require('url');
 
 let mainWindow = null;
 
-console.log('app:', app);
-console.log('BrowserWindow:', BrowserWindow);
+var initWindow = function () {
+    mainWindow = new BrowserWindow({
+        backgroundColor: '#fff',
+        width: 800,
+        minWidth: 20,
+        height: 600,
+        minHeight: 20,
+        titleBarStyle: 'customButtonsOnHover',
+        show: false
+    });
+    mainWindow.webContents.openDevTools();
+    mainWindow.on('ready-to-show', () => {
+        mainWindow.show();
+    });
+};
 
 var loadHtmlFile = function (filepath) {
     if (mainWindow != null) {
@@ -19,32 +32,20 @@ var loadHtmlFile = function (filepath) {
     }
 };
 
-var loadDashboard = function () {
-    loadHtmlFile('html/dashboard.html');
-};
-
 var loadWelcome = function () {
     loadHtmlFile('html/welcome.html')
 };
 
+var loadDashboard = function () {
+    loadHtmlFile('html/dashboard.html');
+};
+
 app.on('ready', () => {
-    mainWindow = new BrowserWindow({
-        backgroundColor: '#fff',
-        width: 800,
-        minWidth: 20,
-        height: 600,
-        minHeight: 20,
-        titleBarStyle: 'customButtonsOnHover',
-        show: false
-    });
+    initWindow();
     // loadHtmlFile('html/welcome.html');
-    //loadWelcome();
+    loadWelcome();
     // Testing dashboard
-    loadDashboard();
-    // mainWindow.webContents.openDevTools();
-    mainWindow.on('ready-to-show', () => {
-        mainWindow.show();
-    });
+    //loadDashboard();
 });
 
 app.on('window-all-closed', () => {

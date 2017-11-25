@@ -6,6 +6,8 @@ const globals = require('./globals');
 const remote = require('electron').remote;
 const main = remote.require('./main');
 
+var regex = new RegExp('(^(/[^/\000\n]*)+/?$)|(^[a-zA-Z]:(\\\\[^<>:"/\\\\\|\?\*\n]+)+\\\\?$)');
+
 $(document).ready(() => {
     $('input').on('invalid', (event) => {
         $(event.target).addClass('invalidInput');
@@ -13,15 +15,29 @@ $(document).ready(() => {
     $('input').on('change', (event) => {
         $(event.target).removeClass('invalidInput');
     });
+    $('#repoPath').keyup((event) => {
+        let path = $('#repoPath').val();
+        if (regex.test(path)) {
+            $('#repoPath').removeClass('invalidInput');
+        } else {
+            $('#repoPath').addClass('invalidInput');
+        }
+    });
     $('#openRepo').click((event) => {
         console.log('click!');
-        var paths = dialog.showOpenDialog({properties: ['openDirectory']});
+        let paths = dialog.showOpenDialog({properties: ['openDirectory']});
+        if (paths.length >= 1) {
+            let path = paths[0];
 //        var repoUrl = url.format({
 //            pathname: paths[0],
 //            protocol: 'file:',
 //            slashes: true
 //        });
-        $('#repoPath').val(paths[0]);
+            $('#repoPath').val(path);
+            if (regex.test(path)) {
+                $('#repoPath').addClass('invalidInput');
+            }
+        }
     });
     $('#openRepositoryForm').submit((event) => {
         event.preventDefault();
@@ -31,6 +47,10 @@ $(document).ready(() => {
         if (repoPath != null && repoPath.length == 0) {
             console.log('Empty path!!!');
             globals.showMessage('Erro', 'Especifique o local do repositório.');
+        } else if (!regex.test(repoPath)) {
+            $('#repoPath').addClass('invalidInput');
+            console.log('Invalid path!!!')
+            globals.showMessage('Erro', 'O caminho especificado não é um caminho válido.');
         } else {
             let gitpath = repoPath + '/.git';
             console.log('gitpath:', gitpath);
