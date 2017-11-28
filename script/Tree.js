@@ -4,6 +4,8 @@ const JSONDatabase = require('./GitPipe/JSONDatabase');
 
 console.log('Tree->JSONDatabase.DIFFFILESTATUS:', JSONDatabase.DIFFFILESTATUS);
 
+console.log('d3:', d3);
+
 function Tree(container, width, height) {
     this.width = width;
     this.height = height;
@@ -12,8 +14,9 @@ function Tree(container, width, height) {
         .attr('width', this.width)
         .attr('height', this.height)
         .attr('class', 'viewSvg')
-        .call(d3.zoom().scaleExtent([1 / 2, 8]).on("zoom", () => this.zoomed()));
-      //.append('g')
+        .call(d3.zoom().scaleExtent([1 / 2, 8]).on("zoom", () => this.zoomed()))
+      .append('g')
+        .attr('class', 'viewG');
         //.attr('transform', 'translate(' + this.width / 2 + ',' + this.height / 2 + ')');
     this.linkLayer = this.svg.append('g');
     this.nodeLayer = this.svg.append('g');
@@ -56,7 +59,12 @@ Tree.prototype.color = function (d) {
 };
 
 Tree.prototype.radius = function (d) {
-    return Math.sqrt(d.data.size) / 10 || 4.5;
+    //return Math.sqrt(d.data.size) / 10 || 4.5;
+    if (d.children != null || d._children != null) {
+        return Math.sqrt(d.data.entries.length) * 5 + 5;
+    } else {
+        return Math.sqrt(d.data.modifiedLines.length) * 5 + 5;
+    }
 };
 
 Tree.prototype.ticked = function () {
@@ -75,14 +83,17 @@ Tree.prototype.ticked = function () {
 
 Tree.prototype.click = function (d) {
     if (d.children) {
+        // Fold children
         d._children = d.children;
         d.children = null;
     } else if (d._children) {
+        // Unfold children
         d.children = d._children;
         d._children = null;
     } else {
-        console.log('d:', d.data);
     }
+    console.log('name:', d.data.name);
+    console.log('path:', d.data.path);
     this.update();
     this.simulation.restart();
 };
@@ -128,8 +139,8 @@ Tree.prototype.load = function (dataPath) {
         this.root = d3.hierarchy(this.root, (d) => d.entries);
 
         this.simulation
-            .force('link', d3.forceLink().strength(1).id((d) => d.id))
-            .force('charge', d3.forceManyBody().strength(-30).distanceMax(100).distanceMin(30))
+            .force('link', d3.forceLink().strength(0.8).id((d) => d.id))
+            .force('charge', d3.forceManyBody().strength(-100).distanceMax(500).distanceMin(30))
             .force('center', d3.forceCenter(this.width / 2, this.height / 2))
             .force('collide', d3.forceCollide().radius((d) => this.radius(d) - 2))
             .on('tick', () => this.ticked());

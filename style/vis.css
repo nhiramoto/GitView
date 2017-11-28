@@ -1,5 +1,5 @@
-.viewSvg {
-  background-color: #EFEFEF;
+.viewSvg .viewG {
+  background: -webkit-radial-gradient(white, lightgray);
 }
 
 .node {
