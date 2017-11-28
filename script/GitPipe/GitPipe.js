@@ -142,6 +142,7 @@ GitPipe.prototype.diffCommitWithParents = function (commitRec) {
     let commitId = commitRec.id;
     let commitSnapshotId = commitRec.snapshotId;
     let parentIds = commitRec.parents;
+    let createDiffPromises = [];
     parentIds.forEach((parentId) => {
         let foundDiff = this.diffRecs.find((diffRec) =>
             diffRec.oldCommitId === parentId && diffRec.recentCommitId === commitId);
@@ -159,12 +160,15 @@ GitPipe.prototype.diffCommitWithParents = function (commitRec) {
                     return this.nodegitRepository.getTree(commitSnapshotId);
                 }).then((tree2) => {
                     commitTree = tree2;
-                    let diff = nodegit.Diff.treeToTree(this.nodegitRepository, parentTree, commitTree);
+                    return nodegit.Diff.treeToTree(this.nodegitRepository, parentTree, commitTree);
+                }).then((diff) => {
                     this.diffs.push(diff);
                 });
             })(parentSnapshotId, commitSnapshotId);
+            createDiffPromises.push(prom);
         }
     });
+    return Promise.all(createDiffPromises);
 };
 
 /**
@@ -206,6 +210,9 @@ GitPipe.prototype.parseCommit = function (commit) {
     });
 };
 
+/**
+ * Percorre o histórico e analisa os commits.
+ */
 GitPipe.prototype.parseCommitsHistory = function () {
     return this.nodegitRepository.getReferences(nodegit.Reference.TYPE.OID).then((references) => {
         let getCommitPromises = [];

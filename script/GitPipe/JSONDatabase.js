@@ -19,25 +19,45 @@ function JSONDatabase (rootPath) {
 }
 
 JSONDatabase.prototype.saveToDisk = function () {
+    let error = false;
     fs.writeFile(this.rootPath + path.sep + 'repository.json', JSON.stringify(this.repository, null, 4), (err) => {
-        if (err) console.error('Error:', err);
+        if (err) {
+            console.error('Error:', err);
+            error = true;
+        }
     });
     fs.writeFile(this.rootPath + path.sep + 'commits.json', JSON.stringify(this.commits, null, 4), (err) => {
-        if (err) console.error('Error:', err);
+        if (err) {
+            console.error('Error:', err);
+            error = true;
+        }
     });
     fs.writeFile(this.rootPath + path.sep + 'diffs.json', JSON.stringify(this.diffs, null, 4), (err) => {
-        if (err) console.error('Error:', err);
+        if (err) {
+            console.error('Error:', err);
+            error = true;
+        }
     });
     fs.writeFile(this.rootPath + path.sep + 'authors.json', JSON.stringify(this.authors, null, 4), (err) => {
-        if (err) console.error('Error:', err);
+        if (err) {
+            console.error('Error:', err);
+            error = true;
+        }
     });
     fs.writeFile(this.rootPath + path.sep + 'dirs.json', JSON.stringify(this.dirs, null, 4), (err) => {
-        if (err) console.error('Error:', err);
+        if (err) {
+            console.error('Error:', err);
+            error = true;
+        }
     });
     fs.writeFile(this.rootPath + path.sep + 'files.json', JSON.stringify(this.files, null, 4), (err) => {
-        if (err) console.error('Error:', err);
+        if (err) {
+            console.error('Error:', err);
+            error = true;
+        }
     });
-    this.saved = true;
+    this.saved = !error;
+    return this.saved;
 };
 
 JSONDatabase.prototype.recoverFromDisk = function () {
@@ -92,7 +112,8 @@ JSONDatabase.prototype.getCommits = function () {
 };
 
 JSONDatabase.prototype.addCommit = function (commitRec) {
-    let foundCommit = this.findCommit(commitRec.id);
+    let commitId = commitRec.id;
+    let foundCommit = this.findCommit(commitId);
     if (foundCommit == undefined) {
         this.commits.push(commitRec);
         this.saved = false;
@@ -114,7 +135,7 @@ JSONDatabase.prototype.deleteCommit = function (commitId) {
 };
 
 JSONDatabase.prototype.addDiff = function (diffRec) {
-    let foundDiff = this.findDiff(diffRec.idCommit1, diffRec.idCommit2);
+    let foundDiff = this.findDiff(diffRec.oldCommitId, diffRec.recentCommitId);
     if (foundDiff == undefined) {
         this.diffs.push(diffRec);
         this.saved = false;
@@ -137,7 +158,8 @@ JSONDatabase.prototype.deleteDiff = function (oldCommitId, recentCommitId) {
 };
 
 JSONDatabase.prototype.addAuthor = function (authorRec) {
-    let foundAuthor = this.findAuthor(authorRec.email);
+    let authorEmail = authorRec.email;
+    let foundAuthor = this.findAuthor(authorEmail);
     if (foundAuthor == undefined) {
         this.authors.push(authorRec);
         this.saved = false;
@@ -270,80 +292,89 @@ JSONDatabase.AuthorRecord = function (authorSign) {
     }
 };
 
+JSONDatabase.prototype.Statistic = function (added, removed, modified) {
+    this.added = added;
+    this.removed = removed;
+    this.modified = modified;
+};
+
 /**
  * Registro do tipo de entrada para o diretório.
  * @constructor
- * @param {JSONDatabase.DIFFENTRYTYPE} type - Tipo de entrada (diretório ou arquivo).
+ * @param {JSONDatabase.ENTRYTYPE} type - Tipo de entrada (diretório ou arquivo).
  */
-JSONDatabase.DiffEntryRecord = function (type) {
+JSONDatabase.EntryRecord = function (type) {
     this.id = null;
     this.name = null;
     this.path = null;
+    this.statistic = null;
     this.type = type;
 };
 
 /**
- * Registro do diff diretório.
+ * Registro do diretório.
  * @constructor
  */
-JSONDatabase.DiffDirectoryRecord = function () {
-    JSONDatabase.DiffEntryRecord.call(this, JSONDatabase.DIFFENTRYTYPE.DIRECTORY);
+JSONDatabase.DirectoryRecord = function () {
+    JSONDatabase.EntryRecord.call(this, JSONDatabase.ENTRYTYPE.DIRECTORY);
     this.entries = [];
 };
-JSONDatabase.DiffDirectoryRecord.prototype = Object.create(JSONDatabase.DiffEntryRecord.prototype);
-JSONDatabase.DiffDirectoryRecord.constructor = JSONDatabase.DiffDirectoryRecord;
+JSONDatabase.DirectoryRecord.prototype = Object.create(JSONDatabase.EntryRecord.prototype);
+JSONDatabase.DirectoryRecord.constructor = JSONDatabase.DirectoryRecord;
 
 /**
  * Registro do diff arquivo.
  * @constructor
  */
-JSONDatabase.DiffFileRecord = function () {
-    JSONDatabase.DiffEntryRecord.call(this, JSONDatabase.DIFFENTRYTYPE.FILE);
+JSONDatabase.FileRecord = function () {
+    JSONDatabase.EntryRecord.call(this, JSONDatabase.ENTRYTYPE.FILE);
     this.oldFileId = null;
     this.status = -1;
-    this.modifiedLines = [];
+    this.lines = [];
 };
-JSONDatabase.DiffFileRecord.prototype = Object.create(JSONDatabase.DiffEntryRecord.prototype);
-JSONDatabase.DiffFileRecord.constructor = JSONDatabase.DiffFileRecord;
+JSONDatabase.FileRecord.prototype = Object.create(JSONDatabase.EntryRecord.prototype);
+JSONDatabase.FileRecord.constructor = JSONDatabase.FileRecord;
 
 /**
  * Registro da diff linha.
  * @constructor
  */
-JSONDatabase.DiffLineRecord = function () {
+JSONDatabase.LineRecord = function () {
     this.oldLineNum = -1;
     this.newLineNum = -1;
     this.status = -1;
 };
 
 /**
- * Tipo de entrada para diff diretório.
+ * Tipo de entrada para diretório.
  * @enum
  */
-JSONDatabase.DIFFENTRYTYPE = {
+JSONDatabase.ENTRYTYPE = {
     FILE: 0,
     DIRECTORY: 1
 };
 
 /**
- * Status do diff arquivo.
+ * Status do arquivo.
  * @enum
  */
-JSONDatabase.DIFFFILESTATUS = {
+JSONDatabase.FILESTATUS = {
     ADDED: 0,
     DELETED: 1,
     MODIFIED: 2,
-    MOVED: 3
+    UNMODIFIED: 3,
+    MOVED: 4
 };
 
 /**
- * Status da diff linha.
+ * Status da linha.
  * @enum
  */
-JSONDatabase.DIFFLINESTATUS = {
+JSONDatabase.LINESTATUS = {
     ADDED: 0,
     DELETED: 1,
-    MODIFIED: 2
+    MODIFIED: 2,
+    UNMODIFIED: 3
 };
 
 module.exports = JSONDatabase;
