@@ -293,9 +293,9 @@ JSONDatabase.AuthorRecord = function (authorSign) {
 };
 
 JSONDatabase.prototype.Statistic = function (added, removed, modified) {
-    this.added = added;
-    this.removed = removed;
-    this.modified = modified;
+    this.added = added || 0;
+    this.removed = removed || 0;
+    this.modified = modified || 0;
 };
 
 /**

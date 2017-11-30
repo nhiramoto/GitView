@@ -17,58 +17,66 @@ function GitPipe() {
 /**
  * Analisa o objeto patch.
  * @param  {NodeGit.ConvenientPatch} patch Objeto patch a ser analisado.
- * @return {Promise} Um promise que retorna um JSONDatabase.DiffFileRecord.
+ * @return {Promise} Um promise que retorna um JSONDatabase.DirectoryRecord
  */
 GitPipe.prototype.parsePatch = function (patch) {
-    console.log('parsePatch() >');
-    let newFileId = patch.newfile().id().toString();
+    let newFileId = patch.newFile().id().toString();
     let newFilePath = patch.newFile().path();
-    let newFileName = path.basename(newFilePath);
     let oldFileId = patch.oldFile().id().toString();
     let oldFilePath = patch.oldFile().path();
     let patchStatus = null;
-    if (oldFilePath === newFilePath) {
-        if (patch.isAdded()) {
-            patchStatus = JSONDatabase.DIFFFILESTATUS.ADDED;
-        } else if (patch.isDeleted()) {
-            patchStatus = JSONDatabase.DIFFFILESTATUS.DELETED;
-        } else if (patch.isModified()) {
-            patchStatus = JSONDatabase.DIFFFILESTATUS.MODIFIED;
-        }
+    if (oldFilePath != newFilePath) {
+        patchStatus = JSONDatabase.FILESTATUS.MOVED;
+    } else if (patch.isAdded()) {
+        patchStatus = JSONDatabase.FILESTATUS.ADDED;
+    } else if (patch.isDeleted()) {
+        patchStatus = JSONDatabase.FILESTATUS.DELETED;
+    } else if (patch.isModified()) {
+        patchStatus = JSONDatabase.FILESTATUS.MODIFIED;
     } else {
-        patchStatus = JSONDatabase.DIFFFILESTATUS.MOVED;
+        patchStatus = JSONDatabase.FILESTATUS.UNMODIFIED;
     }
-    let diffFileRec = new JSONDatabase.DiffFileRecord();
-    diffFileRec.id = newFileId;
-    diffFileRec.name = newFileName;
-    diffFileRec.path = newFilePath;
-    diffFileRec.oldFileId = oldFileId;
-    diffFileRec.status = patchStatus;
-    console.log('parsePatch() <');
+    let statistic = new JSONDatabase.Statistic(0, 0, 0);
+    let fileRec = new JSONDatabase.FileRecord();
+    fileRec.id = newFileId;
+    fileRec.name = path.basename(newFilePath);
+    fileRec.path = newFilePath;
+    fileRec.oldFileId = oldFileId;
+    fileRec.status = patchStatus;
+    fileRec.statistic = statistic;
     return patch.hunks().then((hunks) => {
         let hunkPromises = [];
         hunks.forEach((hunk) => {
             hunkPromises.push(hunk.lines());
         });
-        return Promise.all(hunkPromises);
-    }).then((linesList) => {
-        linesList.forEach((lines) => lines.forEach((line) => {
+    }).then((listLines) => listLines.forEach((lines) => {
+        lines.forEach((line) => {
             let oldLineNum = line.oldLineno();
             let newLineNum = line.newLineno();
-            let lineStatus;
-            let diffLineRec= new JSONDatabase.LineRecord();
+            let lineStatus = null;
             let sign = String.fromCharCode(line.origin());
-            if (sign == '+') {
-                lineStatus = JSONDatabase.LINESTATUS.ADDED;
-            } else if (sign == '-') {
+            if (sign === '-') {
                 lineStatus = JSONDatabase.LINESTATUS.DELETED;
+            } else if (sign === '+') {
+                lineStatus = JSONDatabase.LINESTATUS.ADDED;
             }
-            diffLineRec.oldLineNum = oldLineNum;
-            diffLineRec.newLineNum = newLineNum;
-            diffLineRec.status = lineStatus;
-            diffFileRec.modifiedLines.push(diffLineRec);
-        }));
-        return diffFileRec;
+            let lineRec = new JSONDatabase.LineRecord();
+            lineRec.oldLineNum = oldLineNum;
+            lineRec.newLineNum = newLineNum;
+            lineRec.status = lineStatus;
+        });
+        //....
+    }));
+};
+
+GitPipe.prototype.parseDiff = function (diff) {
+    return diff.patches().then((patches) => {
+        let parsePatchPromises = [];
+        patches.forEach((patch) => {
+            let prom = this.parsePatch(patch);
+            parsePatchPromises.push(prom);
+        });
+        return Promise.all(parsePatchPromises);
     });
 };
 
