@@ -72,57 +72,17 @@ GitPipe.prototype.parsePatch = function (patch) {
     });
 };
 
-GitPipe.prototype.createDiffDirectories = function (commit, filePath, child) {
-    if (filePath.length === 0) {
-        return null;
-    } else if (!fs.lstatSync(filePath).isDirectory()) {
-        return this.createDiffDirectories(commit, path.dirname(filePath), child);
-    } else {
-        return commit.getEntry(name).then((entry) => {
-            console.assert(entry.isTree(), 'GitPipe#createDiffDirectories: entry is not a tree.');
-            return entry.getTree();
-        }).then((tree) => {
-            let treeId = tree.id().toString();
-            let foundDiffDir = this.db.findDirectory(treeId);
-            if (foundDiffDir == undefined) {
-                let newDiffDir = new JSONDatabase.DiffDirectoryRecord();
-                newDiffDir.id = treeId;
-                newDiffDir.name = path.basename(filePath);
-                newDiffDir.path = filePath;
-                newDiffDir.entries.push(child);
-                return this.createDiffDirectories(commit, path.dirname(filePath), newDiffDir);
-            } else {
-                foundDiffDir.entries.push(child);
-                return this.createDiffDirectories(commit, path.dirname(filePath), foundDiffDir);
-            }
-        });
-    }
-};
-
 GitPipe.prototype.parseDiffs = function () {
     let patchesPromises = [];
     console.assert(this.diffs.length === this.diffRecs.length, 'Error: diffs length is not equal to diffRecs length.');
     for (let i = 0; i < this.diffs.length; i++) {
         let diff = this.diffs[i];
         let prom1 = (function (self, i, diff) {
-            return diff.patches().then((patches) => {
-                let patchPromises = [];
-                patches.forEach((patch) => {
-                    let prom2 = self.parsePatch(patch);
-                    if (prom2 != null) {
-                        patchPromises.push(prom2);
-                    }
-                });
-                return Promise.all(patchPromises);
-            }).then((listDiffFileRec) => {
-                listDiffFileRec.forEach((diffFileRec) => {
-                    let filePath = diffFileRec.path;
-                    let commit = self.nodegitRepository.getCommit(diffRec.recentCommitId);
-                    let rootDirId = self.createDiffDirectories(commit, filePath, diffFileRec);
-                    let diffRec = self.diffRecs[i];
-                    diffRec.rootDirId = rootDirId;
-                    self.db.addDiff(diffRec);
-                });
+            return this.parseDiff(diff).then((dirRec) => {
+                let dirId = dirRec.id;
+                let diffRec = self.diffRecs[i];
+                diffRec.rootDirId = dirId;
+                self.db.addDiff(diffRec);
             });
         })(this, i, diff);
         patchesPromises.push(prom1);
