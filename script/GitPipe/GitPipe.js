@@ -15,11 +15,11 @@ function GitPipe() {
 }
 
 /**
- * Analisa o objeto patch.
- * @param  {NodeGit.ConvenientPatch} patch Objeto patch a ser analisado.
- * @return {Promise} Um promise que retorna um JSONDatabase.DirectoryRecord
+ * Cria registro do arquivo relacionado ao patch.
+ * @param  {NodeGit.ConvenientPatch} patch - Objeto patch a ser analisado.
+ * @return {Promise} Um promise que retorna um JSONDatabase.FileRecord
  */
-GitPipe.prototype.parsePatch = function (patch) {
+GitPipe.prototype.createFile = function (patch) {
     let newFileId = patch.newFile().id().toString();
     let newFilePath = patch.newFile().path();
     let oldFileId = patch.oldFile().id().toString();
@@ -57,18 +57,38 @@ GitPipe.prototype.parsePatch = function (patch) {
             let sign = String.fromCharCode(line.origin());
             if (sign === '-') {
                 lineStatus = JSONDatabase.LINESTATUS.DELETED;
+                fileRec.statistic.deleted++;
             } else if (sign === '+') {
                 lineStatus = JSONDatabase.LINESTATUS.ADDED;
+                fileRec.statistic.added++;
             }
             let lineRec = new JSONDatabase.LineRecord();
             lineRec.oldLineNum = oldLineNum;
             lineRec.newLineNum = newLineNum;
             lineRec.status = lineStatus;
+            fileRec.lines.push(lineRec);
         });
-        //....
+        return fileRec;
     }));
 };
 
+/**
+ * Analisa o objeto patch e registra os diretórios e arquivos
+ * com o estado de modificação.
+ * @param {NodeGit.ConvenientPatch} patch
+ */
+GitPipe.prototype.parsePatch = function (patch) {
+    let child = this.createFile(patch);
+    let path = path.dirname(child.path).replace(/^(\.\/)?/, '');
+    while (path.length > 0) {
+
+    }
+};
+
+/**
+ * Analisa cada objeto diff.
+ * @param {NodeGit.Diff} diff - Objeto com os dados do diff.
+ */
 GitPipe.prototype.parseDiff = function (diff) {
     return diff.patches().then((patches) => {
         let parsePatchPromises = [];
@@ -80,6 +100,9 @@ GitPipe.prototype.parseDiff = function (diff) {
     });
 };
 
+/**
+ * Analisa os diffs salvos temporariamente e insere na base de dados.
+ */
 GitPipe.prototype.parseDiffs = function () {
     let patchesPromises = [];
     console.assert(this.diffs.length === this.diffRecs.length, 'Error: diffs length is not equal to diffRecs length.');
@@ -140,7 +163,8 @@ GitPipe.prototype.diffCommitWithParents = function (commitRec) {
 };
 
 /**
- * Percorre os commits salvos e cria diffs de cada commit com o commit pai.
+ * Percorre os commits salvos e salva temporariamente
+ * os diffs de cada commit com o commit pai.
  */
 GitPipe.prototype.diffCommitsHistory = function () {
     let commitRecs = this.db.getCommits();
