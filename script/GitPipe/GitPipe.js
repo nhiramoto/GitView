@@ -16,7 +16,7 @@ function GitPipe() {
 
 /**
  * Cria registro do arquivo relacionado ao patch.
- * @param  {NodeGit.ConvenientPatch} patch - Objeto patch a ser analisado.
+ * @param  {NodeGit.ConvenientPatch} patch - Objeto patch com os dados do arquivo.
  * @return {Promise} Um promise que retorna um JSONDatabase.FileRecord
  */
 GitPipe.prototype.createFile = function (patch) {
@@ -73,27 +73,86 @@ GitPipe.prototype.createFile = function (patch) {
 };
 
 /**
- * Analisa o objeto patch e registra os diretórios e arquivos
- * com o estado de modificação.
- * @param {NodeGit.ConvenientPatch} patch
+ * Cria registro de diretórios recursivamente (dos filhos à raiz).
  */
-GitPipe.prototype.parsePatch = function (patch) {
-    let child = this.createFile(patch);
-    let path = path.dirname(child.path).replace(/^(\.\/)?/, '');
-    while (path.length > 0) {
-
+GitPipe.prototype.createDirectory = function (commit, dirPath, child) {
+    if (dirPath.length <= 0 || dirPath === '.') {
+        return null;
+    } else {
+        return commit.getEntry(dirPath).then((entry) => {
+            console.assert(entry.isTree(), 'GitPipe#parsePatch: Error - Entry is not a tree.');
+            return entry.getTree();
+        }).then((tree) => {
+            let treeId = tree.id().toString();
+            let foundDirRec = this.db.findDirectory(treeId);
+            if (foundDirRec == undefined) {
+                let newDirRec = new JSONDatabase.DirectoryRecord();
+                newDirRec.id = treeId;
+                newDirRec.name = path.basename(dirPath);
+                newDirRec.path = dirPath;
+                newDirRec.statistic = new JSONDatabase.Statistic(0, 0, 0);
+                if (child.type === JSONDatabase.ENTRYTYPE.FILE) {
+                    if (child.status === JSONDatabase.FILESTATUS.ADDED) {
+                        newDirRec.statistic.added++;
+                    } else if (child.status === JSONDatabase.FILESTATUS.DELETED) {
+                        newDirRec.statistic.deleted++;
+                    } else if (child.status === JSONDatabase.FILESTATUS.MODIFIED) {
+                        newDirRec.statistic.modified++;
+                    }
+                } else {
+                    newDirRec.statistic.added += child.statistic.added;
+                    newDirRec.statistic.deleted += child.statistic.deleted;
+                    newDirRec.statistic.modified += child.statistic.modified;
+                }
+                newDirRec.entries.push(child.id);
+                child = newDirRec;
+            } else {
+                if (child.type === JSONDatabase.ENTRYTYPE.FILE) {
+                    if (child.status === JSONDatabase.FILESTATUS.ADDED) {
+                        foundDirRec.statistic.added++;
+                    } else if (child.status === JSONDatabase.FILESTATUS.DELETED) {
+                        foundDirRec.statistic.deleted++;
+                    } else if (child.status === JSONDatabase.FILESTATUS.MODIFIED) {
+                        foundDirRec.statistic.modified++;
+                    }
+                } else {
+                    foundDirRec.statistic.added += child.statistic.added;
+                    foundDirRec.statistic.deleted += child.statistic.deleted;
+                    foundDirRec.statistic.modified += child.statistic.modified;
+                }
+                foundDirRec.entries.push(child.id);
+                child = foundDirRec;
+            }
+            dirPath = path.dirname(dirPath);
+            return this.createDirectory(commit, dirPath, child);
+        });
     }
 };
 
 /**
+ * Analisa o objeto patch e registra os diretórios e arquivos
+ * com o estado de modificação.
+ * @param {NodeGit.Commit} commit
+ * @param {NodeGit.ConvenientPatch} patch
+ * @param {Array<JSONDatabase.DirectoryRecord>} dirs
+ */
+GitPipe.prototype.parsePatch = function (commit, patch) {
+    let child = this.createFile(patch);
+    this.db.addFile(child);
+    let dirPath = path.dirname(child.path).replace(/^(\.\/)?/, ''); // remove './' from begining.
+    return this.createDirectory(commit, dirPath, child);
+};
+
+/**
  * Analisa cada objeto diff.
+ * @param {NodeGit.Commit} commit - Objeto commit mais recente do diff.
  * @param {NodeGit.Diff} diff - Objeto com os dados do diff.
  */
-GitPipe.prototype.parseDiff = function (diff) {
+GitPipe.prototype.parseDiff = function (commit, diff) {
     return diff.patches().then((patches) => {
         let parsePatchPromises = [];
         patches.forEach((patch) => {
-            let prom = this.parsePatch(patch);
+            let prom = this.parsePatch(commit, patch);
             parsePatchPromises.push(prom);
         });
         return Promise.all(parsePatchPromises);
@@ -108,14 +167,17 @@ GitPipe.prototype.parseDiffs = function () {
     console.assert(this.diffs.length === this.diffRecs.length, 'Error: diffs length is not equal to diffRecs length.');
     for (let i = 0; i < this.diffs.length; i++) {
         let diff = this.diffs[i];
-        let prom1 = (function (self, i, diff) {
-            return this.parseDiff(diff).then((dirRec) => {
+        let diffRec = this.diffRecs[i];
+        let prom1 = (function (self, diff, diffRec) {
+            let commitId = diffRec.recentCommitId;
+            return self.nodegitRepository.getCommit(commitId).then((commit) => {
+                return self.parseDiff(commit, diff);
+            }).then((dirRec) => {
                 let dirId = dirRec.id;
-                let diffRec = self.diffRecs[i];
                 diffRec.rootDirId = dirId;
                 self.db.addDiff(diffRec);
             });
-        })(this, i, diff);
+        })(this, diff, diffRec);
         patchesPromises.push(prom1);
     }
     this.diffs = null;
