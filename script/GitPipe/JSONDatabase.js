@@ -20,43 +20,56 @@ function JSONDatabase (rootPath) {
 
 JSONDatabase.prototype.saveToDisk = function () {
     let error = false;
-    fs.writeFile(this.rootPath + path.sep + 'repository.json', JSON.stringify(this.repository, null, 4), (err) => {
-        if (err) {
-            console.error('Error:', err);
-            error = true;
-        }
-    });
-    fs.writeFile(this.rootPath + path.sep + 'commits.json', JSON.stringify(this.commits, null, 4), (err) => {
-        if (err) {
-            console.error('Error:', err);
-            error = true;
-        }
-    });
-    fs.writeFile(this.rootPath + path.sep + 'diffs.json', JSON.stringify(this.diffs, null, 4), (err) => {
-        if (err) {
-            console.error('Error:', err);
-            error = true;
-        }
-    });
-    fs.writeFile(this.rootPath + path.sep + 'authors.json', JSON.stringify(this.authors, null, 4), (err) => {
-        if (err) {
-            console.error('Error:', err);
-            error = true;
-        }
-    });
-    fs.writeFile(this.rootPath + path.sep + 'dirs.json', JSON.stringify(this.dirs, null, 4), (err) => {
-        if (err) {
-            console.error('Error:', err);
-            error = true;
-        }
-    });
-    fs.writeFile(this.rootPath + path.sep + 'files.json', JSON.stringify(this.files, null, 4), (err) => {
-        if (err) {
-            console.error('Error:', err);
-            error = true;
-        }
-    });
+    if (this.repository != null) {
+        fs.writeFile(this.rootPath + path.sep + 'repository.json', JSON.stringify(this.repository, null, 4), (err) => {
+            if (err) {
+                console.error('Error:', err);
+                error = true;
+            }
+        });
+    }
+    if (!error && this.commits.length > 0) {
+        fs.writeFile(this.rootPath + path.sep + 'commits.json', JSON.stringify(this.commits, null, 4), (err) => {
+            if (err) {
+                console.error('Error:', err);
+                error = true;
+            }
+        });
+    }
+    if (!error && this.diffs.length > 0) {
+        fs.writeFile(this.rootPath + path.sep + 'diffs.json', JSON.stringify(this.diffs, null, 4), (err) => {
+            if (err) {
+                console.error('Error:', err);
+                error = true;
+            }
+        });
+    }
+    if (!error && this.authors.length > 0) {
+        fs.writeFile(this.rootPath + path.sep + 'authors.json', JSON.stringify(this.authors, null, 4), (err) => {
+            if (err) {
+                console.error('Error:', err);
+                error = true;
+            }
+        });
+    }
+    if (!error && this.dirs.length > 0) {
+        fs.writeFile(this.rootPath + path.sep + 'dirs.json', JSON.stringify(this.dirs, null, 4), (err) => {
+            if (err) {
+                console.error('Error:', err);
+                error = true;
+            }
+        });
+    }
+    if (!error && this.files.length > 0) {
+        fs.writeFile(this.rootPath + path.sep + 'files.json', JSON.stringify(this.files, null, 4), (err) => {
+            if (err) {
+                console.error('Error:', err);
+                error = true;
+            }
+        });
+    }
     this.saved = !error;
+    console.log('< saveToDisk()');
     return this.saved;
 };
 

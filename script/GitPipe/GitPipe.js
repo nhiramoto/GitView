@@ -10,10 +10,14 @@ const JSONDatabase = require('./JSONDatabase');
 function GitPipe() {
     this.nodegitRepository = null;
     this.db = null;
-    this.diffRecs = [];
     this.diffs = [];
 }
 
+/**
+ * Salva a base de dados em arquivo.
+ * @return Caso tenha sucesso na escrita em arquivo retorna true,
+ *  ou false caso contrário.
+ */
 GitPipe.prototype.save = function () {
     return this.db.saveToDisk();
 };
@@ -199,29 +203,32 @@ GitPipe.prototype.diffCommitWithParents = function (commitRec) {
     let commitId = commitRec.id;
     let commitSnapshotId = commitRec.snapshotId;
     let parentIds = commitRec.parents;
+    let commitTree = null;
+    return this.nodegitRepository.getTree(commitSnapshotId).then((tree) => {
+        commitTree = tree;
+    });
     let createDiffPromises = [];
     parentIds.forEach((parentId) => {
-        let foundDiff = this.diffRecs.find((diffRec) =>
-            diffRec.oldCommitId === parentId && diffRec.recentCommitId === commitId);
+        let foundDiff = this.diffs.find((diff) =>
+            diff.diffRec.oldCommitId === parentId && diff.diffRec.recentCommitId === commitId);
         if (foundDiff == undefined) {
             let parentRec = this.db.findCommit(parentId);
             let parentSnapshotId = parentRec.snapshotId;
             let diffRec = new JSONDatabase.DiffRecord();
             diffRec.oldCommitId = parentId;
             diffRec.recentCommitId = commitId;
-            this.diffRecs.push(diffRec);
-            let prom = (function (parentSnapshotId, commitSnapshotId) {
+            let prom = (function (self, diffRec, parentSnapshotId, commitSnapshotId) {
                 let parentTree, commitTree;
-                return this.nodegitRepository.getTree(parentSnapshotId).then((tree1) => {
+                return self.nodegitRepository.getTree(parentSnapshotId).then((tree1) => {
                     parentTree = tree1;
-                    return this.nodegitRepository.getTree(commitSnapshotId);
-                }).then((tree2) => {
-                    commitTree = tree2;
-                    return nodegit.Diff.treeToTree(this.nodegitRepository, parentTree, commitTree);
+                    return nodegit.Diff.treeToTree(self.nodegitRepository, parentTree, commitTree);
                 }).then((diff) => {
-                    this.diffs.push(diff);
+                    self.diffs.push({
+                        gitDiff: diff,
+                        diffRec: diffRec
+                    });
                 });
-            })(parentSnapshotId, commitSnapshotId);
+            })(this, diffRec, parentSnapshotId, commitSnapshotId);
             createDiffPromises.push(prom);
         }
     });
