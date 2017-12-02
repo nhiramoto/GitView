@@ -224,6 +224,37 @@ JSONDatabase.prototype.deleteFile = function (fileId) {
     } else return null;
 };
 
+/**
+ * Pesquisa por um diretório ou arquivo na base de dados.
+ * @param {String} entryId - Chave de pesquisa.
+ * @return {JSONDatabase.EntryRecord} O diretório ou arquivo encontrado,
+ *  undefined caso não encontre.
+ */
+JSONDatabase.prototype.findEntry = function (entryId) {
+    let result = this.findDirectory(entryId);
+    if (result == undefined) return this.findFile(entryId);
+    else return result;
+};
+
+/**
+ * Constrói a hierarquia de diretórios a partir do diretório
+ *  com rootId correspondente.
+ * @param {String} rootId - Chave do diretório raiz.
+ */
+JSONDatabase.prototype.hierarchical = function (rootId) {
+    let root = this.findEntry(rootId);
+    console.assert(root != undefined, 'JSONDatabase#hierarchical: Error - Entry not found (loose id).');
+    if (root.type === JSONDatabase.ENTRYTYPE.DIRECTORY) {
+        let entriesId = root.entries;
+        root.entries = [];
+        entriesId.forEach((entryId) => {
+            let entry = this.hierarchical(entryId);
+            root.entries.push(entry);
+        });
+    }
+    return root;
+};
+
 //-------------------------------- Records --------------------------------
 /**
  * Registro do repositório.

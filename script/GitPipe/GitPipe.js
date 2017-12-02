@@ -14,6 +14,10 @@ function GitPipe() {
     this.diffs = [];
 }
 
+GitPipe.prototype.save = function () {
+    return this.db.saveToDisk();
+};
+
 /**
  * Cria registro do arquivo relacionado ao patch.
  * @param  {NodeGit.ConvenientPatch} patch - Objeto patch com os dados do arquivo.
@@ -293,7 +297,7 @@ GitPipe.prototype.parseCommitsHistory = function () {
 /**
  * Abre o repositório usando nodegit e salva na base de dados.
  * @param {String} repositoryPath - Caminho do repositório.
- * @return {Promise} Promise que retorna o caminho da base de dados.
+ * @return {Promise<String>} Promise que retorna o caminho da base de dados.
  */
 GitPipe.prototype.openRepository = function (repositoryPath) {
     let pathToRepo = path.resolve(repositoryPath);
