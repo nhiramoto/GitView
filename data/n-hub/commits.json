@@ -1,0 +1,331 @@
+[
+    {
+        "id": "b3628bc0394e357e67ac2324bd4f3a2fd6090c45",
+        "message": "Fixing welcome page scrollbar\n",
+        "date": "2017-08-08T14:08:00.000Z",
+        "snapshotId": "e07f297e854ad29c29701ccacc9f02de83448a12",
+        "parents": [
+            "6c635caa34e51a75b28cec511dacffd7b9ca4066"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "6c635caa34e51a75b28cec511dacffd7b9ca4066",
+        "message": "Merge branch 'master' of https://github.com/nhtoshiaki/n-hub\n",
+        "date": "2017-08-01T15:12:47.000Z",
+        "snapshotId": "24d6f65100c3cf3627803cde10f02f90df153bfd",
+        "parents": [
+            "202ce440760b06e52888b57877b95b286dff078d",
+            "0fce0b65e922a9f036b3aac4dbe123970e34611a"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "202ce440760b06e52888b57877b95b286dff078d",
+        "message": "Adding 'the interfacels'\n",
+        "date": "2017-08-01T15:10:40.000Z",
+        "snapshotId": "97ab18cac2b2991d96008b3cea7c3a1875951739",
+        "parents": [
+            "00b0480e0497c43acf25da3dd6406b22c576ead5"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "0fce0b65e922a9f036b3aac4dbe123970e34611a",
+        "message": "Adding electron-prebuilt to dev dependencies.\n",
+        "date": "2017-07-25T20:16:40.000Z",
+        "snapshotId": "024703e156803239b341dce10e438f99e564ff4a",
+        "parents": [
+            "00b0480e0497c43acf25da3dd6406b22c576ead5"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "00b0480e0497c43acf25da3dd6406b22c576ead5",
+        "message": "Adding exit on close all windows to app.\n",
+        "date": "2017-07-25T18:41:04.000Z",
+        "snapshotId": "80ada019b85ffdee391c640ceed6328bcf1e3401",
+        "parents": [
+            "3a17f95ed664d80228d5005a8b1d272e68c49b70"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "3a17f95ed664d80228d5005a8b1d272e68c49b70",
+        "message": "Changing main js file.\n",
+        "date": "2017-07-25T18:34:31.000Z",
+        "snapshotId": "4347ce59c5dee61ce68192e87ca0f358d37ee77d",
+        "parents": [
+            "1bfcefcb469c616d5a91870d182dc42a8840c282"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "1bfcefcb469c616d5a91870d182dc42a8840c282",
+        "message": "Adding electron-packager output folder to gitignore.\n",
+        "date": "2017-07-25T18:29:49.000Z",
+        "snapshotId": "0272fa8eefa71f02dd5f64d01fe2a01b7c1fc417",
+        "parents": [
+            "dc288c40845b63e77e5c699d6055d090c1ae4654"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "dc288c40845b63e77e5c699d6055d090c1ae4654",
+        "message": "New resource sugestion; electron-packager.\n",
+        "date": "2017-07-25T18:18:29.000Z",
+        "snapshotId": "4587627ae1f45d22eebe63ace12888171882b9b3",
+        "parents": [
+            "793b7e73364f4e272e998086d3927bcaf79ec847"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "793b7e73364f4e272e998086d3927bcaf79ec847",
+        "message": "Add feed.\n",
+        "date": "2017-07-25T13:10:52.000Z",
+        "snapshotId": "d10b0640b0ba396fad103e7b06fe14e189c2989b",
+        "parents": [
+            "da18193a456c376fd3e0448ea10d895172b4cd04"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "da18193a456c376fd3e0448ea10d895172b4cd04",
+        "message": "Changing the main font, adding rss icon.\n",
+        "date": "2017-07-25T12:10:52.000Z",
+        "snapshotId": "b09f74f2c21d4eae88980d5128360dba80cd6453",
+        "parents": [
+            "0176f73c03cdfb380c45d71c918e60d937997670"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "0176f73c03cdfb380c45d71c918e60d937997670",
+        "message": "Adding item author and date; news resource layout.\n",
+        "date": "2017-07-24T21:11:27.000Z",
+        "snapshotId": "aeea63165ceae1dcd14d887520596343c20879b6",
+        "parents": [
+            "eab29e10be3c5d68070e623bc201b0e409020c8b"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "eab29e10be3c5d68070e623bc201b0e409020c8b",
+        "message": "Finalizing calendar layout.\n",
+        "date": "2017-07-23T21:49:22.000Z",
+        "snapshotId": "1ee61ea681eb30db8f1ceca559010edd216a9df1",
+        "parents": [
+            "e6f12aac8698e8c8f217140c2d3330426b265159"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "e6f12aac8698e8c8f217140c2d3330426b265159",
+        "message": "Adding e-mail composer.\n",
+        "date": "2017-07-23T20:04:55.000Z",
+        "snapshotId": "7654ee16c84d3948885c4bf6a397cddccf99d168",
+        "parents": [
+            "92aebc5a95d6ed9984b5277ad3f03edf440a7f07"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "92aebc5a95d6ed9984b5277ad3f03edf440a7f07",
+        "message": "Initializing calendar layout.\n",
+        "date": "2017-07-23T15:31:42.000Z",
+        "snapshotId": "c26e5706af9705efcd60cb7a06dd25588dbee405",
+        "parents": [
+            "f2d0ba0cf41a6264c55ea24942efd67e9bb21501"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "f2d0ba0cf41a6264c55ea24942efd67e9bb21501",
+        "message": "Finalizing chat resource interface.\n",
+        "date": "2017-07-22T20:07:14.000Z",
+        "snapshotId": "3bd3194f038ce8b51daec15a3d57e836ba641d39",
+        "parents": [
+            "9c059f36df5475abaf00016150ce80a2aac9781b"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "9c059f36df5475abaf00016150ce80a2aac9781b",
+        "message": "Setting color scheme (hover, active, ...).\n",
+        "date": "2017-07-22T14:27:21.000Z",
+        "snapshotId": "b5de6774bffeef1fbfb2d1d89b290cf985d046eb",
+        "parents": [
+            "4e3026fe6679e5b6648588f25b72013376725abc"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "4e3026fe6679e5b6648588f25b72013376725abc",
+        "message": "Initializing chat layout.\n",
+        "date": "2017-07-21T15:21:01.000Z",
+        "snapshotId": "1e5bac9c9d2325ff108fec3639a4daff3f43241d",
+        "parents": [
+            "29b8c288b6e60a8082f0db602b4e9f1aa3fcf93b"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "29b8c288b6e60a8082f0db602b4e9f1aa3fcf93b",
+        "message": "Fixed absolute div sizing.\n",
+        "date": "2017-07-21T13:44:36.000Z",
+        "snapshotId": "309677fe9a64957aa0cda2870bf9cb4931eed736",
+        "parents": [
+            "98cc9025b44f6cc25d7ba09aec79c413ee20bf63"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "98cc9025b44f6cc25d7ba09aec79c413ee20bf63",
+        "message": "E-mail basic layout.\n",
+        "date": "2017-07-21T12:47:44.000Z",
+        "snapshotId": "8d2af5713323453e2aaaca943a00fe2901633422",
+        "parents": [
+            "ba31f3bbe446b9e4879cbf1422655faddd1febff"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "ba31f3bbe446b9e4879cbf1422655faddd1febff",
+        "message": "Splitted email list and viewer in email content.\n",
+        "date": "2017-07-18T15:10:35.000Z",
+        "snapshotId": "3b7a3e347ac1fe802bc08b52f1376803f6691928",
+        "parents": [
+            "441235ea5128482ac44b2c0351b6ba24e898668e"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "441235ea5128482ac44b2c0351b6ba24e898668e",
+        "message": "Initializing Global settings.\n",
+        "date": "2017-07-17T22:10:36.000Z",
+        "snapshotId": "b324b3f3614a7f2ee0df5f3de9e618d90c0c6fad",
+        "parents": [
+            "c0edd929899b7f9d7a876b24762427c0617cc010"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "c0edd929899b7f9d7a876b24762427c0617cc010",
+        "message": "Initializing email content layout.\n",
+        "date": "2017-07-17T13:41:10.000Z",
+        "snapshotId": "ac561e48cfc6e103969c71b8cd5ac81d66a25cf0",
+        "parents": [
+            "ce85efa25d403727f77f60b572bc1bfb0eacbdbc"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "ce85efa25d403727f77f60b572bc1bfb0eacbdbc",
+        "message": "Changing menu with sidebar buttons.\n",
+        "date": "2017-07-16T20:57:28.000Z",
+        "snapshotId": "502bf4844482a4976f36aca30d63d319ac80f838",
+        "parents": [
+            "424e50883c983d1ed4df7b11a8bc6a2128b2a599"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "424e50883c983d1ed4df7b11a8bc6a2128b2a599",
+        "message": "Created sidebar hamburger button.\n",
+        "date": "2017-07-14T20:57:20.000Z",
+        "snapshotId": "1c80d0df73030b6bb4f74f216312d7378365e27d",
+        "parents": [
+            "be4b23457ab77cefd92d52fddf354909cc9085e6"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "be4b23457ab77cefd92d52fddf354909cc9085e6",
+        "message": "Created sidebar menu.\n",
+        "date": "2017-07-13T20:57:03.000Z",
+        "snapshotId": "cc790a1e274627bd01954405e4de93085cb89530",
+        "parents": [
+            "138b8fee66f192cf345cfc9f74edb62296a02599"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "138b8fee66f192cf345cfc9f74edb62296a02599",
+        "message": "Initializing dashboard html.\n",
+        "date": "2017-07-13T14:17:13.000Z",
+        "snapshotId": "3dbac1b0a15b1aeb892cf90a2e5180fa50d6e4bd",
+        "parents": [
+            "653bed3e3278103ed73c37e4c5bcfb36b8f0a098"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "653bed3e3278103ed73c37e4c5bcfb36b8f0a098",
+        "message": "Finalizing welcome page.\n",
+        "date": "2017-07-12T15:19:51.000Z",
+        "snapshotId": "8e24bc096fca8c30410913ab979dfd0e4f31ee7d",
+        "parents": [
+            "c5fcea15868f8266bea7f4feaec53315d3bf41e3"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "c5fcea15868f8266bea7f4feaec53315d3bf41e3",
+        "message": "Initializing selection session on welcome.html.\n",
+        "date": "2017-07-11T22:42:36.000Z",
+        "snapshotId": "571e8334b359ced383904739136ca9c09993b382",
+        "parents": [
+            "a23ddadf01bfd2b93953d0f8eb96ebc23b3a4db3"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "a23ddadf01bfd2b93953d0f8eb96ebc23b3a4db3",
+        "message": "Installing jquery module.\n",
+        "date": "2017-07-11T18:48:45.000Z",
+        "snapshotId": "d7d458ab2e79c1aa901575c4ccfdcb23ecce85ee",
+        "parents": [
+            "b836cd52fbdacb73f15853f67a3a789ee983cc6d"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "b836cd52fbdacb73f15853f67a3a789ee983cc6d",
+        "message": "Login session.\n",
+        "date": "2017-07-11T18:38:22.000Z",
+        "snapshotId": "b4f00c3cd5efd9568c8154647b0214df0d642534",
+        "parents": [
+            "8c5ff93c06a25e82b879a2abc228b5ccc05ac0a1"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "8c5ff93c06a25e82b879a2abc228b5ccc05ac0a1",
+        "message": "Testing welcome page layout.\n",
+        "date": "2017-07-10T22:08:30.000Z",
+        "snapshotId": "6050d6806cc456d0c6b909c17aadc5c26db53bd3",
+        "parents": [
+            "ba405a0c8ec983c5d5859c72da0db5f12b75f067"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "ba405a0c8ec983c5d5859c72da0db5f12b75f067",
+        "message": "Initial configuration (npm, electron).\n",
+        "date": "2017-07-10T14:20:44.000Z",
+        "snapshotId": "3ba1c4b65e50eaed66724c86268c571c513c3847",
+        "parents": [
+            "35944d4579fa8e502b844a4c032e4a2519e033f7"
+        ],
+        "authorEmail": "nh_toshi.94@hotmail.com"
+    },
+    {
+        "id": "35944d4579fa8e502b844a4c032e4a2519e033f7",
+        "message": "Initial commit",
+        "date": "2017-07-10T13:02:44.000Z",
+        "snapshotId": "21bd4622b1a44741f117bcb6ab6a3c3102004d70",
+        "parents": [],
+        "authorEmail": "nhtoshiaki@users.noreply.github.com"
+    }
+]

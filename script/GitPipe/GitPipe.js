@@ -57,6 +57,7 @@ GitPipe.prototype.createFile = function (patch) {
         hunks.forEach((hunk) => {
             hunkPromises.push(hunk.lines());
         });
+        return Promise.all(hunkPromises);
     }).then((listLines) => listLines.forEach((lines) => {
         lines.forEach((line) => {
             let oldLineNum = line.oldLineno();
@@ -88,7 +89,7 @@ GitPipe.prototype.createDirectory = function (commit, dirPath, child) {
         return null;
     } else {
         return commit.getEntry(dirPath).then((entry) => {
-            console.assert(entry.isTree(), 'GitPipe#parsePatch: Error - Entry is not a tree.');
+            console.assert(entry.isTree(), 'GitPipe#createDirectory: Error - Entry is not a tree.');
             return entry.getTree();
         }).then((tree) => {
             let treeId = tree.id().toString();
@@ -172,24 +173,21 @@ GitPipe.prototype.parseDiff = function (commit, diff) {
  */
 GitPipe.prototype.parseDiffs = function () {
     let patchesPromises = [];
-    console.assert(this.diffs.length === this.diffRecs.length, 'Error: diffs length is not equal to diffRecs length.');
     for (let i = 0; i < this.diffs.length; i++) {
         let diff = this.diffs[i];
-        let diffRec = this.diffRecs[i];
-        let prom1 = (function (self, diff, diffRec) {
-            let commitId = diffRec.recentCommitId;
+        let prom1 = (function (self, diff) {
+            let commitId = diff.diffRec.recentCommitId;
             return self.nodegitRepository.getCommit(commitId).then((commit) => {
-                return self.parseDiff(commit, diff);
+                return self.parseDiff(commit, diff.gitDiff);
             }).then((dirRec) => {
                 let dirId = dirRec.id;
-                diffRec.rootDirId = dirId;
-                self.db.addDiff(diffRec);
+                diff.diffRec.rootDirId = dirId;
+                self.db.addDiff(diff.diffRec);
             });
-        })(this, diff, diffRec);
+        })(this, diff);
         patchesPromises.push(prom1);
     }
-    this.diffs = null;
-    this.diffRecs = null;
+    this.diffs = [];
     return Promise.all(patchesPromises);
 };
 
@@ -198,45 +196,56 @@ GitPipe.prototype.parseDiffs = function () {
  * @param {JSONDatabase.CommitRecord} commitRec
  */
 GitPipe.prototype.diffCommitWithParents = function (commitRec) {
-    console.log('> diffCommitWithParents...');
-    console.log('commitRec:', commitRec);
+    console.log('> diffCommitWithParents()');
     let commitId = commitRec.id;
+    console.log('  commitId:', commitId);
     let commitSnapshotId = commitRec.snapshotId;
+    console.log('  commitSnapshotId:', commitSnapshotId);
+    let parentRec = null;
+    let parentSnapshotId = null;
     let parentIds = commitRec.parents;
+    console.log('  parentIds:', parentIds);
     let commitTree = null;
-    return this.nodegitRepository.getTree(commitSnapshotId).then((tree) => {
-        commitTree = tree;
-    });
-    let createDiffPromises = [];
-    parentIds.forEach((parentId) => {
-        let foundDiff = this.diffs.find((diff) =>
-            diff.diffRec.oldCommitId === parentId && diff.diffRec.recentCommitId === commitId);
-        if (foundDiff == undefined) {
-            let parentRec = this.db.findCommit(parentId);
-            let parentSnapshotId = parentRec.snapshotId;
-            let diffRec = new JSONDatabase.DiffRecord();
-            diffRec.oldCommitId = parentId;
-            diffRec.recentCommitId = commitId;
-            let prom = (function (self, diffRec, parentSnapshotId, commitSnapshotId) {
-                let parentTree, commitTree;
-                return self.nodegitRepository.getTree(parentSnapshotId).then((tree1) => {
-                    parentTree = tree1;
-                    return nodegit.Diff.treeToTree(self.nodegitRepository, parentTree, commitTree);
-                }).then((diff) => {
-                    self.diffs.push({
-                        gitDiff: diff,
-                        diffRec: diffRec
+    return this.nodegitRepository.getTree(commitSnapshotId).then((tree1) => {
+        commitTree = tree1;
+        console.log('  commitTree:', commitTree);
+        let createDiffPromises = [];
+        parentIds.forEach((parentId) => {
+            let foundDiff = this.diffs.find((diff) =>
+                diff.diffRec.oldCommitId === parentId && diff.diffRec.recentCommitId === commitId);
+            console.log('    foundDiff:', foundDiff);
+            if (foundDiff == undefined) {
+                parentRec = this.db.findCommit(parentId);
+                parentSnapshotId = parentRec.snapshotId;
+                diffRec = new JSONDatabase.DiffRecord();
+                diffRec.oldCommitId = parentId;
+                diffRec.recentCommitId = commitId;
+                console.log('    diffRec:', diffRec);
+                let prom = (function (self, diffRec, parentSnapshotId, commitTree) {
+                    let parentTree;
+                    return self.nodegitRepository.getTree(parentSnapshotId).then((tree2) => {
+                        parentTree = tree2;
+                        console.log('      parentTree:', parentTree);
+                        return nodegit.Diff.treeToTree(self.nodegitRepository, parentTree, commitTree);
+                    }).then((diff) => {
+                        console.log('      diff:', diff);
+                        self.diffs.push({
+                            gitDiff: diff,
+                            diffRec: diffRec
+                        });
                     });
-                });
-            })(this, diffRec, parentSnapshotId, commitSnapshotId);
-            createDiffPromises.push(prom);
-        }
+                })(this, diffRec, parentSnapshotId, commitTree);
+                createDiffPromises.push(prom);
+            }
+        });
+        return Promise.all(createDiffPromises);
+    }).then(() => {
+        console.log('< diffCommitWithParents()');
     });
-    return Promise.all(createDiffPromises);
 };
 
 /**
- * Percorre os commits salvos e salva temporariamente
+ * Percorre os commits e salva temporariamente
  * os diffs de cada commit com o commit pai.
  */
 GitPipe.prototype.diffCommitsHistory = function () {

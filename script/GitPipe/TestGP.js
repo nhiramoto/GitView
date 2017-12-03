@@ -1,7 +1,7 @@
 const GitPipe = require('./GitPipe');
 
 var pipe = new GitPipe();
-pipe.openRepository('../../../Tests/git/simplegit-progit').then(() => {
+pipe.openRepository('../../../IHM/n-hub').then(() => {
     //console.log('db:', pipe.getDb());
     return pipe.parseCommitsHistory();
 }).then(() => {
@@ -11,8 +11,8 @@ pipe.openRepository('../../../Tests/git/simplegit-progit').then(() => {
     return pipe.diffCommitsHistory();
 }).then(() => {
     console.log('diffs.length:', pipe.diffs.length);
-    console.log('diffRecs.length:', pipe.diffRecs.length);
-    console.log('diffRecs:', pipe.diffRecs);
+    console.log('diffs:', pipe.diffs);
+    console.log('saved:', pipe.save());
 }).catch((err) => {
     if (err) console.error('Error:', err);
 });
