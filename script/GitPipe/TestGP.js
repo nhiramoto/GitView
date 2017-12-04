@@ -12,8 +12,7 @@ pipe.openRepository('../../../IHM/n-hub').then(() => {
 }).then(() => {
     console.log('diffs.length:', pipe.diffs.length);
     console.log('diffs:', pipe.diffs);
-    console.log('saved:', pipe.save());
+    // return pipe.parseDiffs();
 }).catch((err) => {
     if (err) console.error('Error:', err);
 });
-

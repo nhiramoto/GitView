@@ -83,9 +83,13 @@ GitPipe.prototype.createFile = function (patch) {
 
 /**
  * Cria registro de diretórios recursivamente (dos filhos à raiz).
+ * @param {NodeGit.Commit} commit - Usado para a recuperação dos objetos tree à partir do seu caminho.
+ * @param {String} dirPath - Caminho do diretório a ser criado/atualizado.
+ * @param {JSONDatabase.EntryRecord} child - Filho do diretório a ser criado.
+ * @return {JSONDatabase.EntryRecord} O último diretório criado (diretório raíz).
  */
 GitPipe.prototype.createDirectory = function (commit, dirPath, child) {
-    if (dirPath.length <= 0 || dirPath === '.') {
+    if (dirPath.length <= 0) {
         return null;
     } else {
         return commit.getEntry(dirPath).then((entry) => {
@@ -94,7 +98,7 @@ GitPipe.prototype.createDirectory = function (commit, dirPath, child) {
         }).then((tree) => {
             let treeId = tree.id().toString();
             let foundDirRec = this.db.findDirectory(treeId);
-            if (foundDirRec == undefined) {
+            if (foundDirRec == undefined) { // Diretório ainda não existe
                 let newDirRec = new JSONDatabase.DirectoryRecord();
                 newDirRec.id = treeId;
                 newDirRec.name = path.basename(dirPath);
@@ -115,7 +119,7 @@ GitPipe.prototype.createDirectory = function (commit, dirPath, child) {
                 }
                 newDirRec.entries.push(child.id);
                 child = newDirRec;
-            } else {
+            } else { // Diretório já criado, atualiza-o.
                 if (child.type === JSONDatabase.ENTRYTYPE.FILE) {
                     if (child.status === JSONDatabase.FILESTATUS.ADDED) {
                         foundDirRec.statistic.added++;
@@ -132,8 +136,12 @@ GitPipe.prototype.createDirectory = function (commit, dirPath, child) {
                 foundDirRec.entries.push(child.id);
                 child = foundDirRec;
             }
-            dirPath = path.dirname(dirPath);
-            return this.createDirectory(commit, dirPath, child);
+            if (dirPath === '.') { // Diretório raíz do snapshot.
+                return child;
+            } else {
+                dirPath = path.dirname(dirPath);
+                return this.createDirectory(commit, dirPath, child);
+            }
         });
     }
 };
@@ -164,7 +172,12 @@ GitPipe.prototype.parseDiff = function (commit, diff) {
             let prom = this.parsePatch(commit, patch);
             parsePatchPromises.push(prom);
         });
-        return Promise.all(parsePatchPromises);
+        return Promise.all(parsePatchPromises).then((dirRecs) => {
+            let f = dirRecs.filter((d) => d.path === '.');
+            console.assert(f.length === dirRecs.length, 'GitPipe#parseDiff: Error - Returned directories is not all root.');
+            console.log('  parseDiff(): dirRecs:', dirRecs);
+            return dirRecs[0];
+        });
     });
 };
 
@@ -180,6 +193,7 @@ GitPipe.prototype.parseDiffs = function () {
             return self.nodegitRepository.getCommit(commitId).then((commit) => {
                 return self.parseDiff(commit, diff.gitDiff);
             }).then((dirRec) => {
+                console.log('  parseDiffs(): dirRec:', dirRec);
                 let dirId = dirRec.id;
                 diff.diffRec.rootDirId = dirId;
                 self.db.addDiff(diff.diffRec);
