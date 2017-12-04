@@ -2,7 +2,7 @@ const d3 = require('d3');
 const fs = require('fs');
 const JSONDatabase = require('./GitPipe/JSONDatabase');
 
-console.log('Tree->JSONDatabase.DIFFFILESTATUS:', JSONDatabase.DIFFFILESTATUS);
+console.log('Tree->JSONDatabase.FILESTATUS:', JSONDatabase.FILESTATUS);
 
 console.log('d3:', d3);
 
@@ -46,11 +46,11 @@ Tree.prototype.color = function (d) {
     } else if (d.children != null) { // Inner node
         return "white";
     } else { // Leaf node
-        if (d.data.status == JSONDatabase.DIFFFILESTATUS.ADDED) {
+        if (d.data.status == JSONDatabase.FILESTATUS.ADDED) {
             return "#2fe2a1";
-        } else if (d.data.status == JSONDatabase.DIFFFILESTATUS.DELETED) {
+        } else if (d.data.status == JSONDatabase.FILESTATUS.DELETED) {
             return "#d15375";
-        } else if (d.data.status == JSONDatabase.DIFFFILESTATUS.MODIFIED) {
+        } else if (d.data.status == JSONDatabase.FILESTATUS.MODIFIED) {
             return "#dbd825";
         } else {
             return "#7f58d3";
@@ -140,7 +140,7 @@ Tree.prototype.load = function (dataPath) {
 
         this.simulation
             .force('link', d3.forceLink().strength(0.8).id((d) => d.id))
-            .force('charge', d3.forceManyBody().strength(-100).distanceMax(500).distanceMin(30))
+            .force('charge', d3.forceManyBody().strength(-400).distanceMax(300).distanceMin(30))
             .force('center', d3.forceCenter(this.width / 2, this.height / 2))
             .force('collide', d3.forceCollide().radius((d) => this.radius(d) - 2))
             .on('tick', () => this.ticked());
