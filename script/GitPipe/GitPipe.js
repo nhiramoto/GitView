@@ -28,8 +28,11 @@ GitPipe.prototype.save = function () {
  * @return {Promise} Um promise que retorna um JSONDatabase.FileRecord
  */
 GitPipe.prototype.createFile = function (patch) {
+    console.log('> createFile()');
+    console.log('  patch:', patch);
     let newFileId = patch.newFile().id().toString();
     let newFilePath = patch.newFile().path();
+    console.log('  newFilePath:', newFilePath);
     let oldFileId = patch.oldFile().id().toString();
     let oldFilePath = patch.oldFile().path();
     let patchStatus = null;
@@ -58,27 +61,30 @@ GitPipe.prototype.createFile = function (patch) {
             hunkPromises.push(hunk.lines());
         });
         return Promise.all(hunkPromises);
-    }).then((listLines) => listLines.forEach((lines) => {
-        lines.forEach((line) => {
-            let oldLineNum = line.oldLineno();
-            let newLineNum = line.newLineno();
-            let lineStatus = null;
-            let sign = String.fromCharCode(line.origin());
-            if (sign === '-') {
-                lineStatus = JSONDatabase.LINESTATUS.DELETED;
-                fileRec.statistic.deleted++;
-            } else if (sign === '+') {
-                lineStatus = JSONDatabase.LINESTATUS.ADDED;
-                fileRec.statistic.added++;
-            }
-            let lineRec = new JSONDatabase.LineRecord();
-            lineRec.oldLineNum = oldLineNum;
-            lineRec.newLineNum = newLineNum;
-            lineRec.status = lineStatus;
-            fileRec.lines.push(lineRec);
+    }).then((listLines) => {
+        listLines.forEach((lines) => {
+            lines.forEach((line) => {
+                let oldLineNum = line.oldLineno();
+                let newLineNum = line.newLineno();
+                let lineStatus = null;
+                let sign = String.fromCharCode(line.origin());
+                if (sign === '-') {
+                    lineStatus = JSONDatabase.LINESTATUS.DELETED;
+                    fileRec.statistic.deleted++;
+                } else if (sign === '+') {
+                    lineStatus = JSONDatabase.LINESTATUS.ADDED;
+                    fileRec.statistic.added++;
+                }
+                let lineRec = new JSONDatabase.LineRecord();
+                lineRec.oldLineNum = oldLineNum;
+                lineRec.newLineNum = newLineNum;
+                lineRec.status = lineStatus;
+                fileRec.lines.push(lineRec);
+            });
         });
+        console.log('< createFile()');
         return fileRec;
-    }));
+    });
 };
 
 /**
@@ -89,8 +95,56 @@ GitPipe.prototype.createFile = function (patch) {
  * @return {JSONDatabase.EntryRecord} O último diretório criado (diretório raíz).
  */
 GitPipe.prototype.createDirectory = function (commit, dirPath, child) {
+    console.log('> createDirectory()');
+    console.log('  dirPath:', dirPath);
     if (dirPath.length <= 0) {
+        console.log('< createDirectory()');
         return null;
+    } else if (dirPath === '.') {
+        return commit.getTree().then((tree) => {
+            let treeId = tree.id().toString();
+            let foundDirRec = this.db.findDirectory(treeId);
+            if (foundDirRec == undefined) { // Diretório ainda não existe
+                let newDirRec = new JSONDatabase.DirectoryRecord();
+                newDirRec.id = treeId;
+                newDirRec.name = '';
+                newDirRec.path = dirPath;
+                newDirRec.statistic = new JSONDatabase.Statistic(0, 0, 0);
+                if (child.type === JSONDatabase.ENTRYTYPE.FILE) {
+                    if (child.status === JSONDatabase.FILESTATUS.ADDED) {
+                        newDirRec.statistic.added++;
+                    } else if (child.status === JSONDatabase.FILESTATUS.DELETED) {
+                        newDirRec.statistic.deleted++;
+                    } else if (child.status === JSONDatabase.FILESTATUS.MODIFIED) {
+                        newDirRec.statistic.modified++;
+                    }
+                } else {
+                    newDirRec.statistic.added += child.statistic.added;
+                    newDirRec.statistic.deleted += child.statistic.deleted;
+                    newDirRec.statistic.modified += child.statistic.modified;
+                }
+                newDirRec.entries.push(child.id);
+                this.db.addDirectory(newDirRec);
+                child = newDirRec;
+            } else { // Diretório já criado, atualiza-o.
+                if (child.type === JSONDatabase.ENTRYTYPE.FILE) {
+                    if (child.status === JSONDatabase.FILESTATUS.ADDED) {
+                        foundDirRec.statistic.added++;
+                    } else if (child.status === JSONDatabase.FILESTATUS.DELETED) {
+                        foundDirRec.statistic.deleted++;
+                    } else if (child.status === JSONDatabase.FILESTATUS.MODIFIED) {
+                        foundDirRec.statistic.modified++;
+                    }
+                } else {
+                    foundDirRec.statistic.added += child.statistic.added;
+                    foundDirRec.statistic.deleted += child.statistic.deleted;
+                    foundDirRec.statistic.modified += child.statistic.modified;
+                }
+                foundDirRec.entries.push(child.id);
+                child = foundDirRec;
+            }
+            return child;
+        });
     } else {
         return commit.getEntry(dirPath).then((entry) => {
             console.assert(entry.isTree(), 'GitPipe#createDirectory: Error - Entry is not a tree.');
@@ -118,6 +172,7 @@ GitPipe.prototype.createDirectory = function (commit, dirPath, child) {
                     newDirRec.statistic.modified += child.statistic.modified;
                 }
                 newDirRec.entries.push(child.id);
+                this.db.addDirectory(newDirRec);
                 child = newDirRec;
             } else { // Diretório já criado, atualiza-o.
                 if (child.type === JSONDatabase.ENTRYTYPE.FILE) {
@@ -136,12 +191,9 @@ GitPipe.prototype.createDirectory = function (commit, dirPath, child) {
                 foundDirRec.entries.push(child.id);
                 child = foundDirRec;
             }
-            if (dirPath === '.') { // Diretório raíz do snapshot.
-                return child;
-            } else {
-                dirPath = path.dirname(dirPath);
-                return this.createDirectory(commit, dirPath, child);
-            }
+            console.log('< createDirectory()');
+            dirPath = path.dirname(dirPath);
+            return this.createDirectory(commit, dirPath, child);
         });
     }
 };
@@ -154,10 +206,16 @@ GitPipe.prototype.createDirectory = function (commit, dirPath, child) {
  * @param {Array<JSONDatabase.DirectoryRecord>} dirs
  */
 GitPipe.prototype.parsePatch = function (commit, patch) {
-    let child = this.createFile(patch);
-    this.db.addFile(child);
-    let dirPath = path.dirname(child.path).replace(/^(\.\/)?/, ''); // remove './' from begining.
-    return this.createDirectory(commit, dirPath, child);
+    console.log('> parsePatch()');
+    return this.createFile(patch).then((child) => {
+        console.log('  child:', child);
+        this.db.addFile(child);
+        let dirPath = path.dirname(child.path).replace(/^(\.\/)?/, ''); // remove './' from begining.
+        return this.createDirectory(commit, dirPath, child);
+    }).then((v) => {
+        console.log('< parsePatch()');
+        return v;
+    });
 };
 
 /**
@@ -167,6 +225,8 @@ GitPipe.prototype.parsePatch = function (commit, patch) {
  */
 GitPipe.prototype.parseDiff = function (commit, diff) {
     return diff.patches().then((patches) => {
+        console.log('> parseDiff()');
+        console.log('  diff:', diff);
         let parsePatchPromises = [];
         patches.forEach((patch) => {
             let prom = this.parsePatch(commit, patch);
@@ -176,6 +236,7 @@ GitPipe.prototype.parseDiff = function (commit, diff) {
             let f = dirRecs.filter((d) => d.path === '.');
             console.assert(f.length === dirRecs.length, 'GitPipe#parseDiff: Error - Returned directories is not all root.');
             console.log('  parseDiff(): dirRecs:', dirRecs);
+            console.log('< parseDiff()');
             return dirRecs[0];
         });
     });
@@ -185,6 +246,7 @@ GitPipe.prototype.parseDiff = function (commit, diff) {
  * Analisa os diffs salvos temporariamente e insere na base de dados.
  */
 GitPipe.prototype.parseDiffs = function () {
+    console.log('> parseDiffs()');
     let patchesPromises = [];
     for (let i = 0; i < this.diffs.length; i++) {
         let diff = this.diffs[i];
@@ -197,6 +259,8 @@ GitPipe.prototype.parseDiffs = function () {
                 let dirId = dirRec.id;
                 diff.diffRec.rootDirId = dirId;
                 self.db.addDiff(diff.diffRec);
+            }).then(() => {
+                console.log('< parseDiffs()');
             });
         })(this, diff);
         patchesPromises.push(prom1);

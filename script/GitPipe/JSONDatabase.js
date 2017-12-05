@@ -336,7 +336,7 @@ JSONDatabase.AuthorRecord = function (authorSign) {
     }
 };
 
-JSONDatabase.prototype.Statistic = function (added, deleted, modified) {
+JSONDatabase.Statistic = function (added, deleted, modified) {
     this.added = added || 0;
     this.deleted = deleted || 0;
     this.modified = modified || 0;
