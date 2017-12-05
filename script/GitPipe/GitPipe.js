@@ -67,19 +67,22 @@ GitPipe.prototype.createFile = function (patch) {
                 let oldLineNum = line.oldLineno();
                 let newLineNum = line.newLineno();
                 let lineStatus = null;
-                let sign = String.fromCharCode(line.origin());
-                if (sign === '-') {
-                    lineStatus = JSONDatabase.LINESTATUS.DELETED;
-                    fileRec.statistic.deleted++;
-                } else if (sign === '+') {
-                    lineStatus = JSONDatabase.LINESTATUS.ADDED;
-                    fileRec.statistic.added++;
+                let sign = String.fromCharCode(line.origin()).trim();
+                console.log('line:', line.content() + ' sign:', sign);
+                if (sign.length > 0) {
+                    if (sign === '-') {
+                        lineStatus = JSONDatabase.LINESTATUS.DELETED;
+                        fileRec.statistic.deleted++;
+                    } else if (sign === '+') {
+                        lineStatus = JSONDatabase.LINESTATUS.ADDED;
+                        fileRec.statistic.added++;
+                    }
+                    let lineRec = new JSONDatabase.LineRecord();
+                    lineRec.oldLineNum = oldLineNum;
+                    lineRec.newLineNum = newLineNum;
+                    lineRec.status = lineStatus;
+                    fileRec.lines.push(lineRec);
                 }
-                let lineRec = new JSONDatabase.LineRecord();
-                lineRec.oldLineNum = oldLineNum;
-                lineRec.newLineNum = newLineNum;
-                lineRec.status = lineStatus;
-                fileRec.lines.push(lineRec);
             });
         });
         console.log('< createFile()');
@@ -143,6 +146,7 @@ GitPipe.prototype.createDirectory = function (commit, dirPath, child) {
                 foundDirRec.entries.push(child.id);
                 child = foundDirRec;
             }
+            console.log('< createDirectory()');
             return child;
         });
     } else {
