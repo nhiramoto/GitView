@@ -6,11 +6,16 @@ const JSONDatabase = require('./JSONDatabase');
 /**
  * Módulo para obtenção dos dados do repositório.
  * @constructor
+ * @param {String} dbPath - Caminho do diretório da base de dados.
  */
-function GitPipe() {
+function GitPipe(dbPath) {
     this.nodegitRepository = null;
-    this.db = null;
     this.diffs = [];
+    if (dbPath == undefined) {
+        this.db = null;
+    } else {
+        this.db = new JSONDatabase(dbPath);
+    }
 }
 
 /**
@@ -19,7 +24,21 @@ function GitPipe() {
  *  ou false caso contrário.
  */
 GitPipe.prototype.save = function () {
-    return this.db.saveToDisk();
+    if (this.db != null) {
+        return this.db.saveToDisk();
+    } else {
+        console.error('Error: Database not set.');
+        return false;
+    }
+};
+
+GitPipe.prototype.load = function () {
+    if (this.db != null) {
+        return this.db.recoverFromDisk();
+    } else {
+        console.error('Error: Database not set.');
+        return false;
+    }
 };
 
 /**

@@ -20,14 +20,14 @@ function JSONDatabase (rootPath) {
 
 JSONDatabase.prototype.saveToDisk = function () {
     let error = false;
-    if (this.repository != null) {
+    if (this.repository != null && this.rootPath != null) {
         fs.writeFile(this.rootPath + path.sep + 'repository.json', JSON.stringify(this.repository, null, 4), (err) => {
             if (err) {
                 console.error('Error:', err);
                 error = true;
             }
         });
-    }
+    } else error = true;
     if (!error && this.commits.length > 0) {
         fs.writeFile(this.rootPath + path.sep + 'commits.json', JSON.stringify(this.commits, null, 4), (err) => {
             if (err) {
@@ -74,31 +74,48 @@ JSONDatabase.prototype.saveToDisk = function () {
 };
 
 JSONDatabase.prototype.recoverFromDisk = function () {
-    fs.readFile(this.rootPath + path.sep + 'repository.json', 'utf8', (err, repositoryJson) => {
-        if (err) console.error('Error:', err);
-        this.repository = JSON.parse(repositoryJson);
-    });
-    fs.readFileSync(this.rootPath + path.sep + 'commits.json', 'utf8', (err, commitsJson) => {
-        if (err) console.error('Error:', err);
-        this.commits = JSON.parse(commitsJson);
-    });
-    fs.readFileSync(this.rootPath + path.sep + 'diffs.json', 'utf8', (err, diffsJson) => {
-        if (err) console.error('Error:', err);
-        this.diffs = JSON.parse(diffsJson);
-    });
-    fs.readFileSync(this.rootPath + path.sep + 'authors.json', 'utf8', (err, authorsJson) => {
-        if (err) console.error('Error:', err);
-        this.authors = JSON.parse(authorsJson);
-    });
-    fs.readFile(this.rootPath + path.sep + 'dirs.json', 'utf8', (err, dirsJson) => {
-        if (err) console.error('Error:', err);
-        this.dirs = JSON.parse(dirsJson);
-    });
-    fs.readFile(this.rootPath + path.sep + 'files.json', 'utf8', (err, filesJson) => {
-        if (err) console.error('Error:', err);
-        this.files = JSON.parse(filesJson);
-    });
-    this.saved = true;
+    let error = false;
+    if (this.rootPath != null) {
+        fs.readFile(this.rootPath + path.sep + 'repository.json', 'utf8', (err, repositoryJson) => {
+            if (err) {
+                console.error('Error:', err);
+                error = true;
+            }
+            this.repository = JSON.parse(repositoryJson);
+        });
+    } else error = true;
+    if (!error) {
+        fs.readFileSync(this.rootPath + path.sep + 'commits.json', 'utf8', (err, commitsJson) => {
+            if (err) console.error('Error:', err);
+            this.commits = JSON.parse(commitsJson);
+        });
+    }
+    if (!error) {
+        fs.readFileSync(this.rootPath + path.sep + 'diffs.json', 'utf8', (err, diffsJson) => {
+            if (err) console.error('Error:', err);
+            this.diffs = JSON.parse(diffsJson);
+        });
+    }
+    if (!error) {
+        fs.readFileSync(this.rootPath + path.sep + 'authors.json', 'utf8', (err, authorsJson) => {
+            if (err) console.error('Error:', err);
+            this.authors = JSON.parse(authorsJson);
+        });
+    }
+    if (!error) {
+        fs.readFile(this.rootPath + path.sep + 'directories.json', 'utf8', (err, dirsJson) => {
+            if (err) console.error('Error:', err);
+            this.dirs = JSON.parse(dirsJson);
+        });
+    }
+    if (!error) {
+        fs.readFile(this.rootPath + path.sep + 'files.json', 'utf8', (err, filesJson) => {
+            if (err) console.error('Error:', err);
+            this.files = JSON.parse(filesJson);
+        });
+    }
+    this.saved = !error;
+    return this.saved;
 };
 
 JSONDatabase.prototype.setRootPath = function (rootPath) {
