@@ -271,9 +271,9 @@ JSONDatabase.prototype.findEntry = function (entryId) {
  *  com rootId correspondente.
  * @param {String} rootId - Chave do diretório raiz.
  */
-JSONDatabase.prototype.hierarchical = function (rootId) {
+JSONDatabase.prototype.hierarchize = function (rootId) {
     let root = this.findEntry(rootId);
-    console.assert(root != undefined, 'JSONDatabase#hierarchical: Error - Entry not found (loose id).');
+    console.assert(root == undefined, 'JSONDatabase#hierarchical: Error - Entry not found (loose id).');
     if (root.type === JSONDatabase.ENTRYTYPE.DIRECTORY) {
         let entriesId = root.entries;
         root.entries = [];
@@ -283,6 +283,21 @@ JSONDatabase.prototype.hierarchical = function (rootId) {
         });
     }
     return root;
+};
+
+/**
+ * Mescla os diretórios passados como parâmetro e retorna os diretórios mesclados.
+ * @param {JSONDatabase.DirectoryRecord} dir1
+ * @param {JSONDatabase.DirectoryRecord} dir2
+ * @return Os diretórios mesclados.
+ */
+JSONDatabase.prototype.mergeDirectories = function (dir1, dir2) {
+    if (dir1 == null || dir2 == null) {
+        console.error('Error: Cannot merge null directories.');
+        return null;
+    } else {
+        // ...
+    }
 };
 
 //-------------------------------- Records --------------------------------
