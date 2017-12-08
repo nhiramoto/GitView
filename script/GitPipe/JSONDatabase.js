@@ -296,7 +296,18 @@ JSONDatabase.prototype.mergeDirectories = function (dir1, dir2) {
         console.error('Error: Cannot merge null directories.');
         return null;
     } else {
-        // ...
+        if (dir1.name.trim() === dir2.name.trim()) {
+            let mergedDir = new JSONDatabase.DirectoryRecord();
+            let toMerge = dir1.entries.filter(e1 => dir2.entries.map(e2 => e2.name).includes(e1.name));
+            mergedDir.id = dir1.id + '' + dir2.id;
+            mergedDir.name = dir1.name;
+            mergedDir.path = dir2.path;
+            mergedDir.statistic = new JSONDatabase.Statistic(dir1.added + dir2.added, dir1.deleted + dir2.deleted, dir1.modified + dir2.modified);
+            mergedDir.entries = dir1.entries.filter(e1 => !toMerge.includes(e1)).concat(dir2.entries.filter(e2 => !toMerge.map(me => me.name).includes(e2.name)));
+        } else {
+            console.error('Error: The directories names must be the same to merge.')
+            return null;
+        }
     }
 };
 
