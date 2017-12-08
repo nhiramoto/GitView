@@ -293,19 +293,30 @@ JSONDatabase.prototype.hierarchize = function (rootId) {
  */
 JSONDatabase.prototype.mergeDirectories = function (dir1, dir2) {
     if (dir1 == null || dir2 == null) {
-        console.error('Error: Cannot merge null directories.');
+        console.error('Error: JSONDatabase#mergeDirectories - Cannot merge null directories.');
+        return null;
+    } else if (dir1.isFile() || dir2.isFile()) {
+        console.error('Error: JSONDatabase#mergeDirectories - Cannot merge files.');
         return null;
     } else {
         if (dir1.name.trim() === dir2.name.trim()) {
             let mergedDir = new JSONDatabase.DirectoryRecord();
-            let toMerge = dir1.entries.filter(e1 => dir2.entries.map(e2 => e2.name).includes(e1.name));
+            let toMergeDir1 = dir1.entries.filter(e1 => e1.isDirectory() && dir2.entries.map(e2 => e2.name).includes(e1.name));
+            let toMergeDir2 = dir2.entries.filter(e2 => e2.isDirectory() && toMergeDir1.map(e1 => e1.name).includes(e2.name));
             mergedDir.id = dir1.id + '' + dir2.id;
             mergedDir.name = dir1.name;
             mergedDir.path = dir2.path;
             mergedDir.statistic = new JSONDatabase.Statistic(dir1.added + dir2.added, dir1.deleted + dir2.deleted, dir1.modified + dir2.modified);
-            mergedDir.entries = dir1.entries.filter(e1 => !toMerge.includes(e1)).concat(dir2.entries.filter(e2 => !toMerge.map(me => me.name).includes(e2.name)));
+            mergedDir.entries = dir1.entries.filter(e1 => !toMergeDir1.includes(e1)).concat(dir2.entries.filter(e2 => !toMergeDir2.includes(e2)));
+            toMergeDir1.forEach(e1 => {
+                let e2 = toMergeDir2.find(v => v.name === e1.name);
+                let mergedEntries = this.mergeDirectories(e1, e2);
+                console.assert(e1.isDirectory() && e2.isDirectory(), 'Error: JSONDatabase#mergeDirectories - Entries is not directories.');
+                mergedDir.entries.push(mergedEntries);
+            });
+            return mergedDir;
         } else {
-            console.error('Error: The directories names must be the same to merge.')
+            console.error('Error: JSONDatabase#mergeDirectories - To merge, the directories names must be the same.')
             return null;
         }
     }
@@ -397,6 +408,14 @@ JSONDatabase.EntryRecord = function (type) {
     this.statistic = null;
     this.type = type;
 };
+
+JSONDatabase.EntryRecord.prototype.isFile = function () {
+    return this.type === JSONDatabase.ENTRYTYPE.FILE;
+};
+
+JSONDatabase.EntryRecord.prototype.isDirectory = function () {
+    return this.type === JSONDatabase.ENTRYTYPE.DIRECTORY;
+}:
 
 /**
  * Registro do diretório.

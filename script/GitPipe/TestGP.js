@@ -16,8 +16,8 @@ pipe.openRepository('../../../Tests/git/simplegit-progit').then(() => {
     console.log('dirs.length:', pipe.getDb().dirs.length);
     console.log('files.length:', pipe.getDb().files.length);
     console.log('saved:', pipe.save());
-}).then(() => {
-    
+    let diffDir = pipe.getLastDiffTree();
+    console.log('pipe.diffDir:', diffDir);
 }).catch((err) => {
     if (err) console.error('Error:', err);
 });

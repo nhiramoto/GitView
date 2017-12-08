@@ -443,22 +443,34 @@ GitPipe.prototype.load = function () {
 };
 
 GitPipe.prototype.getLastDiffTree = function () {
-    let repoRec = this.db.getRepository();
-    let headId = repoRec.head;
-    let commit = this.db.findCommit(headId);
-    let parentIds = commit.parents;
-    let diffDir = null;
-    parentIds.forEach((parentId) => {
-        let diff = this.db.findDiff(parentId, headId);
-        let rootDirId = diff.rootDirId;
-        if (diffDir == null) {
-            diffDir = this.db.hierarchize(rootDirId);
+    if (this.db == null) {
+        console.error('Error: GitPipe#getLastDiffTree - Database not set.');
+        return null;
+    } else {
+        let repoRec = this.db.getRepository();
+        if (repoRec == null) {
+            console.error('Error: GitPipe#getLastDiffTree - Repository not opened.');
+            return null;
         } else {
-            let rootDir = this.db.hierarchize(rootDirId);
-            diffDir = this.db.mergeDirectories(diffDir, rootDir);
+            let headId = repoRec.head;
+            let commit = this.db.findCommit(headId);
+            let parentIds = commit.parents;
+            let diffDir = null;
+            parentIds.forEach((parentId) => {
+                let diff = this.db.findDiff(parentId, headId);
+                let rootDirId = diff.rootDirId;
+                if (diffDir == null) {
+                    diffDir = this.db.hierarchize(rootDirId);
+                } else {
+                    let rootDir = this.db.hierarchize(rootDirId);
+                    console.log('  rootDir:', rootDir);
+                    diffDir = this.db.mergeDirectories(diffDir, rootDir);
+                    console.log('  diffDir:', diffDir);
+                }
+            });
+            return diffDir;
         }
-    });
-    return diffDir;
+    }
 };
 
 GitPipe.prototype.setNodegitRepository = function (nodegitRepository) {
