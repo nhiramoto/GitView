@@ -455,18 +455,18 @@ GitPipe.prototype.getLastDiffTree = function () {
             let headId = repoRec.head;
             let commit = this.db.findCommit(headId);
             let parentIds = commit.parents;
-            let diffDir = null;
+            let _parentId = parentIds.shift();
+            let diff = this.db.findDiff(_parentId, headId);
+            let rootDirId = diff.rootDirId;
+            let diffDir = this.db.hierarchize(rootDirId);
+            let rootDir = null;
             parentIds.forEach((parentId) => {
-                let diff = this.db.findDiff(parentId, headId);
-                let rootDirId = diff.rootDirId;
-                if (diffDir == null) {
-                    diffDir = this.db.hierarchize(rootDirId);
-                } else {
-                    let rootDir = this.db.hierarchize(rootDirId);
-                    console.log('  rootDir:', rootDir);
-                    diffDir = this.db.mergeDirectories(diffDir, rootDir);
-                    console.log('  diffDir:', diffDir);
-                }
+                diff = this.db.findDiff(parentId, headId);
+                rootDirId = diff.rootDirId;
+                rootDir = this.db.hierarchize(rootDirId);
+                console.log('  rootDir:', rootDir);
+                diffDir = this.db.mergeDirectories(diffDir, rootDir);
+                console.log('  diffDir:', diffDir);
             });
             return diffDir;
         }
