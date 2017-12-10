@@ -220,7 +220,7 @@ JSONDatabase.prototype.addDirectory = function (directoryRec) {
 };
 
 JSONDatabase.prototype.findDirectory = function (directoryId) {
-    return this.dirs.find((dir) => dir.id === directoryId);
+    return this.dirs.find(dir => dir.id === directoryId);
 };
 
 JSONDatabase.prototype.deleteDirectory = function (directoryId) {
@@ -273,12 +273,12 @@ JSONDatabase.prototype.findEntry = function (entryId) {
  */
 JSONDatabase.prototype.hierarchize = function (rootId) {
     let root = this.findEntry(rootId);
-    console.assert(root == undefined, 'JSONDatabase#hierarchical: Error - Entry not found (loose id).');
+    console.assert(root != undefined, 'JSONDatabase#hierarchize: Error - Entry not found (loose id).');
     if (root.type === JSONDatabase.ENTRYTYPE.DIRECTORY) {
         let entriesId = root.entries;
         root.entries = [];
         entriesId.forEach((entryId) => {
-            let entry = this.hierarchical(entryId);
+            let entry = this.hierarchize(entryId);
             root.entries.push(entry);
         });
     }
@@ -415,7 +415,7 @@ JSONDatabase.EntryRecord.prototype.isFile = function () {
 
 JSONDatabase.EntryRecord.prototype.isDirectory = function () {
     return this.type === JSONDatabase.ENTRYTYPE.DIRECTORY;
-}:
+};
 
 /**
  * Registro do diretório.
