@@ -33,11 +33,11 @@ module.exports = function (grunt) {
     });
     
     // Loading plugins
-    grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-contrib-sass')
+    //grunt.loadNpmTasks('grunt-contrib-watch');
+    //grunt.loadNpmTasks('grunt-contrib-sass')
     grunt.loadNpmTasks('grunt-run');
 
     // Registering tasks
-    grunt.registerTask('default', ['run:test', 'sass']);
+    //grunt.registerTask('default', ['run:test', 'sass']);
     grunt.registerTask('test', ['run:test'])
 };
