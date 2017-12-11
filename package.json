@@ -4,6 +4,7 @@
   "description": "Módulo de visualização do projeto de pesquisa (TCC).",
   "main": "main.js",
   "scripts": {
+    "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,9 +18,12 @@
   },
   "homepage": "https://github.com/nhtoshiaki/GitVision/Source#readme",
   "dependencies": {
+    "d3": "^4.12.0",
+    "jquery": "^3.2.1",
     "nodegit": "^0.20.3"
   },
   "devDependencies": {
+    "electron": "1.7.9",
     "grunt": "^1.0.1",
     "grunt-contrib-sass": "^1.0.0",
     "grunt-contrib-watch": "^1.0.0",
