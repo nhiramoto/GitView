@@ -261,6 +261,7 @@ JSONDatabase.prototype.deleteFile = function (fileId) {
  *  undefined caso não encontre.
  */
 JSONDatabase.prototype.findEntry = function (entryId) {
+    console.log('findEntry(id = ' + entryId + ')');
     let result = this.findDirectory(entryId);
     if (result == undefined) return this.findFile(entryId);
     else return result;
@@ -273,6 +274,7 @@ JSONDatabase.prototype.findEntry = function (entryId) {
  */
 JSONDatabase.prototype.hierarchize = function (rootId) {
     let root = this.findEntry(rootId);
+    console.log('root:', root);
     console.assert(root != undefined, 'JSONDatabase#hierarchize: Error - Entry not found (loose id).');
     if (root.type === JSONDatabase.ENTRYTYPE.DIRECTORY) {
         let entriesId = root.entries;

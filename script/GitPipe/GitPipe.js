@@ -165,7 +165,7 @@ GitPipe.prototype.parseDiffs = function () {
             return self.nodegitRepository.getCommit(commitId).then((commit) => {
                 return self.parseDiff(commit, diff.gitDiff);
             }).then((dirRec) => {
-                console.log('  parseDiffs(): dirRec:', dirRec);
+                //console.log('  parseDiffs(): dirRec:', dirRec);
                 let dirId = dirRec.id;
                 diff.diffRec.rootDirId = dirId;
                 self.db.addDiff(diff.diffRec);
@@ -207,10 +207,6 @@ GitPipe.prototype.parseDiff = function (commit, diff) {
  */
 GitPipe.prototype.parsePatch = function (commit, patch) {
     return this.createFile(patch).then((child) => {
-        console.log('  patch file:', child);
-        if (child != null) {
-            this.db.addFile(child);
-        }
         let dirPath = path.dirname(child.path).replace(/^(\.\/)?/, ''); // remove './' from begining.
         return this.createDirectory(commit, dirPath, child);
     });
@@ -223,9 +219,10 @@ GitPipe.prototype.parsePatch = function (commit, patch) {
  */
 GitPipe.prototype.createFile = function (patch) {
     let newFileId = patch.newFile().id().toString();
-    let foundFile = this.db.findFile(newFileId);
-    if (foundFile == undefined) {
+    let foundFileRec = this.db.findFile(newFileId);
+    if (foundFileRec == undefined) {
         let newFilePath = patch.newFile().path();
+        console.log('> createFile(path = ' + newFilePath + ')');
         let oldFileId = patch.oldFile().id().toString();
         let oldFilePath = patch.oldFile().path();
         let patchStatus = null;
@@ -241,13 +238,13 @@ GitPipe.prototype.createFile = function (patch) {
             patchStatus = JSONDatabase.FILESTATUS.UNMODIFIED;
         }
         let statistic = new JSONDatabase.Statistic(0, 0, 0);
-        let fileRec = new JSONDatabase.FileRecord();
-        fileRec.id = newFileId;
-        fileRec.name = path.basename(newFilePath);
-        fileRec.path = newFilePath;
-        fileRec.oldFileId = oldFileId;
-        fileRec.status = patchStatus;
-        fileRec.statistic = statistic;
+        let newFileRec = new JSONDatabase.FileRecord();
+        newFileRec.id = newFileId;
+        newFileRec.name = path.basename(newFilePath);
+        newFileRec.path = newFilePath;
+        newFileRec.oldFileId = oldFileId;
+        newFileRec.status = patchStatus;
+        newFileRec.statistic = statistic;
         return patch.hunks().then((hunks) => {
             let hunkPromises = [];
             hunks.forEach((hunk) => {
@@ -264,22 +261,23 @@ GitPipe.prototype.createFile = function (patch) {
                     if (sign.length > 0) {
                         if (sign === '-') {
                             lineStatus = JSONDatabase.LINESTATUS.DELETED;
-                            fileRec.statistic.deleted++;
+                            newFileRec.statistic.deleted++;
                         } else if (sign === '+') {
                             lineStatus = JSONDatabase.LINESTATUS.ADDED;
-                            fileRec.statistic.added++;
+                            newFileRec.statistic.added++;
                         }
                         let lineRec = new JSONDatabase.LineRecord();
                         lineRec.oldLineNum = oldLineNum;
                         lineRec.newLineNum = newLineNum;
                         lineRec.status = lineStatus;
-                        fileRec.lines.push(lineRec);
+                        newFileRec.lines.push(lineRec);
                     }
                 });
             });
-            return fileRec;
+            this.db.addFile(newFileRec);
+            return newFileRec;
         });
-    } else return null;
+    } else return new Promise((resolve, reject) => resolve(foundFileRec));
 };
 
 /**

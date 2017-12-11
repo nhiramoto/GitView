@@ -21,6 +21,8 @@ pipe.openRepository('../../../IHM/n-hub').then(() => {
     let diffDir = pipe.getLastDiffTree();
     console.log('pipe.diffDir:');
     console.log(util.inspect(diffDir, false, null));
+}).then(() => {
+    console.log('finish!');
 }).catch((err) => {
     if (err) console.error('Error:', err);
 });
