@@ -1,4 +1,4 @@
-const nodegit = require('nodegit');
+const Git = require('nodegit');
 const path = require('path');
 const fs = require('fs');
 const JSONDatabase = require('./JSONDatabase');
@@ -9,7 +9,7 @@ const JSONDatabase = require('./JSONDatabase');
  * @param {String} dbPath - Caminho do diretório da base de dados.
  */
 function GitPipe(dbPath) {
-    this.nodegitRepository = null;
+    this.gitRepo = null;
     this.diffs = [];
     if (dbPath == undefined) {
         this.db = null;
@@ -27,14 +27,14 @@ GitPipe.prototype.openRepository = function (repositoryPath) {
     let pathToRepo = path.resolve(repositoryPath);
     let repoRec = null;
     let dbPath = null;
-    return nodegit.Repository.open(pathToRepo).then((repository) => {
-        this.nodegitRepository = repository;
+    return Git.Repository.open(pathToRepo).then((repository) => {
+        this.gitRepo = repository;
         // Subdiretório onde todas as bases de dados são salvas (uma para cada repositório)
         fs.mkdir('./data', () => {});
-        return this.nodegitRepository.head();
+        return this.gitRepo.head();
     }).then((head) => {
         let headCommitId = head.target().toString();
-        repoRec = new JSONDatabase.RepositoryRecord(this.nodegitRepository);
+        repoRec = new JSONDatabase.RepositoryRecord(this.gitRepo);
         repoRec.head = headCommitId;
         dbPath = './data/' + repoRec.name;
         this.db = new JSONDatabase(dbPath);
@@ -49,13 +49,13 @@ GitPipe.prototype.openRepository = function (repositoryPath) {
  * Percorre o histórico e analisa os commits.
  */
 GitPipe.prototype.parseCommitsHistory = function () {
-    return this.nodegitRepository.getReferences(nodegit.Reference.TYPE.OID).then((references) => {
+    return this.gitRepo.getReferences(nodegit.Reference.TYPE.OID).then((references) => {
         let getCommitPromises = [];
         references.forEach((reference) => {
             let isbranch = reference.isBranch();
             if (isbranch) {
                 let commitId = reference.target().toString();
-                getCommitPromises.push(this.nodegitRepository.getCommit(commitId));
+                getCommitPromises.push(this.gitRepo.getCommit(commitId));
             }
         });
         return Promise.all(getCommitPromises);
@@ -120,11 +120,12 @@ GitPipe.prototype.diffCommitWithParents = function (commitRec) {
     let commitSnapshotId = commitRec.snapshotId;
     let parentRec = null;
     let parentSnapshotId = null;
-    let parentIds = commitRec.parents;
     let commitTree = null;
-    return this.nodegitRepository.getTree(commitSnapshotId).then((tree1) => {
+    let parentIds = null;
+    return this.gitRepo.getTree(commitSnapshotId).then((tree1) => {
         commitTree = tree1;
         let createDiffPromises = [];
+        parentIds = commitRec.parents;
         parentIds.forEach((parentId) => {
             let foundDiff = this.diffs.find((diff) =>
                 diff.diffRec.oldCommitId === parentId && diff.diffRec.recentCommitId === commitId);
@@ -136,9 +137,9 @@ GitPipe.prototype.diffCommitWithParents = function (commitRec) {
                 diffRec.recentCommitId = commitId;
                 let prom = (function (self, diffRec, parentSnapshotId, commitTree) {
                     let parentTree;
-                    return self.nodegitRepository.getTree(parentSnapshotId).then((tree2) => {
+                    return self.gitRepo.getTree(parentSnapshotId).then((tree2) => {
                         parentTree = tree2;
-                        return nodegit.Diff.treeToTree(self.nodegitRepository, parentTree, commitTree);
+                        return Git.Diff.treeToTree(self.nodegitRepository, parentTree, commitTree, Git.Diff.OPTION.INCLUDE_UNMODIFIED);
                     }).then((diff) => {
                         self.diffs.push({
                             gitDiff: diff,
@@ -219,11 +220,12 @@ GitPipe.prototype.parsePatch = function (commit, patch) {
  */
 GitPipe.prototype.createFile = function (patch) {
     let newFileId = patch.newFile().id().toString();
-    let foundFileRec = this.db.findFile(newFileId);
+    let oldFileId = patch.oldFile().id().toString();
+    let diffFileId = oldFileId + ':' + newFileId;
+    let foundFileRec = this.db.findFile(diffFileId);
     if (foundFileRec == undefined) {
         let newFilePath = patch.newFile().path();
         console.log('> createFile(path = ' + newFilePath + ')');
-        let oldFileId = patch.oldFile().id().toString();
         let oldFilePath = patch.oldFile().path();
         let patchStatus = null;
         if (oldFilePath != newFilePath) {
@@ -234,12 +236,13 @@ GitPipe.prototype.createFile = function (patch) {
             patchStatus = JSONDatabase.FILESTATUS.DELETED;
         } else if (patch.isModified()) {
             patchStatus = JSONDatabase.FILESTATUS.MODIFIED;
-        } else {
+        } else if (patch.isUnmodified()) {
             patchStatus = JSONDatabase.FILESTATUS.UNMODIFIED;
         }
+        console.assert(patchStatus != null, 'createFile(): Error - patchStatus not defined!');
         let statistic = new JSONDatabase.Statistic(0, 0, 0);
         let newFileRec = new JSONDatabase.FileRecord();
-        newFileRec.id = newFileId;
+        newFileRec.id = diffFileId;
         newFileRec.name = path.basename(newFilePath);
         newFileRec.path = newFilePath;
         newFileRec.oldFileId = oldFileId;
