@@ -4,6 +4,7 @@ const remote = require('electron').remote;
 const main = remote.require('./main');
 const globals = require('./globals');
 const Tree = require('./Tree');
+const ipc = require('electron').ipcRenderer;
 
 $(document).ready(() => {
     $('body').fadeIn('slow');
@@ -17,6 +18,10 @@ $(document).ready(() => {
             $('.options').addClass('active');
         }
         optionActive = !optionActive;
+    });
+
+    ipc.on('repoPath', repoPath => {
+        console.log('repoPath:', repoPath);
     });
 
     let svgWidth = 500, svgHeight = 500;

@@ -5,6 +5,7 @@ const fs = require('fs');
 const globals = require('./globals');
 const remote = require('electron').remote;
 const main = remote.require('./main');
+const currentWindow = remote.getCurrentWindow();
 
 var regex = new RegExp('(^(/[^/\000\n]*)+/?$)|(^[a-zA-Z]:(\\\\[^<>:"/\\\\\|\?\*\n]+)+\\\\?$)');
 
@@ -62,6 +63,8 @@ $(document).ready(() => {
                 } else {
                     console.log('Opening repository...');
                     globals.showMessage('Abrir Repositório', 'Abrindo repositório: ' + repoPath);
+                    // Armazena a variável no window process
+                    currentWindow.webContents.send('repoPath', repoPath);
                     setTimeout(() => {
                         $('.background').fadeOut('slow', () => {
                             main.loadDashboard();
