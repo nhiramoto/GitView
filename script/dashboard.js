@@ -4,7 +4,7 @@ const remote = require('electron').remote;
 const main = remote.require('./main');
 const globals = require('./globals');
 const Tree = require('./Tree');
-const ipc = require('electron').ipcRenderer;
+var sharedObject = remote.getGlobal('sharedObject');
 
 $(document).ready(() => {
     $('body').fadeIn('slow');
@@ -20,9 +20,7 @@ $(document).ready(() => {
         optionActive = !optionActive;
     });
 
-    ipc.on('repoPath', repoPath => {
-        console.log('repoPath:', repoPath);
-    });
+    console.log('repoPath:', sharedObject.repoPath);
 
     let svgWidth = 500, svgHeight = 500;
     let container = d3.select('#view');

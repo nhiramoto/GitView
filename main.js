@@ -2,7 +2,8 @@ const {app, BrowserWindow} = require('electron');
 const path = require('path');
 const url = require('url');
 
-let mainWindow = null;
+var mainWindow = null;
+global.sharedObject = {};
 
 var initWindow = function () {
     mainWindow = new BrowserWindow({
@@ -20,7 +21,7 @@ var initWindow = function () {
     });
 };
 
-var loadHtmlFile = function (filepath) {
+var loadHtmlFile = function (filepath, params) {
     if (mainWindow != null) {
         mainWindow.loadURL(url.format({
             pathname: path.join(__dirname, filepath),
@@ -32,20 +33,20 @@ var loadHtmlFile = function (filepath) {
     }
 };
 
-var loadWelcome = function () {
-    loadHtmlFile('html/welcome.html')
+var loadWelcome = function (params) {
+    loadHtmlFile('html/welcome.html', params)
 };
 
-var loadDashboard = function () {
-    loadHtmlFile('html/dashboard.html');
+var loadDashboard = function (params) {
+    loadHtmlFile('html/dashboard.html', params);
 };
 
 app.on('ready', () => {
     initWindow();
     // loadHtmlFile('html/welcome.html');
-    //loadWelcome();
+    loadWelcome();
     // Testing dashboard
-    loadDashboard();
+    //loadDashboard();
 });
 
 app.on('window-all-closed', () => {
