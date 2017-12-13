@@ -1,9 +1,9 @@
-const {app, BrowserWindow} = require('electron');
+const {app, BrowserWindow, ipcMain} = require('electron');
 const path = require('path');
 const url = require('url');
 
 var mainWindow = null;
-global.sharedObject = {};
+var repoPath = null;
 
 var initWindow = function () {
     mainWindow = new BrowserWindow({
@@ -40,6 +40,14 @@ var loadWelcome = function (params) {
 var loadDashboard = function (params) {
     loadHtmlFile('html/dashboard.html', params);
 };
+
+ipcMain.on('setRepoPath', (event, arg) => {
+    repoPath = arg;
+});
+
+ipcMain.on('getRepoPath', (event, arg) => {
+    event.sender.send('getRepoPath-reply', repoPath);
+});
 
 app.on('ready', () => {
     initWindow();

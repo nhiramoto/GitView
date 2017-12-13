@@ -49,7 +49,7 @@ GitPipe.prototype.openRepository = function (repositoryPath) {
  * Percorre o histórico e analisa os commits.
  */
 GitPipe.prototype.parseCommitsHistory = function () {
-    return this.gitRepo.getReferences(nodegit.Reference.TYPE.OID).then((references) => {
+    return this.gitRepo.getReferences(Git.Reference.TYPE.OID).then((references) => {
         let getCommitPromises = [];
         references.forEach((reference) => {
             let isbranch = reference.isBranch();

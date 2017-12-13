@@ -1,11 +1,10 @@
 const $ = require('jquery');
+const {remote, ipcRenderer} = require('electron');
 const {dialog} = require('electron').remote;
 const url = require('url');
 const fs = require('fs');
 const globals = require('./globals');
-const remote = require('electron').remote;
 const main = remote.require('./main');
-var sharedObject = remote.getGlobal('sharedObject');
 
 var regex = new RegExp('(^(/[^/\000\n]*)+/?$)|(^[a-zA-Z]:(\\\\[^<>:"/\\\\\|\?\*\n]+)+\\\\?$)');
 
@@ -25,9 +24,8 @@ $(document).ready(() => {
         }
     });
     $('#openRepo').click((event) => {
-        console.log('click!');
         let paths = dialog.showOpenDialog({properties: ['openDirectory']});
-        if (paths.length >= 1) {
+        if (paths != null && paths.length >= 1) {
             let path = paths[0];
 //        var repoUrl = url.format({
 //            pathname: paths[0],
@@ -42,7 +40,6 @@ $(document).ready(() => {
     });
     $('#openRepositoryForm').submit((event) => {
         event.preventDefault();
-        console.log('click!');
         var repoPath = $('#repoPath').val();
         console.log('repoPath:', repoPath);
         if (repoPath != null && repoPath.length == 0) {
@@ -63,7 +60,7 @@ $(document).ready(() => {
                 } else {
                     console.log('Opening repository...');
                     globals.showMessage('Abrir Repositório', 'Abrindo repositório: ' + repoPath);
-                    sharedObject.repoPath = repoPath;
+                    ipcRenderer.send('setRepoPath', repoPath);
                     setTimeout(() => {
                         $('.background').fadeOut('slow', () => {
                             main.loadDashboard();

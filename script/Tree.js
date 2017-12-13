@@ -2,10 +2,6 @@ const d3 = require('d3');
 const fs = require('fs');
 const JSONDatabase = require('./GitPipe/JSONDatabase');
 
-console.log('Tree->JSONDatabase.FILESTATUS:', JSONDatabase.FILESTATUS);
-
-console.log('d3:', d3);
-
 function Tree(container, width, height) {
     this.width = width;
     this.height = height;
@@ -18,8 +14,8 @@ function Tree(container, width, height) {
       .append('g')
         .attr('class', 'viewG');
         //.attr('transform', 'translate(' + this.width / 2 + ',' + this.height / 2 + ')');
-    this.linkLayer = this.svg.append('g');
-    this.nodeLayer = this.svg.append('g');
+    this.linkLayer = this.svg.append('g').attr('class', 'linkLayer');
+    this.nodeLayer = this.svg.append('g').attr('class', 'nodeLayer');
     this.simulation = d3.forceSimulation();
     this.links = null;
     this.linkSvg = null;
@@ -127,27 +123,32 @@ Tree.prototype.dragended = function (d) {
     d.fy = null;
 };
 
+/**
+ * Carrega os dados do arquivo.
+ * @param {String} dataPath - Caminho para o arquivo de dados.
+ */
 Tree.prototype.load = function (dataPath) {
     //d3.json(dataPath, (err, data) => {
     fs.readFile(dataPath, (err, contentBuffer) => {
-        if (err) throw err;
-        console.log('d3:', d3);
-        console.log('this:', this);
-
-        this.root = JSON.parse(contentBuffer.toString());
-
-        this.root = d3.hierarchy(this.root, (d) => d.entries);
-
-        this.simulation
-            .force('link', d3.forceLink().strength(0.8).id((d) => d.id))
-            .force('charge', d3.forceManyBody().strength(-400).distanceMax(300).distanceMin(30))
-            .force('center', d3.forceCenter(this.width / 2, this.height / 2))
-            .force('collide', d3.forceCollide().radius((d) => this.radius(d) - 2))
-            .on('tick', () => this.ticked());
-        
-        this.update();
-
+        if (err) console.error('Error:', err);
+        let data = JSON.parse(contentBuffer.toString());
+        this.create(data);
     });
+};
+
+/**
+ * Contrói a árvore basedo nos dados.
+ * @param data - Dados a serem representados na visualização.
+ */
+Tree.prototype.build = function (data) {
+    this.root = d3.hierarchy(data, d => d.entries);
+    this.simulation
+        .force('link', d3.forceLink().strength(0.8).id((d) => d.id))
+        .force('charge', d3.forceManyBody().strength(-400).distanceMax(300).distanceMin(30))
+        .force('center', d3.forceCenter(this.width / 2, this.height / 2))
+        .force('collide', d3.forceCollide().radius((d) => this.radius(d) - 2))
+        .on('tick', () => this.ticked());
+    this.update();
 };
 
 Tree.prototype.update = function () {
