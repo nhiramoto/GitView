@@ -7,7 +7,7 @@ const GitPipe = require('./GitPipe/GitPipe');
 const Tree = require('./Tree');
 
 var repoPath = null;
-var svgWidth = '100%', svgHeight = 600;
+var svgWidth = 600, svgHeight = 600;
 var container = null;
 var tree = null;
 var gitPipe = null;
@@ -54,7 +54,8 @@ $(document).ready(() => {
             }
         }).then((diffDir) => {
             if (diffDir) {
-                console.log('last diff tree recovered!');
+                console.log('last diff tree got!');
+                console.log('diffDir:', diffDir);
                 container = d3.select('#view');
                 tree = new Tree(container, svgWidth, svgHeight);
                 tree.build(diffDir);

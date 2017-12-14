@@ -35,6 +35,8 @@ $(document).ready(() => {
             $('#repoPath').val(path);
             if (regex.test(path)) {
                 $('#repoPath').addClass('invalidInput');
+            } else {
+                $('#repoPath').removeClass('invalidInput');
             }
         }
     });

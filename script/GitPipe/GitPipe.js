@@ -212,7 +212,8 @@ GitPipe.prototype.parseDiff = function (commit, gitDiff) {
  */
 GitPipe.prototype.parsePatch = function (commit, patch) {
     return this.createFile(patch).then((child) => {
-        let dirPath = path.dirname(child.path).replace(/^(\.\/)?/, ''); // remove './' from begining.
+        let dirPath = path.dirname(child.path);
+        console.log('creating directories from dirPath:', dirPath);
         return this.createDirectory(commit, dirPath, child);
     });
 };
@@ -231,6 +232,7 @@ GitPipe.prototype.createFile = function (patch) {
         let newFilePath = patch.newFile().path();
         console.log('> createFile(path = ' + newFilePath + ')');
         let oldFilePath = patch.oldFile().path();
+        console.log('> oldFilePath:', oldFilePath);
         let patchStatus = null;
         if (oldFilePath != newFilePath) {
             patchStatus = JSONDatabase.FILESTATUS.MOVED;

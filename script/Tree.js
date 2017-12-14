@@ -14,8 +14,8 @@ function Tree(container, width, height) {
       .append('g')
         .attr('class', 'viewG');
         //.attr('transform', 'translate(' + this.width / 2 + ',' + this.height / 2 + ')');
-    this.linkLayer = this.svg.append('g').attr('class', 'linkLayer');
-    this.nodeLayer = this.svg.append('g').attr('class', 'nodeLayer');
+    this.linkLayer = this.svg.append('g');
+    this.nodeLayer = this.svg.append('g');
     this.simulation = d3.forceSimulation();
     this.links = null;
     this.linkSvg = null;
@@ -128,11 +128,12 @@ Tree.prototype.dragended = function (d) {
  * @param {String} dataPath - Caminho para o arquivo de dados.
  */
 Tree.prototype.load = function (dataPath) {
+    console.log('loading data from file:', dataPath);
     //d3.json(dataPath, (err, data) => {
     fs.readFile(dataPath, (err, contentBuffer) => {
         if (err) console.error('Error:', err);
         let data = JSON.parse(contentBuffer.toString());
-        this.create(data);
+        this.build(data);
     });
 };
 
@@ -141,9 +142,11 @@ Tree.prototype.load = function (dataPath) {
  * @param data - Dados a serem representados na visualização.
  */
 Tree.prototype.build = function (data) {
+    console.log('building data tree..');
     this.root = d3.hierarchy(data, d => d.entries);
+    console.log('root:', this.root);
     this.simulation
-        .force('link', d3.forceLink().strength(0.8).id((d) => d.id))
+        .force('link', d3.forceLink().strength(0.8).id(d => d.id))
         .force('charge', d3.forceManyBody().strength(-400).distanceMax(300).distanceMin(30))
         .force('center', d3.forceCenter(this.width / 2, this.height / 2))
         .force('collide', d3.forceCollide().radius((d) => this.radius(d) - 2))
@@ -186,9 +189,9 @@ Tree.prototype.update = function () {
     this.linkSvg = this.linkEnter.merge(this.linkSvg);
 
     this.nodeSvg = this.nodeLayer.selectAll('.node')
-        .data(this.nodes, (d) => d.id);
+        .data(this.nodes, d => d.data.id);
     this.nodeSvg.selectAll('circle')
-        .style('fill', (d) => this.color(d));
+        .style('fill', d => this.color(d));
     this.nodeSvg.exit()
         .transition()
             .duration(100)
@@ -198,12 +201,12 @@ Tree.prototype.update = function () {
     this.nodeEnter = this.nodeSvg.enter()
         .append('g')
             .attr('class', 'node')
-            .on('click', (d) => this.click(d))
+            .on('click', d => this.click(d))
             .call(drag);
     this.nodeEnter.append('circle')
-        .attr('r', (d) => this.radius(d))
+        .attr('r', d => this.radius(d))
         //.attr('r', this.nodeRadius)
-        .style('fill', (d) => this.color(d))
+        .style('fill', d => this.color(d))
         .style('opacity', 0)
         .transition()
             .duration(100)

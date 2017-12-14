@@ -17,7 +17,7 @@
                     "type": 0,
                     "oldFileId": "11a1",
                     "status": 2,
-                    "modifiedLines": [
+                    "lines": [
                         {
                             "oldLineNum": 1,
                             "newLineNum": 1,
@@ -42,7 +42,7 @@
                     "type": 0,
                     "oldFileId": "12a1",
                     "status": 2,
-                    "modifiedLines": [
+                    "lines": [
                         {
                             "oldLineNum": 3,
                             "newLineNum": 3,
@@ -67,7 +67,7 @@
                     "type": 0,
                     "oldFileId": "13a1",
                     "status": 2,
-                    "modifiedLines": [
+                    "lines": [
                         {
                             "oldLineNum": 3,
                             "newLineNum": 3,
@@ -82,7 +82,7 @@
                     "type": 0,
                     "oldFileId": "14a1",
                     "status": 2,
-                    "modifiedLines": [
+                    "lines": [
                         {
                             "oldLineNum": 1,
                             "newLineNum": 1,
@@ -105,7 +105,7 @@
                     "type": 0,
                     "oldFileId": "21a1",
                     "status": 2,
-                    "modifiedLines": [
+                    "lines": [
                         {
                             "oldLineNum": 2,
                             "newLineNum": 2,
@@ -120,7 +120,7 @@
                     "type": 0,
                     "oldFileId": "22a1",
                     "status": 2,
-                    "modifiedLines": [
+                    "lines": [
                         {
                             "oldLineNum": null,
                             "newLineNum": 5,
@@ -159,7 +159,7 @@
                             "type": 0,
                             "oldFileId": null,
                             "status": 0,
-                            "modifiedLines": [
+                            "lines": [
                                 {
                                     "oldLineNum": null,
                                     "newLineNum": 0,
@@ -182,7 +182,7 @@
                             "type": 0,
                             "oldFileId": null,
                             "status": 0,
-                            "modifiedLines": []
+                            "lines": []
                         }
                     ]
                 },
@@ -199,7 +199,7 @@
                             "type": 0,
                             "oldFileId": null,
                             "status": 0,
-                            "modifiedLines": []
+                            "lines": []
                         }
                     ]
                 }
@@ -218,7 +218,7 @@
                     "type": 0,
                     "oldFileId": "4a1",
                     "status": 2,
-                    "modifiedLines": [
+                    "lines": [
                         {
                             "oldLineNum": 1,
                             "newLineNum": 1,
@@ -248,7 +248,7 @@
                     "type": 0,
                     "oldFileId": "42a1",
                     "status": 1,
-                    "modifiedLines": []
+                    "lines": []
                 },
                 {
                     "id": "43",
@@ -257,7 +257,7 @@
                     "type": 0,
                     "oldFileId": "43a1",
                     "status": 2,
-                    "modifiedLines": [
+                    "lines": [
                         {
                             "oldLineNum": 0,
                             "newLineNum": null,
@@ -279,7 +279,7 @@
             "type": 0,
             "oldFileId": "5a1",
             "status": 2,
-            "modifiedLines": [
+            "lines": [
                 {
                     "oldLineNum": 1,
                     "newLineNum": 1,
