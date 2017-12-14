@@ -83,7 +83,10 @@ JSONDatabase.prototype.recoverFromDisk = function () {
             }
             this.repository = JSON.parse(repositoryJson);
         });
-    } else error = true;
+    } else {
+        console.error('[JSONDatabase#recoverFromDisk] Error: Database path not set.');
+        return false;
+    }
     if (!error) {
         fs.readFileSync(this.rootPath + path.sep + 'commits.json', 'utf8', (err, commitsJson) => {
             if (err) console.error('Error:', err);
@@ -328,7 +331,7 @@ JSONDatabase.prototype.mergeDirectories = function (dir1, dir2) {
 /**
  * Registro do repositório.
  * @constructor
- * @param {NodeGit.Repository} repository - Objeto com os dados do repositório.
+ * @param {Git.Repository} repository - Objeto com os dados do repositório.
  */
 JSONDatabase.RepositoryRecord = function (repository) {
     if (repository != null) {
@@ -346,7 +349,7 @@ JSONDatabase.RepositoryRecord = function (repository) {
 /**
  * Registro do commit.
  * @constructor
- * @param {NodeGit.Commit} commit - Objeto com os dados do commit.
+ * @param {Git.Commit} commit - Objeto com os dados do commit.
  */
 JSONDatabase.CommitRecord = function (commit) {
     if (commit != null) {
@@ -379,7 +382,7 @@ JSONDatabase.DiffRecord = function () {
 
 /**
  * Registro do autor.
- * @param {NodeGit.Signature} authorSign
+ * @param {Git.Signature} authorSign
  * @constructor
  */
 JSONDatabase.AuthorRecord = function (authorSign) {

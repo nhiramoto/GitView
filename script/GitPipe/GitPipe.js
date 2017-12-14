@@ -73,7 +73,7 @@ GitPipe.prototype.parseCommitsHistory = function () {
 
 /**
  * Cria registro do commit.
- * @param {NodeGit.Commit} commit - Commit a ser analisado.
+ * @param {Git.Commit} commit - Commit a ser analisado.
  */
 GitPipe.prototype.parseCommit = function (commit) {
     let commitRec = new JSONDatabase.CommitRecord(commit);
@@ -100,9 +100,12 @@ GitPipe.prototype.parseCommit = function (commit) {
  * os diffs de cada commit com o commit pai.
  */
 GitPipe.prototype.diffCommitsHistory = function () {
+    console.log('> diffCommitsHistory');
     let commitRecs = this.db.getCommits();
+    console.log('  commitRecs length:', commitRecs.length);
     let diffCommitsPromises = [];
     commitRecs.forEach((commitRec) => {
+        console.log('    parsing commitRec:', commitRec);
         let prom = this.diffCommitWithParents(commitRec);
         if (prom != null) {
             diffCommitsPromises.push(prom);
@@ -139,7 +142,7 @@ GitPipe.prototype.diffCommitWithParents = function (commitRec) {
                     let parentTree;
                     return self.gitRepo.getTree(parentSnapshotId).then((tree2) => {
                         parentTree = tree2;
-                        return Git.Diff.treeToTree(self.nodegitRepository, parentTree, commitTree, Git.Diff.OPTION.INCLUDE_UNMODIFIED);
+                        return Git.Diff.treeToTree(self.gitRepo, parentTree, commitTree, Git.Diff.OPTION.INCLUDE_UNMODIFIED);
                     }).then((diff) => {
                         self.diffs.push({
                             gitDiff: diff,
@@ -162,9 +165,10 @@ GitPipe.prototype.parseDiffs = function () {
     for (let i = 0; i < this.diffs.length; i++) {
         let diff = this.diffs[i];
         let prom1 = (function (self, diff) {
+            let gitDiff = diff.gitDiff;
             let commitId = diff.diffRec.recentCommitId;
-            return self.nodegitRepository.getCommit(commitId).then((commit) => {
-                return self.parseDiff(commit, diff.gitDiff);
+            return self.gitRepo.getCommit(commitId).then((commit) => {
+                return self.parseDiff(commit, gitDiff);
             }).then((dirRec) => {
                 //console.log('  parseDiffs(): dirRec:', dirRec);
                 let dirId = dirRec.id;
@@ -181,11 +185,11 @@ GitPipe.prototype.parseDiffs = function () {
 
 /**
  * Analisa cada objeto diff.
- * @param {NodeGit.Commit} commit - Objeto commit mais recente do diff.
- * @param {NodeGit.Diff} diff - Objeto com os dados do diff.
+ * @param {Git.Commit} commit - Objeto commit mais recente do diff.
+ * @param {Git.Diff} gitDiff - Objeto com os dados do diff.
  */
-GitPipe.prototype.parseDiff = function (commit, diff) {
-    return diff.patches().then((patches) => {
+GitPipe.prototype.parseDiff = function (commit, gitDiff) {
+    return gitDiff.patches().then((patches) => {
         let parsePatchPromises = [];
         patches.forEach((patch) => {
             let prom = this.parsePatch(commit, patch);
@@ -202,8 +206,8 @@ GitPipe.prototype.parseDiff = function (commit, diff) {
 /**
  * Analisa o objeto patch e registra os diretórios e arquivos
  * com o estado de modificação.
- * @param {NodeGit.Commit} commit
- * @param {NodeGit.ConvenientPatch} patch
+ * @param {Git.Commit} commit
+ * @param {Git.ConvenientPatch} patch
  * @param {Array<JSONDatabase.DirectoryRecord>} dirs
  */
 GitPipe.prototype.parsePatch = function (commit, patch) {
@@ -215,7 +219,7 @@ GitPipe.prototype.parsePatch = function (commit, patch) {
 
 /**
  * Cria registro do arquivo relacionado ao patch.
- * @param  {NodeGit.ConvenientPatch} patch - Objeto patch com os dados do arquivo.
+ * @param  {Git.ConvenientPatch} patch - Objeto patch com os dados do arquivo.
  * @return {Promise} Um promise que retorna um JSONDatabase.FileRecord
  */
 GitPipe.prototype.createFile = function (patch) {
@@ -268,13 +272,17 @@ GitPipe.prototype.createFile = function (patch) {
                         } else if (sign === '+') {
                             lineStatus = JSONDatabase.LINESTATUS.ADDED;
                             newFileRec.statistic.added++;
+                        } else {
+                            lineStatus = JSONDatabase.LINESTATUS.UNMODIFIED;
                         }
-                        let lineRec = new JSONDatabase.LineRecord();
-                        lineRec.oldLineNum = oldLineNum;
-                        lineRec.newLineNum = newLineNum;
-                        lineRec.status = lineStatus;
-                        newFileRec.lines.push(lineRec);
+                    } else {
+                        lineStatus = JSONDatabase.LINESTATUS.UNMODIFIED;
                     }
+                    let lineRec = new JSONDatabase.LineRecord();
+                    lineRec.oldLineNum = oldLineNum;
+                    lineRec.newLineNum = newLineNum;
+                    lineRec.status = lineStatus;
+                    newFileRec.lines.push(lineRec);
                 });
             });
             this.db.addFile(newFileRec);
@@ -285,7 +293,7 @@ GitPipe.prototype.createFile = function (patch) {
 
 /**
  * Cria registro de diretórios recursivamente (dos filhos à raiz).
- * @param {NodeGit.Commit} commit - Usado para a recuperação dos objetos tree à partir do seu caminho.
+ * @param {Git.Commit} commit - Usado para a recuperação dos objetos tree à partir do seu caminho.
  * @param {String} dirPath - Caminho do diretório a ser criado/atualizado.
  * @param {JSONDatabase.EntryRecord} child - Filho do diretório a ser criado.
  * @return {JSONDatabase.EntryRecord} O último diretório criado (diretório raíz).
@@ -322,7 +330,7 @@ GitPipe.prototype.createDirectory = function (commit, dirPath, child) {
                 child = newDirRec;
             } else { // Diretório já criado, atualiza-o.
                 if (foundDirRec.entries.find(e => e.name === child.name) == undefined) { // já existe child?
-                    if (child.type === JSONDatabase.ENTRYTYPE.FILE) {
+                        if (child.type === JSONDatabase.ENTRYTYPE.FILE) {
                         if (child.status === JSONDatabase.FILESTATUS.ADDED) {
                             foundDirRec.statistic.added++;
                         } else if (child.status === JSONDatabase.FILESTATUS.DELETED) {
@@ -424,12 +432,12 @@ GitPipe.prototype.load = function () {
 
 GitPipe.prototype.getLastDiffTree = function () {
     if (this.db == null) {
-        console.error('Error: GitPipe#getLastDiffTree - Database not set.');
+        console.error('[GitPipe#getLastDiffTree] Error: Database not set.');
         return null;
     } else {
         let repoRec = this.db.getRepository();
         if (repoRec == null) {
-            console.error('Error: GitPipe#getLastDiffTree - Repository not opened.');
+            console.error('[GitPipe#getLastDiffTree] Error: Repository not opened.');
             return null;
         } else {
             console.log('  repoRec:', repoRec)
@@ -460,12 +468,12 @@ GitPipe.prototype.getLastDiffTree = function () {
     }
 };
 
-GitPipe.prototype.setNodegitRepository = function (nodegitRepository) {
-    this.nodegitRepository = nodegitRepository;
+GitPipe.prototype.setGitRepository = function (gitRepo) {
+    this.gitRepo = gitRepo;
 };
 
-GitPipe.prototype.getNodegitRepository = function () {
-    return this.nodegitRepository;
+GitPipe.prototype.getGitRepository = function () {
+    return this.gitRepo;
 };
 
 GitPipe.prototype.setDb = function (db) {

@@ -61,6 +61,8 @@ $(document).ready(() => {
             } else {
                 console.error('Error: diffDir is null.');
             }
+        }).catch(err => {
+            if (err) console.error('[dashboard.js] ', err);
         });
     });
     ipcRenderer.send('getRepoPath');

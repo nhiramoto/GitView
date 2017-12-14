@@ -59,7 +59,7 @@ Tree.prototype.radius = function (d) {
     if (d.children != null || d._children != null) {
         return Math.sqrt(d.data.entries.length) * 5 + 5;
     } else {
-        return Math.sqrt(d.data.modifiedLines.length) * 5 + 5;
+        return Math.sqrt(d.data.lines.length) * 5 + 5;
     }
 };
 
