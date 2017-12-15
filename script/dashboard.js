@@ -27,6 +27,11 @@ $(document).ready(() => {
         optionActive = !optionActive;
     });
 
+    $('#openRepo').click(event => {
+        console.log('click!!!');
+        globals.input('Abrir Repositório', 'Tem certeza que quer fechar o repositório atual para abrir um novo repositório?');
+    });
+
     ipcRenderer.on('getRepoPath-reply', (event, args) => {
         repoPath = args;
         console.log('repoPath:', repoPath);

@@ -11,6 +11,14 @@
     </script>
 </head>
 <body>
+    <div id="message">
+        <span id="msgtitle">Título</span><br>
+        <span id="msgbody">Corpo da mensagem.</span><br>
+        <div class="buttonPane">
+            <input class="dialogGreen" id="okButton" type="button" value="Sim">
+            <input class="dialogRed" id="cancelButton" type="button" value="Cancelar">
+        </div>
+    </div>
     <div class="header">
         <span class="title">GitVision</span>
     </div>
@@ -24,7 +32,7 @@
             <span class="optionTitle">Opções</span>
         </div>
         <ul class="optionList">
-            <li>Opção 1</li>
+            <li id="openRepo">Abrir Repositório</li>
             <li>Opção 2</li>
             <li>Opção 3</li>
         </ul>

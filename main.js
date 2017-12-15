@@ -64,4 +64,5 @@ app.on('window-all-closed', () => {
 });
 
 exports.loadHtmlFile = loadHtmlFile;
+exports.loadWelcome = loadWelcome;
 exports.loadDashboard = loadDashboard;

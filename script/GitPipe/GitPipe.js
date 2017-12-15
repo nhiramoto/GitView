@@ -245,12 +245,12 @@ GitPipe.prototype.createFile = function (patch) {
         } else if (patch.isUnmodified()) {
             patchStatus = JSONDatabase.FILESTATUS.UNMODIFIED;
         }
-        console.assert(patchStatus != null, 'createFile(): Error - patchStatus not defined!');
+        console.assert(patchStatus != null, '[GitPipe#createFile] Error: patchStatus not defined!');
         let statistic = new JSONDatabase.Statistic(0, 0, 0);
         let newFileRec = new JSONDatabase.FileRecord();
         newFileRec.id = diffFileId;
-        newFileRec.name = path.basename(newFilePath);
         newFileRec.path = newFilePath;
+        newFileRec.name = path.basename(newFilePath);
         newFileRec.oldFileId = oldFileId;
         newFileRec.status = patchStatus;
         newFileRec.statistic = statistic;
@@ -353,7 +353,7 @@ GitPipe.prototype.createDirectory = function (commit, dirPath, child) {
         });
     } else {
         return commit.getEntry(dirPath).then((entry) => {
-            console.assert(entry.isTree(), 'GitPipe#createDirectory: Error - Entry is not a tree.');
+            console.assert(entry.isTree(), '[GitPipe#createDirectory] Error: Entry is not a tree.');
             return entry.getTree();
         }).then((tree) => {
             let treeId = tree.id().toString();
