@@ -36,6 +36,7 @@ body {
   background: white;
   box-shadow: 1px 0 8px black;
   transition: left .5s ease;
+  z-index: 10;
 }
 .options.active {
   left: 0;

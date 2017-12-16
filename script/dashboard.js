@@ -44,7 +44,9 @@ $(document).ready(() => {
             $('#repoName').text(repoRec.name);
             return gitPipe.parseCommitsHistory();
         }).then(() => {
-            console.log('commits parsed.');
+            console.log('***');
+            //console.log('commits parsed.');
+            //console.log('commit count:', gitPipe.parsedCommits.length);
             //return gitPipe.diffCommitsHistory();
         })
         //.then(() => {

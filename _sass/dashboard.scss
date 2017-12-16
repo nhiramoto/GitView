@@ -42,6 +42,7 @@ body {
     background: white;
     box-shadow: 1px 0 8px black;
     transition: left .5s ease;
+    z-index: 10;
     &.active {
         left: 0;
         transition: left .3s ease;

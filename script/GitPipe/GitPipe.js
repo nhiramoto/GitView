@@ -11,6 +11,7 @@ const JSONDatabase = require('./JSONDatabase');
 function GitPipe(dbPath) {
     this.gitRepo = null;
     this.diffs = [];
+    this.parsedCommits = [];
     if (dbPath == undefined) {
         this.db = null;
     } else {
@@ -49,27 +50,42 @@ GitPipe.prototype.openRepository = function (repositoryPath) {
  * Percorre o histórico e analisa os commits.
  */
 GitPipe.prototype.parseCommitsHistory = function () {
-    console.log('> parseCommitsHistory()');
-    return this.gitRepo.getReferences(Git.Reference.TYPE.OID).then((references) => {
-        let getCommitPromises = [];
-        references.forEach((reference) => {
-            let isbranch = reference.isBranch();
-            if (isbranch) {
-                let commitId = reference.target().toString();
-                getCommitPromises.push(this.gitRepo.getCommit(commitId));
-            }
+    return this.gitRepo.getMasterCommit().then(commit => {
+        let history = commit.history();
+        history.on('commit', commit => {
+            this.parsedCommits.push(commit.id().toString());
+            this.parseCommit(commit);
         });
-        return Promise.all(getCommitPromises);
-    }).then((commits) => {
-        let parseCommitPromises = [];
-        commits.forEach((commit) => {
-            let prom = this.parseCommit(commit);
-            if (prom != null) {
-                parseCommitPromises.push(prom);
-            }
+        history.on('end', commits => {
+            console.log('* commits length:', commits.length);
+            this.db.repository.commitCount = commits.length;
+            this.save();
         });
-        return Promise.all(parseCommitPromises);
+        history.on('error', err => {
+            console.error(err);
+        });
+        history.start();
     });
+    //return this.gitRepo.getReferences(Git.Reference.TYPE.OID).then((references) => {
+    //    let getCommitPromises = [];
+    //    references.forEach((reference) => {
+    //        let isbranch = reference.isBranch();
+    //        if (isbranch) {
+    //            let commitId = reference.target().toString();
+    //            getCommitPromises.push(this.gitRepo.getCommit(commitId));
+    //        }
+    //    });
+    //    return Promise.all(getCommitPromises);
+    //}).then((commits) => {
+    //    let parseCommitPromises = [];
+    //    commits.forEach((commit) => {
+    //        let prom = this.parseCommit(commit);
+    //        if (prom != null) {
+    //            parseCommitPromises.push(prom);
+    //        }
+    //    });
+    //    return Promise.all(parseCommitPromises);
+    //});
 };
 
 /**
@@ -78,23 +94,22 @@ GitPipe.prototype.parseCommitsHistory = function () {
  */
 GitPipe.prototype.parseCommit = function (commit) {
     let commitRec = new JSONDatabase.CommitRecord(commit);
-    console.log('> parseCommit(): commitId:', commitRec);
     let authorSign = commit.author();
     let authorRec = new JSONDatabase.AuthorRecord(authorSign);
     let authorEmail = authorRec.email;
     commitRec.authorEmail = authorEmail;
     this.db.addCommit(commitRec);
     this.db.addAuthor(authorRec);
-    return commit.getParents().then((parents) => {
-        let parseParentPromises = [];
-        parents.forEach((parent) => {
-            let prom = this.parseCommit(parent);
-            if (prom != null) {
-                parseParentPromises.push(prom);
-            }
-        });
-        return Promise.all(parseParentPromises);
-    });
+    //return commit.getParents().then((parents) => {
+    //    let parseParentPromises = [];
+    //    parents.forEach((parent) => {
+    //        let prom = this.parseCommit(parent);
+    //        if (prom != null) {
+    //            parseParentPromises.push(prom);
+    //        }
+    //    });
+    //    return Promise.all(parseParentPromises);
+    //});
 };
 
 /**
