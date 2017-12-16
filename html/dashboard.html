@@ -19,8 +19,8 @@
             <input class="dialogRed" id="cancelButton" type="button" value="Cancelar">
         </div>
     </div>
-    <div class="header">
-        <span class="title">GitVision</span>
+    <div id="mainHeader">
+        <span class="title">Repositório: <span id="repoName">Nome do repositório</span></span>
     </div>
     <div class="options">
         <div id="optionButton">
@@ -37,13 +37,29 @@
             <li>Opção 3</li>
         </ul>
     </div>
-    <div class="sidebar">
-        <span class="sidebarTitle">Filtros</span>
-        
-    </div>
-    <div class="background">
+    <div id="background">
+        <div id="sidebar">
+            <span class="sidebarTitle">Filtros</span>
+        </div>
         <div id="view">
         </div>
+        <!--<div id="info">-->
+        <!--    <span id="infoTitle">Nome do Repositório</span>-->
+        <!--    <table>-->
+        <!--        <tr>-->
+        <!--            <td>Local:</td>-->
+        <!--            <td>-->
+        <!--                <span id="repoPath"></span>-->
+        <!--            </td>-->
+        <!--        </tr>-->
+        <!--        <tr>-->
+        <!--            <td>Último <i>commit</i>:</td>-->
+        <!--            <td>-->
+        <!--                <span id="lastCommit"></span>-->
+        <!--            </td>-->
+        <!--        </tr>-->
+        <!--    </table>-->
+        <!--</div>-->
     </div>
 </body>
 </html>

@@ -187,6 +187,9 @@ input[type="button"].red:hover {
 #message.error #msgtitle {
   color: red;
 }
+#message.error #msgbody {
+  color: darkred;
+}
 #message #msgtitle {
   font-weight: bold;
   font-size: 16px;

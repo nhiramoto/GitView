@@ -40,6 +40,8 @@ $(document).ready(() => {
             dbPath = _dbPath;
             console.log('repository opened:', repoPath);
             console.log('database path:', dbPath);
+            let repoRec = gitPipe.db.getRepository();
+            $('#repoName').text(repoRec.name);
             return gitPipe.parseCommitsHistory();
         }).then(() => {
             console.log('commits parsed.');

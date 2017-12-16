@@ -192,8 +192,13 @@ input[type="button"].red {
     transform: translateY(-110%);
     transition: transform .5s ease-out;
 
-    &.error #msgtitle {
-        color: red;
+    &.error {
+        #msgtitle {
+            color: red;
+        }
+        #msgbody {
+            color: darkred;
+        }
     }
 
     #msgtitle {

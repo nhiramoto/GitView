@@ -6,6 +6,7 @@ const fs = require('fs');
 const globals = require('./globals');
 const main = remote.require('./main');
 
+// Expressão Regular para caminho válido no Windows ou Linux
 var regex = new RegExp('(^(/[^/\000\n]*)+/?$)|(^[a-zA-Z]:(\\\\[^<>:"/\\\\\|\?\*\n]+)+\\\\?$)');
 
 $(document).ready(() => {
@@ -34,9 +35,9 @@ $(document).ready(() => {
 //        });
             $('#repoPath').val(path);
             if (regex.test(path)) {
-                $('#repoPath').addClass('invalidInput');
-            } else {
                 $('#repoPath').removeClass('invalidInput');
+            } else {
+                $('#repoPath').addClass('invalidInput');
             }
         }
     });
@@ -45,20 +46,20 @@ $(document).ready(() => {
         var repoPath = $('#repoPath').val();
         console.log('repoPath:', repoPath);
         if (repoPath != null && repoPath.length == 0) {
-            console.log('Empty path!!!');
-            globals.showMessage('Erro', 'Especifique o local do repositório.');
+            console.error('Empty path!!!');
+            globals.showError('Erro', 'Especifique o local do repositório.');
         } else if (!regex.test(repoPath)) {
             $('#repoPath').addClass('invalidInput');
             console.log('Invalid path!!!')
-            globals.showMessage('Erro', 'O caminho especificado não é um caminho válido.');
+            globals.showError('Erro', 'O caminho especificado não é um caminho válido.');
         } else {
             let gitpath = repoPath + '/.git';
             console.log('gitpath:', gitpath);
             fs.stat(gitpath, (err, stats) => {
                 if (err || !stats.isDirectory()) {
                     console.log('stat:', stats)
-                    console.error('Error: Folder is not a git repository.');
-                    globals.showMessage('Erro', 'O diretório especificado não é um repositório git.')
+                    console.error('Folder is not a git repository.');
+                    globals.showError('Erro', 'O diretório especificado não é um repositório git.')
                 } else {
                     console.log('Opening repository...');
                     globals.showMessage('Abrir Repositório', 'Abrindo repositório: ' + repoPath);
