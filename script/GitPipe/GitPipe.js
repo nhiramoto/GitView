@@ -49,6 +49,7 @@ GitPipe.prototype.openRepository = function (repositoryPath) {
  * Percorre o histórico e analisa os commits.
  */
 GitPipe.prototype.parseCommitsHistory = function () {
+    console.log('> parseCommitsHistory()');
     return this.gitRepo.getReferences(Git.Reference.TYPE.OID).then((references) => {
         let getCommitPromises = [];
         references.forEach((reference) => {
@@ -77,6 +78,7 @@ GitPipe.prototype.parseCommitsHistory = function () {
  */
 GitPipe.prototype.parseCommit = function (commit) {
     let commitRec = new JSONDatabase.CommitRecord(commit);
+    console.log('> parseCommit(): commitId:', commitRec);
     let authorSign = commit.author();
     let authorRec = new JSONDatabase.AuthorRecord(authorSign);
     let authorEmail = authorRec.email;
@@ -447,7 +449,6 @@ GitPipe.prototype.getLastDiffTree = function () {
             let commit = this.db.findCommit(headId);
             console.log('  commit:', commit);
             let parentIds = commit.parents;
-
             let _parentId = parentIds.shift();
             console.log('    -> parentId:', _parentId);
             let diff = this.db.findDiff(_parentId, headId);

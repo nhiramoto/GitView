@@ -136,6 +136,10 @@ JSONDatabase.prototype.setRepository = function (repositoryRec) {
     }
 };
 
+JSONDatabase.prototype.incCommitCount = function () {
+    this.repository.commitCount++;
+};
+
 JSONDatabase.prototype.getRepository = function () {
     return this.repository;
 };
@@ -344,6 +348,7 @@ JSONDatabase.RepositoryRecord = function (repository) {
         this.name = null;
     }
     this.head = null;
+    this.commitCount = 0;
 };
 
 /**
