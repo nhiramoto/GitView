@@ -28,7 +28,6 @@ $(document).ready(() => {
     });
 
     $('#openRepo').click(event => {
-        console.log('click!!!');
         globals.input('Abrir Repositório', 'Tem certeza que quer fechar o repositório atual para abrir um novo repositório?');
     });
 
@@ -44,9 +43,8 @@ $(document).ready(() => {
             $('#repoName').text(repoRec.name);
             return gitPipe.parseCommitsHistory();
         }).then(() => {
-            console.log('***');
-            //console.log('commits parsed.');
-            //console.log('commit count:', gitPipe.parsedCommits.length);
+            console.log('commits parsed.');
+            console.log('commit count:', gitPipe.db.repository.commitCount);
             //return gitPipe.diffCommitsHistory();
         })
         //.then(() => {

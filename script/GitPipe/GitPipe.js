@@ -11,7 +11,6 @@ const JSONDatabase = require('./JSONDatabase');
 function GitPipe(dbPath) {
     this.gitRepo = null;
     this.diffs = [];
-    this.parsedCommits = [];
     if (dbPath == undefined) {
         this.db = null;
     } else {
@@ -54,11 +53,13 @@ GitPipe.prototype.parseCommitsHistory = function () {
     return this.gitRepo.getHeadCommit().then(commit => {
         let history = commit.history();
         history.on('commit', commit => {
-            this.parsedCommits.push(commit.id().toString());
             this.parseCommit(commit);
         });
         history.on('error', err => {
             console.error(err);
+        });
+        history.on('end', commits => {
+            this.db.repository.commitCount = commits.length;
         });
         let retPromise = new Promise(resolve => {
             history.on('end', resolve);
