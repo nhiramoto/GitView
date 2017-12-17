@@ -27,7 +27,6 @@ body {
 }
 
 .options {
-  box-sizing: border-box;
   position: fixed;
   height: 100%;
   width: 300px;
@@ -58,9 +57,10 @@ body {
   padding: 5px;
 }
 .options ul.optionList li {
-  height: 30px;
-  line-height: 30px;
-  padding: 5px;
+  height: 40px;
+  line-height: 40px;
+  padding-left: 10px;
+  padding-right: 10px;
   list-style: none;
   background: white;
   border-left: 1px solid #DDD;
@@ -126,7 +126,7 @@ body {
   background: magenta;
 }
 
-#background {
+#content {
   position: absolute;
   box-sizing: border-box;
   top: 60px;

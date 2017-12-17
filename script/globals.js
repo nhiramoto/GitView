@@ -38,5 +38,10 @@ module.exports = {
         });
         //$('#message span.buttonPane').attr('hidden', 'false');
         $('#message').addClass('visible');
+        // Retorna uma promise que espera o click do usuário.
+        return new Promise(resolve => {
+            $('#message #okButton').click(event => resolve(true));
+            $('#message #cancelButton').click(event => resolve(false));
+        });
     }
 };

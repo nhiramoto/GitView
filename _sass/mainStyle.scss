@@ -139,17 +139,13 @@ input[type="button"].dialogGreen, input[type="button"].dialogRed {
     color: black;
     -webkit-transition: all .5s ease;
 }
-input[type="button"].dialogGreen {
-    border: 1px solid darkgreen;
-}
+
 input[type="button"].dialogGreen:hover {
     background: -webkit-linear-gradient(top, #2BBC4D, #269F42);
     color: white;
     -webkit-transition: all .3s ease;
 }
-input[type="button"].dialogRed {
-    border: 1px solid darkred;
-}
+
 input[type="button"].dialogRed:hover {
     background: -webkit-linear-gradient(top, #D83B46, #CB2431);
     color: white;

@@ -83,23 +83,11 @@ GitPipe.prototype.parseCommit = function (commit) {
     this.db.addAuthor(authorRec);
 };
 
-/**
- * Percorre os commits e salva temporariamente
- * os diffs de cada commit com o commit pai.
- */
-GitPipe.prototype.diffCommitsHistory = function () {
-    console.log('> diffCommitsHistory');
-    let commitRecs = this.db.getCommits();
-    console.log('  commitRecs length:', commitRecs.length);
-    let diffCommitsPromises = [];
-    commitRecs.forEach((commitRec) => {
-        console.log('    parsing commitRec:', commitRec);
-        let prom = this.diffCommitWithParents(commitRec);
-        if (prom != null) {
-            diffCommitsPromises.push(prom);
-        }
-    });
-    return Promise.all(diffCommitsPromises);
+GitPipe.prototype.registerHeadDiff = function () {
+    let repoRec = this.db.getRepository();
+    let headId = repoRec.head;
+    let commitRec = this.db.findCommit(headId);
+    this.diffCommitWithParents(commitRec);
 };
 
 /**

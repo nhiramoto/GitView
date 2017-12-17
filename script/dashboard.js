@@ -28,7 +28,13 @@ $(document).ready(() => {
     });
 
     $('#openRepo').click(event => {
-        globals.input('Abrir Repositório', 'Tem certeza que quer fechar o repositório atual para abrir um novo repositório?');
+        globals.input('Abrir Repositório', 'Tem certeza que quer fechar o repositório atual para abrir um novo repositório?')
+            .then(res => {
+                if (res)
+                    $('.background').fadeOut('slow', () => {
+                        main.loadWelcome();
+                    });
+            });
     });
 
     ipcRenderer.on('getRepoPath-reply', (event, args) => {
