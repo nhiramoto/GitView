@@ -47,45 +47,25 @@ GitPipe.prototype.openRepository = function (repositoryPath) {
 };
 
 /**
- * Percorre o histórico e analisa os commits.
+ * Utiliza o event emitter history para caminhar no histórico de commits.
+ * A partir da branch master.
  */
 GitPipe.prototype.parseCommitsHistory = function () {
-    return this.gitRepo.getMasterCommit().then(commit => {
+    return this.gitRepo.getHeadCommit().then(commit => {
         let history = commit.history();
         history.on('commit', commit => {
             this.parsedCommits.push(commit.id().toString());
             this.parseCommit(commit);
         });
-        history.on('end', commits => {
-            console.log('* commits length:', commits.length);
-            this.db.repository.commitCount = commits.length;
-            this.save();
-        });
         history.on('error', err => {
             console.error(err);
         });
+        let retPromise = new Promise(resolve => {
+            history.on('end', resolve);
+        });
         history.start();
+        return retPromise;
     });
-    //return this.gitRepo.getReferences(Git.Reference.TYPE.OID).then((references) => {
-    //    let getCommitPromises = [];
-    //    references.forEach((reference) => {
-    //        let isbranch = reference.isBranch();
-    //        if (isbranch) {
-    //            let commitId = reference.target().toString();
-    //            getCommitPromises.push(this.gitRepo.getCommit(commitId));
-    //        }
-    //    });
-    //    return Promise.all(getCommitPromises);
-    //}).then((commits) => {
-    //    let parseCommitPromises = [];
-    //    commits.forEach((commit) => {
-    //        let prom = this.parseCommit(commit);
-    //        if (prom != null) {
-    //            parseCommitPromises.push(prom);
-    //        }
-    //    });
-    //    return Promise.all(parseCommitPromises);
-    //});
 };
 
 /**
@@ -100,16 +80,6 @@ GitPipe.prototype.parseCommit = function (commit) {
     commitRec.authorEmail = authorEmail;
     this.db.addCommit(commitRec);
     this.db.addAuthor(authorRec);
-    //return commit.getParents().then((parents) => {
-    //    let parseParentPromises = [];
-    //    parents.forEach((parent) => {
-    //        let prom = this.parseCommit(parent);
-    //        if (prom != null) {
-    //            parseParentPromises.push(prom);
-    //        }
-    //    });
-    //    return Promise.all(parseParentPromises);
-    //});
 };
 
 /**
@@ -222,10 +192,10 @@ GitPipe.prototype.parseDiff = function (commit, gitDiff) {
 
 /**
  * Analisa o objeto patch e registra os diretórios e arquivos
- * com o estado de modificação.
+ * com o estado da modificação.
  * @param {Git.Commit} commit
  * @param {Git.ConvenientPatch} patch
- * @param {Array<JSONDatabase.DirectoryRecord>} dirs
+ * @return {Array<JSONDatabase.DirectoryRecord>}
  */
 GitPipe.prototype.parsePatch = function (commit, patch) {
     return this.createFile(patch).then((child) => {
@@ -237,8 +207,8 @@ GitPipe.prototype.parsePatch = function (commit, patch) {
 
 /**
  * Cria registro do arquivo relacionado ao patch.
- * @param  {Git.ConvenientPatch} patch - Objeto patch com os dados do arquivo.
- * @return {Promise} Um promise que retorna um JSONDatabase.FileRecord
+ * @param  {Git.ConvenientPatch} patch - Objeto patch com as modificações do arquivo.
+ * @return {Promise} Um promise que retorna o registro do arquivo criado.
  */
 GitPipe.prototype.createFile = function (patch) {
     let newFileId = patch.newFile().id().toString();
