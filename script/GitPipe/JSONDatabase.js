@@ -159,7 +159,7 @@ JSONDatabase.prototype.addCommit = function (commitRec) {
 };
 
 JSONDatabase.prototype.findCommit = function (commitId) {
-    return this.commits.find((commit) => commit.id === commitId);
+    return this.commits.find(commit => commit.id === commitId);
 };
 
 JSONDatabase.prototype.deleteCommit = function (commitId) {
@@ -181,7 +181,7 @@ JSONDatabase.prototype.addDiff = function (diffRec) {
 };
 
 JSONDatabase.prototype.findDiff = function (oldCommitId, recentCommitId) {
-    return this.diffs.find((diff) =>
+    return this.diffs.find(diff =>
         diff.oldCommitId === oldCommitId && diff.recentCommitId === recentCommitId);
 };
 
@@ -205,7 +205,7 @@ JSONDatabase.prototype.addAuthor = function (authorRec) {
 };
 
 JSONDatabase.prototype.findAuthor = function (authorEmail) {
-    return this.authors.find((author) => author.email === authorEmail);
+    return this.authors.find(author => author.email === authorEmail);
 };
 
 JSONDatabase.prototype.deleteAuthor = function (authorEmail) {
@@ -231,7 +231,7 @@ JSONDatabase.prototype.findDirectory = function (directoryId) {
 };
 
 JSONDatabase.prototype.deleteDirectory = function (directoryId) {
-    let foundDir = this.dirs.find((dir) => dir.id === directoryId);
+    let foundDir = this.dirs.find(dir => dir.id === directoryId);
     if (foundDir != undefined) {
         this.dirs.splice(this.dirs.indexOf(foundDir), 1);
         this.saved = false;
@@ -249,7 +249,7 @@ JSONDatabase.prototype.addFile = function (fileRec) {
 };
 
 JSONDatabase.prototype.findFile = function (fileId) {
-    return this.files.find((file) => file.id === fileId);
+    return this.files.find(file => file.id === fileId);
 };
 
 JSONDatabase.prototype.deleteFile = function (fileId) {
@@ -286,7 +286,7 @@ JSONDatabase.prototype.hierarchize = function (rootId) {
     if (root.type === JSONDatabase.ENTRYTYPE.DIRECTORY) {
         let entriesId = root.entries;
         root.entries = [];
-        entriesId.forEach((entryId) => {
+        entriesId.forEach(entryId => {
             let entry = this.hierarchize(entryId);
             root.entries.push(entry);
         });
@@ -364,7 +364,7 @@ JSONDatabase.CommitRecord = function (commit) {
         this.snapshotId = commit.treeId().toString();
         this.parents = [];
         var parentsOid = commit.parents();
-        parentsOid.forEach((oid) => this.parents.push(oid.toString()));
+        parentsOid.forEach(oid => this.parents.push(oid.toString()));
     } else {
         this.id = null;
         this.message = null;
