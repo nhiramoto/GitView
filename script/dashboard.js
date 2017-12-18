@@ -51,22 +51,22 @@ $(document).ready(() => {
         }).then(() => {
             console.log('commits parsed.');
             console.log('commit count:', gitPipe.db.repository.commitCount);
-            //return gitPipe.diffCommitsHistory();
+            return gitPipe.registerHeadDiff();
+        }).then(() => {
+            console.log('Head commit diff registered.');
+            return gitPipe.parseDiffs();
+        }).then(() => {
+            console.log('diffs parsed.');
+            return gitPipe.save();
+        }).then((saved) => {
+            console.log('database saved=', saved);
+            //if (saved) {
+            //    return gitPipe.getLastDiffTree();
+            //} else {
+            //    return new Promise((resolve, reject) => resolve(null));
+            //}
         })
-        //.then(() => {
-        //    console.log('commits diffs created.');
-        //    return gitPipe.parseDiffs();
-        //}).then(() => {
-        //    console.log('diffs parsed.');
-        //    return gitPipe.save();
-        //}).then((saved) => {
-        //    console.log('database saved=', saved);
-        //    if (saved) {
-        //        return gitPipe.getLastDiffTree();
-        //    } else {
-        //        return new Promise((resolve, reject) => resolve(null));
-        //    }
-        //}).then((diffDir) => {
+        //.then((diffDir) => {
         //    if (diffDir) {
         //        console.log('last diff tree got!');
         //        console.log('diffDir:', diffDir);
