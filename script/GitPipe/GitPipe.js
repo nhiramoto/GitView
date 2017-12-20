@@ -59,6 +59,7 @@ GitPipe.prototype.parseCommitsHistory = function () {
             console.error(err);
         });
         history.on('end', commits => {
+            console.log('parseCommitsHistory end event!');
             this.db.repository.commitCount = commits.length;
         });
         let retPromise = new Promise(resolve => {
@@ -84,7 +85,9 @@ GitPipe.prototype.parseCommit = function (commit) {
 };
 
 GitPipe.prototype.registerHeadDiff = function () {
+    console.log('> registerHeadDiff');
     let repoRec = this.db.getRepository();
+    console.log('  repoRec:', repoRec);
     let headId = repoRec.head;
     let commitRec = this.db.findCommit(headId);
     this.diffCommitWithParents(commitRec);
@@ -95,6 +98,8 @@ GitPipe.prototype.registerHeadDiff = function () {
  * @param {JSONDatabase.CommitRecord} commitRec
  */
 GitPipe.prototype.diffCommitWithParents = function (commitRec) {
+    console.log('> diffCommitWithParents');
+    console.log('  commitRec:', commitRec);
     let commitId = commitRec.id;
     let commitSnapshotId = commitRec.snapshotId;
     let parentRec = null;
@@ -130,6 +135,8 @@ GitPipe.prototype.diffCommitWithParents = function (commitRec) {
             }
         });
         return Promise.all(createDiffPromises);
+    }).catch(err => {
+        console.error(err);
     });
 };
 
@@ -149,6 +156,7 @@ GitPipe.prototype.parseDiffs = function () {
                 //console.log('  parseDiffs(): dirRec:', dirRec);
                 let dirId = dirRec.id;
                 diff.diffRec.rootDirId = dirId;
+                console.log('  adding diff:', diff.diffRec);
                 self.db.addDiff(diff.diffRec);
             }).catch(err => {
                 console.error(err);
@@ -384,37 +392,43 @@ GitPipe.prototype.load = function () {
     }
 };
 
-GitPipe.prototype.getLastDiffTree = function () {
+GitPipe.prototype.getHeadDiffTree = function () {
     if (this.db == null) {
-        console.error('[GitPipe#getLastDiffTree] Error: Database not set.');
+        console.error('[GitPipe#getHeadDiffTree] Error: Database not set.');
         return null;
     } else {
         let repoRec = this.db.getRepository();
         if (repoRec == null) {
-            console.error('[GitPipe#getLastDiffTree] Error: Repository not opened.');
+            console.error('[GitPipe#getHeadDiffTree] Error: Repository not opened.');
             return null;
         } else {
-            console.log('  repoRec:', repoRec)
+            console.log('  -> repoRec:', repoRec)
             let headId = repoRec.head;
             let commit = this.db.findCommit(headId);
-            console.log('  commit:', commit);
+            console.log('  -> head commit:', commit);
             let parentIds = commit.parents;
-            let _parentId = parentIds.shift();
+            let _parentId = parentIds[0];
             console.log('    -> parentId:', _parentId);
             let diff = this.db.findDiff(_parentId, headId);
             console.log('    -> diff:', diff);
             let rootDirId = diff.rootDirId;
             console.log('    -> rootDirId:', rootDirId);
             let diffDir = this.db.hierarchize(rootDirId);
+            console.assert(diffDir != null, '[GitPipe#getHeadDiffTree] Error: diffDir is null.');
             console.log('    -> diffDir:', diffDir);
             let rootDir = null;
-            parentIds.forEach(parentId => {
+            parentIds.slice(1).forEach(parentId => {
+                console.log('    -> parentId:', parentId);
                 diff = this.db.findDiff(parentId, headId);
+                console.log('    -> diff:', diff);
                 rootDirId = diff.rootDirId;
+                console.log('    -> rootDirId:', rootDirId);
                 rootDir = this.db.hierarchize(rootDirId);
-                console.log('  rootDir:', rootDir);
+                console.assert(rootDir != null, '[GitPipe#getHeadDiffTree] Error: rootDir is null.');
+                console.log('    -> rootDir:', rootDir);
                 diffDir = this.db.mergeDirectories(diffDir, rootDir);
-                console.log('  diffDir:', diffDir);
+                console.assert(diffDir != null, '[GitPipe#getHeadDiffTree] Error: diffDir is null.');
+                console.log('    -> diffDir:', diffDir);
             });
             return diffDir;
         }

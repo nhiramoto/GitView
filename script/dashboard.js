@@ -57,26 +57,26 @@ $(document).ready(() => {
             return gitPipe.parseDiffs();
         }).then(() => {
             console.log('diffs parsed.');
+            console.log('diffs length:', gitPipe.db.diffs.length);
             return gitPipe.save();
         }).then((saved) => {
             console.log('database saved=', saved);
-            //if (saved) {
-            //    return gitPipe.getLastDiffTree();
-            //} else {
-            //    return new Promise((resolve, reject) => resolve(null));
-            //}
+            if (saved) {
+                return gitPipe.getHeadDiffTree();
+            } else {
+                return new Promise((resolve, reject) => resolve(null));
+            }
+        }).then((diffDir) => {
+            if (diffDir) {
+                console.log('last diff tree got!');
+                console.log('diffDir:', diffDir);
+                //container = d3.select('#view');
+                //tree = new Tree(container, svgWidth, svgHeight);
+                //tree.build(diffDir);
+            } else {
+                console.error('Error: diffDir is null.');
+            }
         })
-        //.then((diffDir) => {
-        //    if (diffDir) {
-        //        console.log('last diff tree got!');
-        //        console.log('diffDir:', diffDir);
-        //        container = d3.select('#view');
-        //        tree = new Tree(container, svgWidth, svgHeight);
-        //        tree.build(diffDir);
-        //    } else {
-        //        console.error('Error: diffDir is null.');
-        //    }
-        //})
         .catch(err => {
             if (err) console.error('[dashboard.js] ', err);
         });
