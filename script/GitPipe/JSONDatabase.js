@@ -283,10 +283,11 @@ JSONDatabase.prototype.hierarchize = function (rootId) {
     let root = this.findEntry(rootId);
     console.log('root:', root);
     console.assert(root != undefined, 'JSONDatabase#hierarchize: Error - Entry not found (loose id).');
-    if (root.type === JSONDatabase.ENTRYTYPE.DIRECTORY) {
-        let entriesId = root.entries;
+    if (root.isDirectory()) {
+        let entriesId = root.entriesId;
         root.entries = [];
         entriesId.forEach(entryId => {
+            console.assert(typeof(entryId) === 'string', '[JSONDatabase#hierarchize] Error: Entry id is not a id.');
             let entry = this.hierarchize(entryId);
             root.entries.push(entry);
         });
@@ -302,17 +303,19 @@ JSONDatabase.prototype.hierarchize = function (rootId) {
  */
 JSONDatabase.prototype.mergeDirectories = function (dir1, dir2) {
     if (dir1 == null || dir2 == null) {
-        console.error('Error: JSONDatabase#mergeDirectories - Cannot merge null directories.');
+        console.error('[JSONDatabase#mergeDirectories] Error: Cannot merge null directories.');
         return null;
     } else if (dir1.isFile() || dir2.isFile()) {
-        console.error('Error: JSONDatabase#mergeDirectories - Cannot merge files.');
+        console.error('[JSONDatabase#mergeDirectories] Error: Cannot merge files.');
         return null;
+    } else if (dir1.entries == undefined || dir2.entries == undefined) {
+        console.error('[JSONDatabase#mergeDirectories] Error: The directories must be hierarchized.');
     } else {
         if (dir1.name.trim() === dir2.name.trim()) {
             let mergedDir = new JSONDatabase.DirectoryRecord();
             let toMergeDir1 = dir1.entries.filter(e1 => e1.isDirectory() && dir2.entries.map(e2 => e2.name).includes(e1.name));
             let toMergeDir2 = dir2.entries.filter(e2 => e2.isDirectory() && toMergeDir1.map(e1 => e1.name).includes(e2.name));
-            mergedDir.id = dir1.id + '' + dir2.id;
+            mergedDir.id = dir1.id + ':' + dir2.id;
             mergedDir.name = dir1.name;
             mergedDir.path = dir2.path;
             mergedDir.statistic = new JSONDatabase.Statistic(dir1.added + dir2.added, dir1.deleted + dir2.deleted, dir1.modified + dir2.modified);
@@ -320,12 +323,12 @@ JSONDatabase.prototype.mergeDirectories = function (dir1, dir2) {
             toMergeDir1.forEach(e1 => {
                 let e2 = toMergeDir2.find(v => v.name === e1.name);
                 let mergedEntries = this.mergeDirectories(e1, e2);
-                console.assert(e1.isDirectory() && e2.isDirectory(), 'Error: JSONDatabase#mergeDirectories - Entries is not directories.');
+                console.assert(e1.isDirectory() && e2.isDirectory(), '[JSONDatabase#mergeDirectories] Error: Entries is not directories.');
                 mergedDir.entries.push(mergedEntries);
             });
             return mergedDir;
         } else {
-            console.error('Error: JSONDatabase#mergeDirectories - To merge, the directories names must be the same.')
+            console.error('[JSONDatabase#mergeDirectories] Error: To merge, the directories names must be the same.')
             return null;
         }
     }
@@ -433,7 +436,7 @@ JSONDatabase.EntryRecord.prototype.isDirectory = function () {
  */
 JSONDatabase.DirectoryRecord = function () {
     JSONDatabase.EntryRecord.call(this, JSONDatabase.ENTRYTYPE.DIRECTORY);
-    this.entries = [];
+    this.entriesId = [];
 };
 JSONDatabase.DirectoryRecord.prototype = Object.create(JSONDatabase.EntryRecord.prototype);
 JSONDatabase.DirectoryRecord.constructor = JSONDatabase.DirectoryRecord;

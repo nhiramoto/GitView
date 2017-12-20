@@ -1,3 +1,5 @@
+'use strict';
+
 const Git = require('nodegit');
 const path = require('path');
 const fs = require('fs');
@@ -59,7 +61,6 @@ GitPipe.prototype.parseCommitsHistory = function () {
             console.error(err);
         });
         history.on('end', commits => {
-            console.log('parseCommitsHistory end event!');
             this.db.repository.commitCount = commits.length;
         });
         let retPromise = new Promise(resolve => {
@@ -87,10 +88,9 @@ GitPipe.prototype.parseCommit = function (commit) {
 GitPipe.prototype.registerHeadDiff = function () {
     console.log('> registerHeadDiff');
     let repoRec = this.db.getRepository();
-    console.log('  repoRec:', repoRec);
     let headId = repoRec.head;
     let commitRec = this.db.findCommit(headId);
-    this.diffCommitWithParents(commitRec);
+    return this.diffCommitWithParents(commitRec);
 };
 
 /**
@@ -101,30 +101,41 @@ GitPipe.prototype.diffCommitWithParents = function (commitRec) {
     console.log('> diffCommitWithParents');
     console.log('  commitRec:', commitRec);
     let commitId = commitRec.id;
+    console.log('  commitId:', commitId);
     let commitSnapshotId = commitRec.snapshotId;
+    console.log('  commitSnapshotId:', commitSnapshotId);
+    let commitTree = null;
     let parentRec = null;
     let parentSnapshotId = null;
-    let commitTree = null;
     let parentIds = null;
+    let diffRec = null;
     return this.gitRepo.getTree(commitSnapshotId).then(tree1 => {
+        console.log('  commit tree got!');
         commitTree = tree1;
+        console.log('  commitTree:', commitTree);
         let createDiffPromises = [];
         parentIds = commitRec.parents;
+        console.log('  parentIds...:', parentIds);
         parentIds.forEach(parentId => {
+            console.log('    -> parentId:', parentId);
             let foundDiff = this.diffs.find(diff =>
                 diff.diffRec.oldCommitId === parentId && diff.diffRec.recentCommitId === commitId);
+            console.log('    -> foundDiff:', foundDiff);
             if (foundDiff == undefined) {
                 parentRec = this.db.findCommit(parentId);
+                console.log('    -> parentRec:', parentRec);
                 parentSnapshotId = parentRec.snapshotId;
                 diffRec = new JSONDatabase.DiffRecord();
                 diffRec.oldCommitId = parentId;
                 diffRec.recentCommitId = commitId;
+                console.log('    -> creating promise for register diff.');
                 let prom = (function (self, diffRec, parentSnapshotId, commitTree) {
                     let parentTree;
                     return self.gitRepo.getTree(parentSnapshotId).then(tree2 => {
                         parentTree = tree2;
                         return Git.Diff.treeToTree(self.gitRepo, parentTree, commitTree, Git.Diff.OPTION.INCLUDE_UNMODIFIED);
                     }).then(gitDiff => {
+                        console.log('    -> registering diffRec:', diffRec);
                         self.diffs.push({
                             gitDiff: gitDiff,
                             diffRec: diffRec
@@ -185,6 +196,8 @@ GitPipe.prototype.parseDiff = function (commit, gitDiff) {
         let f = dirRecs.filter(d => d.path === '.');
         console.assert(f.length === dirRecs.length, 'GitPipe#parseDiff: Error - Returned directories is not all root.');
         return dirRecs[0];
+    }).catch(err => {
+        console.error(err);
     });
 };
 
@@ -197,9 +210,9 @@ GitPipe.prototype.parseDiff = function (commit, gitDiff) {
  */
 GitPipe.prototype.parsePatch = function (commit, patch) {
     return this.createFile(patch).then(child => {
-        let path = path.dirname(child.path);
-        console.log('  creating directories from path:', path);
-        return this.createDirectory(commit, path, child);
+        let dirPath = path.dirname(child.path);
+        console.log('  creating directories from dirPath:', dirPath);
+        return this.createDirectory(commit, dirPath, child);
     });
 };
 
@@ -221,7 +234,7 @@ GitPipe.prototype.createFile = function (patch) {
         let oldPath = patch.oldFile().path();
         console.log('> oldPath:', oldPath);
         let patchStatus = null;
-        if (oldFilePath != newFilePath) {
+        if (oldPath != newPath) {
             patchStatus = JSONDatabase.FILESTATUS.MOVED;
         } else if (patch.isAdded()) {
             patchStatus = JSONDatabase.FILESTATUS.ADDED;
@@ -299,7 +312,7 @@ GitPipe.prototype.createFile = function (patch) {
 GitPipe.prototype.createDirectory = function (commit, dirPath, child) {
     console.log('> createDirectory(path = ' + dirPath + ')');
     if (dirPath.length <= 0) {
-        return null;
+        return new Promise(resolve => resolve(null));
     } else {
         let isRoot = dirPath === '.';
         let getTreePromise = null;
@@ -333,11 +346,18 @@ GitPipe.prototype.createDirectory = function (commit, dirPath, child) {
                     newDirRec.statistic.deleted += child.statistic.deleted;
                     newDirRec.statistic.modified += child.statistic.modified;
                 }
-                newDirRec.entries.push(child.id);
+                newDirRec.entriesId.push(child.id);
                 this.db.addDirectory(newDirRec);
                 child = newDirRec;
             } else { // Diretório já existe, atualiza-o.
-                if (foundDirRec.entries.find(e => e.name === child.name) == undefined) { // já existe child?
+                let foundEntry = null;
+                for (let entryId in foundDirRec.entriesId) {
+                    foundEntry = this.db.findEntry(entryId);
+                    if (foundEntry.name === child.name) {
+                        break;
+                    }
+                }
+                if (foundEntry == undefined) { // Ainda não existe entry
                     if (child.type === JSONDatabase.ENTRYTYPE.FILE) {
                         if (child.status === JSONDatabase.FILESTATUS.ADDED) {
                             foundDirRec.statistic.added++;
@@ -351,7 +371,7 @@ GitPipe.prototype.createDirectory = function (commit, dirPath, child) {
                         foundDirRec.statistic.deleted += child.statistic.deleted;
                         foundDirRec.statistic.modified += child.statistic.modified;
                     }
-                    foundDirRec.entries.push(child.id);
+                    foundDirRec.entriesId.push(child.id);
                 }
                 child = foundDirRec;
             }
@@ -411,6 +431,7 @@ GitPipe.prototype.getHeadDiffTree = function () {
             console.log('    -> parentId:', _parentId);
             let diff = this.db.findDiff(_parentId, headId);
             console.log('    -> diff:', diff);
+            console.assert(diff != null, '[GitPipe#getHeadDiffTree] Error: head commit diff is null.');
             let rootDirId = diff.rootDirId;
             console.log('    -> rootDirId:', rootDirId);
             let diffDir = this.db.hierarchize(rootDirId);

@@ -64,11 +64,9 @@ $(document).ready(() => {
                     console.log('Opening repository...');
                     globals.showMessage('Abrir Repositório', 'Abrindo repositório: ' + repoPath);
                     ipcRenderer.send('setRepoPath', repoPath);
-                    setTimeout(() => {
-                        $('.background').fadeOut('slow', () => {
-                            main.loadDashboard();
-                        });
-                    }, 2000);
+                    $('.background').fadeOut('slow', () => {
+                        main.loadDashboard();
+                    });
                 }
             });
         }

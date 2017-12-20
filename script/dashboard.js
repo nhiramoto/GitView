@@ -41,7 +41,7 @@ $(document).ready(() => {
         repoPath = args;
         console.log('repoPath:', repoPath);
         gitPipe = new GitPipe();
-        gitPipe.openRepository(repoPath).then((_dbPath) => {
+        gitPipe.openRepository(repoPath).then(_dbPath => {
             dbPath = _dbPath;
             console.log('repository opened:', repoPath);
             console.log('database path:', dbPath);
@@ -59,25 +59,24 @@ $(document).ready(() => {
             console.log('diffs parsed.');
             console.log('diffs length:', gitPipe.db.diffs.length);
             return gitPipe.save();
-        }).then((saved) => {
+        }).then(saved => {
             console.log('database saved=', saved);
             if (saved) {
                 return gitPipe.getHeadDiffTree();
             } else {
-                return new Promise((resolve, reject) => resolve(null));
+                return new Promise(resolve => resolve(null));
             }
-        }).then((diffDir) => {
+        }).then(diffDir => {
             if (diffDir) {
                 console.log('last diff tree got!');
                 console.log('diffDir:', diffDir);
-                //container = d3.select('#view');
-                //tree = new Tree(container, svgWidth, svgHeight);
-                //tree.build(diffDir);
+                container = d3.select('#view');
+                tree = new Tree(container, svgWidth, svgHeight);
+                tree.build(diffDir);
             } else {
                 console.error('Error: diffDir is null.');
             }
-        })
-        .catch(err => {
+        }).catch(err => {
             if (err) console.error('[dashboard.js] ', err);
         });
     });
