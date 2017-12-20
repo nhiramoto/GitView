@@ -29,8 +29,8 @@ GitPipe.prototype.openRepository = function (repositoryPath) {
     let pathToRepo = path.resolve(repositoryPath);
     let repoRec = null;
     let dbPath = null;
-    return Git.Repository.open(pathToRepo).then(repository => {
-        this.gitRepo = repository;
+    return Git.Repository.open(pathToRepo).then(repo => {
+        this.gitRepo = repo;
         // Subdiretório onde todas as bases de dados são salvas (uma para cada repositório)
         fs.mkdir('./data', () => {});
         return this.gitRepo.head();
@@ -54,17 +54,18 @@ GitPipe.prototype.openRepository = function (repositoryPath) {
 GitPipe.prototype.parseCommitsHistory = function () {
     return this.gitRepo.getHeadCommit().then(commit => {
         let history = commit.history();
+        let parseCommitsPromises = [];
         history.on('commit', commit => {
-            this.parseCommit(commit);
+            parseCommitsPromises.push(this.parseCommit(commit));
         });
         history.on('error', err => {
             console.error(err);
         });
-        history.on('end', commits => {
-            this.db.repository.commitCount = commits.length;
-        });
         let retPromise = new Promise(resolve => {
-            history.on('end', resolve);
+            history.on('end', commits => {
+                this.db.repository.commitCount = commits.length;
+                Promise.all(parseCommitsPromises).then(resolve);
+            });
         });
         history.start();
         return retPromise;
@@ -85,6 +86,9 @@ GitPipe.prototype.parseCommit = function (commit) {
     this.db.addAuthor(authorRec);
 };
 
+/**
+ * Registra o diff do commit head com seu antecessor.
+ */
 GitPipe.prototype.registerHeadDiff = function () {
     console.log('> registerHeadDiff');
     let repoRec = this.db.getRepository();
@@ -165,10 +169,14 @@ GitPipe.prototype.parseDiffs = function () {
                 return self.parseDiff(commit, gitDiff);
             }).then(dirRec => {
                 //console.log('  parseDiffs(): dirRec:', dirRec);
-                let dirId = dirRec.id;
-                diff.diffRec.rootDirId = dirId;
-                console.log('  adding diff:', diff.diffRec);
-                self.db.addDiff(diff.diffRec);
+                if (dirRec != null) {
+                    let dirId = dirRec.id;
+                    diff.diffRec.rootDirId = dirId;
+                    console.log('  adding diff to db:', diff.diffRec);
+                    self.db.addDiff(diff.diffRec);
+                } else {
+                    console.error('[GitPipe#parseDiffs] Error: dirRec is null.');
+                }
             }).catch(err => {
                 console.error(err);
             });
@@ -258,8 +266,7 @@ GitPipe.prototype.createFile = function (patch) {
     } else fileRec = foundFile;
     return binaryCheckProm.then(blob => {
         if (blob != null) {
-            let isBinary = blob.isBinary();
-            fileRec.isBinary = isBinary;
+            fileRec.isBinary = blob.isBinary();
         }
         return patch.hunks();
     }).then(hunks => {
@@ -353,7 +360,7 @@ GitPipe.prototype.createDirectory = function (commit, dirPath, child) {
                 let foundEntry = null;
                 for (let entryId in foundDirRec.entriesId) {
                     foundEntry = this.db.findEntry(entryId);
-                    if (foundEntry.name === child.name) {
+                    if (foundEntry != undefined && foundEntry.name === child.name) {
                         break;
                     }
                 }
