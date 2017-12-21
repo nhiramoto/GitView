@@ -450,6 +450,7 @@ JSONDatabase.FileRecord = function () {
     this.oldFileId = null;
     this.status = -1;
     this.blocks = [];
+    this.lastBlockIndex = -1;
 };
 JSONDatabase.FileRecord.prototype = Object.create(JSONDatabase.EntryRecord.prototype);
 JSONDatabase.FileRecord.constructor = JSONDatabase.FileRecord;
@@ -460,8 +461,9 @@ JSONDatabase.FileRecord.constructor = JSONDatabase.FileRecord;
  */
 JSONDatabase.BlockRecord = function () {
     this.index = -1;
-    this.size = -1;
-    this.lines = [];
+    this.status = -1;
+    this.newLines = [];
+    this.oldLines = [];
 };
 
 /**
@@ -469,9 +471,8 @@ JSONDatabase.BlockRecord = function () {
  * @constructor
  */
 JSONDatabase.LineRecord = function () {
-    this.oldLineNum = -1;
-    this.newLineNum = -1;
-    this.status = -1;
+    this.lineNum = -1;
+    this.content = null;
 };
 
 /**
