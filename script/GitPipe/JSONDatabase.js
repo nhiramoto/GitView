@@ -449,10 +449,20 @@ JSONDatabase.FileRecord = function () {
     JSONDatabase.EntryRecord.call(this, JSONDatabase.ENTRYTYPE.FILE);
     this.oldFileId = null;
     this.status = -1;
-    this.lines = [];
+    this.blocks = [];
 };
 JSONDatabase.FileRecord.prototype = Object.create(JSONDatabase.EntryRecord.prototype);
 JSONDatabase.FileRecord.constructor = JSONDatabase.FileRecord;
+
+/**
+ * Registro do bloco do arquivo, com as linhas que foram modificadas.
+ *
+ */
+JSONDatabase.BlockRecord = function () {
+    this.index = -1;
+    this.size = -1;
+    this.lines = [];
+};
 
 /**
  * Registro da diff linha.
@@ -473,27 +483,12 @@ JSONDatabase.ENTRYTYPE = {
     DIRECTORY: 1
 };
 
-/**
- * Status do arquivo.
- * @enum
- */
-JSONDatabase.FILESTATUS = {
+JSONDatabase.STATUS = {
     ADDED: 0,
     DELETED: 1,
     MODIFIED: 2,
     UNMODIFIED: 3,
     MOVED: 4
-};
-
-/**
- * Status da linha.
- * @enum
- */
-JSONDatabase.LINESTATUS = {
-    ADDED: 0,
-    DELETED: 1,
-    MODIFIED: 2,
-    UNMODIFIED: 3
 };
 
 module.exports = JSONDatabase;

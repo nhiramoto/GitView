@@ -243,15 +243,15 @@ GitPipe.prototype.createFile = function (patch) {
         console.log('> oldPath:', oldPath);
         let patchStatus = null;
         if (oldPath != newPath) {
-            patchStatus = JSONDatabase.FILESTATUS.MOVED;
+            patchStatus = JSONDatabase.STATUS.MOVED;
         } else if (patch.isAdded()) {
-            patchStatus = JSONDatabase.FILESTATUS.ADDED;
+            patchStatus = JSONDatabase.STATUS.ADDED;
         } else if (patch.isDeleted()) {
-            patchStatus = JSONDatabase.FILESTATUS.DELETED;
+            patchStatus = JSONDatabase.STATUS.DELETED;
         } else if (patch.isModified()) {
-            patchStatus = JSONDatabase.FILESTATUS.MODIFIED;
+            patchStatus = JSONDatabase.STATUS.MODIFIED;
         } else if (patch.isUnmodified()) {
-            patchStatus = JSONDatabase.FILESTATUS.UNMODIFIED;
+            patchStatus = JSONDatabase.STATUS.UNMODIFIED;
         }
         console.assert(patchStatus != null, '[GitPipe#createFile] Error: patchStatus not defined!');
         let statistic = new JSONDatabase.Statistic(0, 0, 0);
@@ -277,6 +277,8 @@ GitPipe.prototype.createFile = function (patch) {
         return Promise.all(hunkPromises);
     }).then(listLines => {
         listLines.forEach(lines => {
+            let modifiedLines = [];
+            let previousLine = null;
             lines.forEach(line => {
                 let oldLineNum = line.oldLineno();
                 let newLineNum = line.newLineno();
@@ -284,16 +286,16 @@ GitPipe.prototype.createFile = function (patch) {
                 let sign = String.fromCharCode(line.origin()).trim();
                 if (sign.length > 0) {
                     if (sign === '-') {
-                        lineStatus = JSONDatabase.LINESTATUS.DELETED;
+                        lineStatus = JSONDatabase.STATUS.DELETED;
                         fileRec.statistic.deleted++;
                     } else if (sign === '+') {
-                        lineStatus = JSONDatabase.LINESTATUS.ADDED;
+                        lineStatus = JSONDatabase.STATUS.ADDED;
                         fileRec.statistic.added++;
                     } else {
-                        lineStatus = JSONDatabase.LINESTATUS.UNMODIFIED;
+                        lineStatus = JSONDatabase.STATUS.UNMODIFIED;
                     }
                 } else {
-                    lineStatus = JSONDatabase.LINESTATUS.UNMODIFIED;
+                    lineStatus = JSONDatabase.STATUS.UNMODIFIED;
                 }
                 let lineRec = new JSONDatabase.LineRecord();
                 lineRec.oldLineNum = oldLineNum;
@@ -341,11 +343,11 @@ GitPipe.prototype.createDirectory = function (commit, dirPath, child) {
                 newDirRec.path = dirPath;
                 newDirRec.statistic = new JSONDatabase.Statistic(0, 0, 0);
                 if (child.type === JSONDatabase.ENTRYTYPE.FILE) {
-                    if (child.status === JSONDatabase.FILESTATUS.ADDED) {
+                    if (child.status === JSONDatabase.STATUS.ADDED) {
                         newDirRec.statistic.added++;
-                    } else if (child.status === JSONDatabase.FILESTATUS.DELETED) {
+                    } else if (child.status === JSONDatabase.STATUS.DELETED) {
                         newDirRec.statistic.deleted++;
-                    } else if (child.status === JSONDatabase.FILESTATUS.MODIFIED) {
+                    } else if (child.status === JSONDatabase.STATUS.MODIFIED) {
                         newDirRec.statistic.modified++;
                     }
                 } else {
@@ -366,11 +368,11 @@ GitPipe.prototype.createDirectory = function (commit, dirPath, child) {
                 }
                 if (foundEntry == undefined) { // Ainda não existe entry
                     if (child.type === JSONDatabase.ENTRYTYPE.FILE) {
-                        if (child.status === JSONDatabase.FILESTATUS.ADDED) {
+                        if (child.status === JSONDatabase.STATUS.ADDED) {
                             foundDirRec.statistic.added++;
-                        } else if (child.status === JSONDatabase.FILESTATUS.DELETED) {
+                        } else if (child.status === JSONDatabase.STATUS.DELETED) {
                             foundDirRec.statistic.deleted++;
-                        } else if (child.status === JSONDatabase.FILESTATUS.MODIFIED) {
+                        } else if (child.status === JSONDatabase.STATUS.MODIFIED) {
                             foundDirRec.statistic.modified++;
                         }
                     } else {
