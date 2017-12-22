@@ -240,7 +240,7 @@ GitPipe.prototype.createFile = function (patch) {
         let newPath = patch.newFile().path();
         console.log('> createFile(path = ' + newPath + ')');
         let oldPath = patch.oldFile().path();
-        console.log('> oldPath:', oldPath);
+        console.log('>   oldPath:', oldPath);
         let patchStatus = null;
         if (oldPath != newPath) {
             patchStatus = JSONDatabase.STATUS.MOVED;
@@ -287,13 +287,15 @@ GitPipe.prototype.createFile = function (patch) {
 };
 
 GitPipe.prototype.parseLines = function(fileRec, lines) {
-    let addLines = [];
+    console.log('> parseLines');
+    let addedLines = [];
     let deletedLines = [];
     let lastLine = null;
     let lastCtxLine = null;
     let lastIsAdded = false;
     let lastIsDeleted = false;
-    let isModified = 0;
+    let modStatus = 0;
+    console.log('  lines length:', lines.length);
     lines.forEach(line => {
         let oldLineNum = line.oldLineno();
         let newLineNum = line.newLineno();
@@ -301,36 +303,47 @@ GitPipe.prototype.parseLines = function(fileRec, lines) {
         let lineRec = new JSONDatabase.LineRecord();
         lineRec.content = content;
         let sign = String.fromCharCode(line.origin()).trim();
+        console.log('sign: "' + sign + '"');
+        console.log(sign, content, '{ oldLineNum:' + oldLineNum + ',newLineNum:' + newLineNum + ' }');
         if (sign.length > 0) {
             if (sign === '+') {
-                if (!lastIsAdded && !lastIsDeleted &&
-                        newLineNum === lastLine.newLineno() + 1) {
-                    isModified++;
-                } else if (lastIsAdded && newLineNum !== lastLine.newLineno() + 1
+                if (!lastIsAdded && !lastIsDeleted
+                        && lastLine != null
+                        && newLineNum === lastLine.newLineno() + 1) {
+                    modStatus++;
+                    console.log('  first line after context -> modStatus:' + modStatus);
+                } else if (lastIsAdded && lastLine != null
+                    && newLineNum !== lastLine.newLineno() + 1
                     || lastIsDeleted) {
-                    if (isModified === 2) {
+                    console.log('  line origin changed.');
+                    if (modStatus === 2) {
+                        console.log('  adding modified block.');
                         let blockRec = new JSONDatabase.BlockRecord();
                         blockRec.index = ++fileRec.lastBlockIndex;
                         blockRec.status = JSONDatabase.STATUS.MODIFIED;
-                        blockRec.newLines = addLines;
+                        blockRec.newLines = addedLines;
                         blockRec.oldLines = deletedLines;
                         fileRec.blocks.push(blockRec);
                         fileRec.statistic.modified += deletedLines.length;
-                        addLines = [];
+                        addedLines = [];
                         deletedLines = [];
-                        isModified = 0;
+                        modStatus = 0;
+                        console.log('  added block:', blockRec);
                     }
-                    if (newLineNum === lastCtxLine.newLineno() + 1) {
-                        isModified++;
-                    } else if (isModified === 1) {
+                    if (lastCtxLine != null && newLineNum === lastCtxLine.newLineno() + 1) {
+                        modStatus++;
+                        console.log('  modification detected -> modStatus:' + modStatus);
+                    } else if (modStatus === 1) {
                         let blockRec = new JSONDatabase.BlockRecord();
                         blockRec.index = ++fileRec.lastBlockIndex;
                         if (lastIsAdded) {
+                            console.log('  adding added block.');
                             blockRec.status = JSONDatabase.STATUS.ADDED;
                             blockRec.newLines = addedLines;
                             blockRec.oldLines = null;
                             fileRec.statistic.added += addedLines.length;
                         } else {
+                            console.log('  adding deleted block.');
                             console.assert(lastIsDeleted, '[GitPipe#parseLines] Error: Last line is not added or deleted.');
                             blockRec.status = JSONDatabase.STATUS.DELETED;
                             blockRec.newLines = null;
@@ -339,41 +352,52 @@ GitPipe.prototype.parseLines = function(fileRec, lines) {
                         }
                         addedLines = [];
                         deletedLines = [];
-                        isModified = 0;
+                        modStatus = 0;
+                        console.log('  added block:', blockRec);
                     }
                 }
                 lineRec.lineNum = newLineNum;
-                addLines.push(lineRec);
+                addedLines.push(lineRec);
                 lastIsAdded = true;
                 lastIsDeleted = false;
+                console.log(sign, 'modStatus:' + modStatus, 'lastisAdded:' + lastIsAdded, 'lastIsDeleted:' + lastIsDeleted);
             } else if (sign === '-') {
                 if (!lastIsAdded && !lastIsDeleted
+                        && lastLine != null
                         && oldLineNum === lastLine.oldLineno() + 1) {
-                    isModified++;
-                } else if (lastIsDeleted && oldLineNum !== lastLine.oldLineno() + 1
+                    modStatus++;
+                    console.log('  first line after context -> modStatus:' + modStatus);
+                } else if (lastIsDeleted && lastLine != null
+                    && oldLineNum !== lastLine.oldLineno() + 1
                     || lastIsAdded) {
-                    if (isModified === 2) {
+                    console.log('  line origin changed.');
+                    if (modStatus === 2) {
+                        console.log('  adding modified block.');
                         let blockRec = new JSONDatabase.BlockRecord();
                         blockRec.index = ++fileRec.lastBlockIndex;
                         blockRec.status = JSONDatabase.STATUS.MODIFIED;
-                        blockRec.newLines = addLines;
+                        blockRec.newLines = addedLines;
                         blockRec.oldLines = deletedLines;
                         fileRec.blocks.push(blockRec);
-                        addLines = [];
+                        addedLines = [];
                         deletedLines = [];
-                        isModified = 0;
+                        modStatus = 0;
+                        console.log('  added block:', blockRec);
                     }
-                    if (oldLineNum === lastCtxLine.oldLineno() + 1) {
-                        isModified++;
-                    } else if (isModified === 1) {
+                    if (lastCtxLine != null && oldLineNum === lastCtxLine.oldLineno() + 1) {
+                        modStatus++;
+                        console.log('  modification detected -> modStatus:' + modStatus);
+                    } else if (modStatus === 1) {
                         let blockRec = new JSONDatabase.BlockRecord();
                         blockRec.index = ++fileRec.lastBlockIndex;
                         if (lastIsAdded) {
+                            console.log('  adding added block.');
                             blockRec.status = JSONDatabase.STATUS.ADDED;
                             blockRec.newLines = addedLines;
                             blockRec.oldLines = null;
                             fileRec.statistic.added += addedLines.length;
                         } else {
+                            console.log('  adding deleted block.');
                             console.assert(lastIsDeleted, '[GitPipe#parseLines] Error: Last line is not added or deleted.');
                             blockRec.status = JSONDatabase.STATUS.DELETED;
                             blockRec.newLines = null;
@@ -382,48 +406,56 @@ GitPipe.prototype.parseLines = function(fileRec, lines) {
                         }
                         addedLines = [];
                         deletedLines = [];
-                        isModified = 0;
+                        modStatus = 0;
+                        console.log('  added block:', blockRec);
                     }
                 }
                 lineRec.lineNum = oldLineNum;
                 deletedLines.push(lineRec);
                 lastIsAdded = false;
                 lastIsDeleted = true;
-            } else {
-                if (isModified === 2) {
-                    let blockRec = new JSONDatabase.BlockRecord();
-                    blockRec.index = ++fileRec.lastBlockIndex;
-                    blockRec.status = JSONDatabase.STATUS.MODIFIED;
-                    blockRec.newLines = addLines;
-                    blockRec.oldLines = deletedLines;
-                    fileRec.blocks.push(blockRec);
-                    fileRec.statistic.modified += deletedLines.length;
-                    addLines = [];
-                    deletedLines = [];
-                    isModified = 0;
-                } else if (isModified === 1) {
-                    let blockRec = new JSONDatabase.BlockRecord();
-                    blockRec.index = ++fileRec.lastBlockIndex;
-                    if (lastIsAdded) {
-                        blockRec.status = JSONDatabase.STATUS.ADDED;
-                        blockRec.newLines = addedLines;
-                        blockRec.oldLines = null;
-                        fileRec.statistic.added += addedLines.length;
-                    } else {
-                        console.assert(lastIsDeleted, '[GitPipe#parseLines] Error: Last line is not added or deleted.');
-                        blockRec.status = JSONDatabase.STATUS.DELETED;
-                        blockRec.newLines = null;
-                        blockRec.oldLines = deletedLines;
-                        fileRec.statistic.deleted += deletedLines.length;
-                    }
-                    addedLines = [];
-                    deletedLines = [];
-                    isModified = 0;
-                }
-                lastCtxLine = line;
-                lastIsAdded = false;
-                lastIsDeleted = false;
+                console.log(sign, 'modStatus:' + modStatus, 'lastisAdded:' + lastIsAdded, 'lastIsDeleted:' + lastIsDeleted);
             }
+        } else { // context line
+            if (modStatus === 2) {
+                console.log('  adding modified block.');
+                let blockRec = new JSONDatabase.BlockRecord();
+                blockRec.index = ++fileRec.lastBlockIndex;
+                blockRec.status = JSONDatabase.STATUS.MODIFIED;
+                blockRec.newLines = addedLines;
+                blockRec.oldLines = deletedLines;
+                fileRec.blocks.push(blockRec);
+                fileRec.statistic.modified += deletedLines.length;
+                addedLines = [];
+                deletedLines = [];
+                modStatus = 0;
+                console.log('  added block:', blockRec);
+            } else if (modStatus === 1) {
+                let blockRec = new JSONDatabase.BlockRecord();
+                blockRec.index = ++fileRec.lastBlockIndex;
+                if (lastIsAdded) {
+                    console.log('  adding added block.');
+                    blockRec.status = JSONDatabase.STATUS.ADDED;
+                    blockRec.newLines = addedLines;
+                    blockRec.oldLines = null;
+                    fileRec.statistic.added += addedLines.length;
+                } else {
+                    console.log('  adding deleted block.');
+                    console.assert(lastIsDeleted, '[GitPipe#parseLines] Error: Last line is not added or deleted.');
+                    blockRec.status = JSONDatabase.STATUS.DELETED;
+                    blockRec.newLines = null;
+                    blockRec.oldLines = deletedLines;
+                    fileRec.statistic.deleted += deletedLines.length;
+                }
+                addedLines = [];
+                deletedLines = [];
+                modStatus = 0;
+                console.log('  added block:', blockRec);
+            }
+            lastCtxLine = line;
+            lastIsAdded = false;
+            lastIsDeleted = false;
+            console.log('  lastCtxLine:' + lastCtxLine, 'modStatus:' + modStatus, 'lastisAdded:' + lastIsAdded, 'lastIsDeleted:' + lastIsDeleted);
         }
         lastLine = line;
     });

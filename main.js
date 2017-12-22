@@ -15,7 +15,7 @@ var initWindow = function () {
         titleBarStyle: 'customButtonsOnHover',
         show: false
     });
-    //mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
     mainWindow.on('ready-to-show', () => {
         mainWindow.show();
     });

@@ -464,8 +464,8 @@ JSONDatabase.FileRecord.constructor = JSONDatabase.FileRecord;
 JSONDatabase.BlockRecord = function () {
     this.index = -1;
     this.status = -1;
-    this.newLines = [];
-    this.oldLines = [];
+    this.newLines = null;
+    this.oldLines = null;
 };
 
 /**
