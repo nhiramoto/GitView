@@ -457,6 +457,23 @@ JSONDatabase.FileRecord = function () {
 JSONDatabase.FileRecord.prototype = Object.create(JSONDatabase.EntryRecord.prototype);
 JSONDatabase.FileRecord.constructor = JSONDatabase.FileRecord;
 
+JSONDatabase.FileRecord.prototype.addBlock = function (oldLines, newLines, status) {
+    let blockRec = new JSONDatabase.BlockRecord();
+    blockRec.index = ++this.lastBlockIndex;
+    blockRec.status = status;
+    blockRec.newLines = newLines;
+    blockRec.oldLines = oldLines;
+    if (status === JSONDatabase.STATUS.ADDED) {
+        this.statistic.added += newLines.length;
+    } else if (status === JSONDatabase.STATUS.DELETED) {
+        this.statistic.deleted += oldLines.length;
+    } else {
+        console.assert(status === JSONDatabase.STATUS.MODIFIED, '[JSONDatabase.FileRecord#addBlock] Error: Unknown status passed.');
+        this.statistic.modified += oldLines.length;
+    }
+    this.blocks.push(blockRec);
+};
+
 /**
  * Registro do bloco do arquivo, com as linhas que foram modificadas.
  *

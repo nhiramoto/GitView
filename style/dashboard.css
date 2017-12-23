@@ -7,7 +7,7 @@ body {
 }
 
 #mainHeader {
-  position: absolute;
+  position: fixed;
   box-sizing: border-box;
   top: 0;
   left: 0;
@@ -139,9 +139,9 @@ body {
 }
 
 #sidebar {
-  position: absolute;
+  position: fixed;
   left: 0;
-  top: 0;
+  top: 60px;
   margin: 0;
   background: -webkit-linear-gradient(left, white, #DFDFDF);
   box-shadow: 2px 0 3px rgba(10, 10, 10, 0.5);

@@ -33,20 +33,20 @@ Tree.prototype.zoomed = function () {
 Tree.prototype.color = function (d) {
     if (d.parent == null) { // Root node
         if (d.children != null) {
-            return "#808080";
+            return "#888";
         } else if (d._children) {
-            return "#505050"
+            return "#222"
         }
     } else if (d._children != null) { // Collapsed node
         return "#3182bd";
     } else if (d.children != null) { // Inner node
         return "white";
     } else { // Leaf node
-        if (d.data.status == JSONDatabase.FILESTATUS.ADDED) {
+        if (d.data.status == JSONDatabase.STATUS.ADDED) {
             return "#2fe2a1";
-        } else if (d.data.status == JSONDatabase.FILESTATUS.DELETED) {
+        } else if (d.data.status == JSONDatabase.STATUS.DELETED) {
             return "#d15375";
-        } else if (d.data.status == JSONDatabase.FILESTATUS.MODIFIED) {
+        } else if (d.data.status == JSONDatabase.STATUS.MODIFIED) {
             return "#dbd825";
         } else {
             return "#7f58d3";
@@ -56,10 +56,12 @@ Tree.prototype.color = function (d) {
 
 Tree.prototype.radius = function (d) {
     //return Math.sqrt(d.data.size) / 10 || 4.5;
-    if (d.children != null || d._children != null) {
+    if (d.parent == null) {
+        return 10;
+    } else if (d.children != null || d._children != null) {
         return Math.sqrt(d.data.entries.length) * 5 + 5;
     } else {
-        return Math.sqrt(d.data.lines.length) * 5 + 5;
+        return Math.sqrt(d.data.blocks.length) * 5 + 5;
     }
 };
 
@@ -88,8 +90,8 @@ Tree.prototype.click = function (d) {
         d._children = null;
     } else {
     }
-    console.log('name:', d.data.name);
     console.log('path:', d.data.path);
+    console.log('statistic:', d.data.statistic);
     this.update();
     this.simulation.restart();
 };
