@@ -430,10 +430,10 @@ GitPipe.prototype.parseLines = function(fileRec, lines) {
  * @return {JSONDatabase.DirectoryRecord} O último diretório criado (diretório raíz).
  */
 GitPipe.prototype.createDirectory = function (commit, dirPath, child) {
-    console.log('> createDirectory(path = ' + dirPath + ')');
     if (dirPath.length <= 0) {
         return new Promise(resolve => resolve(null));
     } else {
+        console.log('> createDirectory(path = ' + dirPath + ')');
         let isRoot = dirPath === '.';
         let getTreePromise = null;
         if (isRoot) {
@@ -470,10 +470,14 @@ GitPipe.prototype.createDirectory = function (commit, dirPath, child) {
                 this.db.addDirectory(newDirRec);
                 child = newDirRec;
             } else { // Diretório já existe, atualiza-o.
+                console.log('foundDirRec.entriesId:', foundDirRec.entriesId);
                 let foundEntry = null;
-                for (let entryId in foundDirRec.entriesId) {
+                for (let index in foundDirRec.entriesId) {
+                    let entryId = foundDirRec.entriesId[index];
+                    console.log('  entryId:', entryId);
                     foundEntry = this.db.findEntry(entryId);
-                    if (foundEntry != undefined && foundEntry.name === child.name) {
+                    console.assert(foundEntry != null, '[GitPipe#createDirectory] Error: Entry not found, loose id.');
+                    if (foundEntry.name === child.name) {
                         break;
                     }
                 }
