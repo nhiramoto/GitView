@@ -556,14 +556,17 @@ GitPipe.prototype.getHeadDiffTree = function () {
                 console.log('    -> parentId:', parentId);
                 diff = this.db.findDiff(parentId, headId);
                 console.log('    -> diff:', diff);
-                rootDirId = diff.rootDirId;
-                console.log('    -> rootDirId:', rootDirId);
-                rootDir = this.db.hierarchize(rootDirId);
-                console.assert(rootDir != null, '[GitPipe#getHeadDiffTree] Error: rootDir is null.');
-                console.log('    -> rootDir:', rootDir);
-                diffDir = this.db.mergeDirectories(diffDir, rootDir);
-                console.assert(diffDir != null, '[GitPipe#getHeadDiffTree] Error: diffDir is null.');
-                console.log('    -> diffDir:', diffDir);
+                // diff == null -> There is no changes.
+                if (diff != null) {
+                    rootDirId = diff.rootDirId;
+                    console.log('    -> rootDirId:', rootDirId);
+                    rootDir = this.db.hierarchize(rootDirId);
+                    console.assert(rootDir != null, '[GitPipe#getHeadDiffTree] Error: rootDir is null.');
+                    console.log('    -> rootDir:', rootDir);
+                    diffDir = this.db.mergeDirectories(diffDir, rootDir);
+                    console.assert(diffDir != null, '[GitPipe#getHeadDiffTree] Error: diffDir is null.');
+                    console.log('    -> diffDir:', diffDir);
+                }
             });
             return diffDir;
         }
