@@ -7,7 +7,7 @@ const GitPipe = require('./GitPipe/GitPipe');
 const Tree = require('./Tree');
 
 var repoPath = null;
-var svgWidth = 600, svgHeight = 600;
+var svgWidth = 800, svgHeight = 600;
 var container = null;
 var tree = null;
 var gitPipe = null;
@@ -43,24 +43,24 @@ $(document).ready(() => {
         gitPipe = new GitPipe();
         gitPipe.openRepository(repoPath).then(_dbPath => {
             dbPath = _dbPath;
-            console.log('repository opened:', repoPath);
-            console.log('database path:', dbPath);
+            console.log('-> repository opened:', repoPath);
+            console.log('   database path:', dbPath);
             let repoRec = gitPipe.db.getRepository();
             $('#repoName').text(repoRec.name);
             return gitPipe.parseCommitsHistory();
         }).then(() => {
-            console.log('commits parsed.');
-            console.log('commit count:', gitPipe.db.repository.commitCount);
+            console.log('-> commits parsed.');
+            console.log('   commit count:', gitPipe.db.repository.commitCount);
             return gitPipe.registerHeadDiff();
         }).then(() => {
-            console.log('Head commit diff registered.');
+            console.log('-> Head commit diff registered.');
             return gitPipe.parseDiffs();
         }).then(() => {
-            console.log('diffs parsed.');
-            console.log('diffs length:', gitPipe.db.diffs.length);
+            console.log('-> diffs parsed.');
+            console.log('   diffs length:', gitPipe.db.diffs.length);
             return gitPipe.save();
         }).then(saved => {
-            console.log('database saved=', saved);
+            console.log('-> database saved=', saved);
             if (saved) {
                 return gitPipe.getHeadDiffTree();
             } else {
@@ -68,8 +68,8 @@ $(document).ready(() => {
             }
         }).then(diffDir => {
             if (diffDir) {
-                console.log('last diff tree got!');
-                console.log('diffDir:', diffDir);
+                console.log('-> last diff tree got!');
+                console.log('-> diffDir:', diffDir);
                 container = d3.select('#view');
                 tree = new Tree(container, svgWidth, svgHeight);
                 tree.build(diffDir);

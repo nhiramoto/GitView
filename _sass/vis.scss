@@ -5,19 +5,10 @@
 }
 
 .node {
-  cursor: pointer;
-  stroke: #505050;
-  stroke-width: 1.5px;
   -webkit-transition: stroke .3s ease, stroke-width .3s ease;
   &:hover {
       stroke: steelblue;
       stroke-width: 2.5px;
       -webkit-transition: stroke .5s ease, stroke-width .5s ease;
   }
-}
-
-.link {
-  fill: none;
-  stroke: #505050;
-  stroke-width: 1.5px;
 }
