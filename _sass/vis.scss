@@ -4,11 +4,28 @@
     }
 }
 
-.node {
-  -webkit-transition: stroke .3s ease, stroke-width .3s ease;
-  &:hover {
-      stroke: steelblue;
-      stroke-width: 2.5px;
-      -webkit-transition: stroke .5s ease, stroke-width .5s ease;
-  }
+.node circle {
+    stroke: #505050;
+    stroke-width: 1.5px;
+    cursor: pointer;
+    -webkit-transition: stroke .3s ease, stroke-width .3s ease;
+    &:hover {
+        stroke: steelblue;
+        stroke-width: 2.5px;
+        -webkit-transition: stroke .5s ease, stroke-width .5s ease;
+    }
+}
+
+.node-label {
+    font-family: sans-serif;
+    font-size: 10px;
+    pointer-events: none;
+    &:hover {
+        stroke: black;
+        stroke-width: 1;
+    }
+}
+
+.link {
+    stroke: #ccc;
 }

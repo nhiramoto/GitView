@@ -482,6 +482,7 @@ GitPipe.prototype.createDirectory = function (commit, dirPath, child) {
                             foundDirRec.statistic.modified++;
                         }
                     } else {
+                        console.log(foundDirRec.path + ' statistic:', foundDirRec.statistic);
                         foundDirRec.statistic.added += child.statistic.added;
                         foundDirRec.statistic.deleted += child.statistic.deleted;
                         foundDirRec.statistic.modified += child.statistic.modified;

@@ -136,6 +136,15 @@ Tree.prototype.radius = function (d) {
         return Math.sqrt(d.data.blocks.length) * 5 + 5;
     }
 };
+
+Tree.prototype.nodeOpacity = function (d) {
+    let count = d.data.statistic.added + d.data.statistic.deleted + d.data.statistic.modified;
+    if (count === 0) {
+        return '0.5';
+    } else {
+        return '1';
+    }
+};
 //=============== Attributes ===============
 
 /**
@@ -197,12 +206,12 @@ Tree.prototype.update = function () {
         .attr('class', 'link')
         .style('stroke', '#505050')
         .style('stroke-width', '1.5px')
-        .style('fill', 'none');
+        .style('fill', 'none')
     this.linkEnter
-        .style('opacity', 0)
+        .style('stroke-opacity', 0)
         .transition()
             .duration(100)
-            .style('opacity', 1);
+            .style('stroke-opacity', d => this.nodeOpacity(d.target));
 
     this.linkSvg = this.linkEnter.merge(this.linkSvg);
 
@@ -219,15 +228,18 @@ Tree.prototype.update = function () {
     this.nodeEnter = this.nodeSvg.enter()
         .append('g')
             .attr('class', 'node')
+            .style('opacity', d => this.nodeOpacity(d))
             .on('click', d => this.click(d))
             .on('hover', d => this.hover(d))
             .call(drag);
+    this.nodeEnter.append('text')
+        .attr('class', 'node-label')
+        .text(d => d.data.name)
+        .attr('dx', d => this.radius(d) + 5)
+        .attr('dy', d => this.radius(d) + 5);
     this.nodeEnter.append('circle')
         .attr('r', d => this.radius(d))
-        .style('stroke', '#505050')
-        .style('stroke-width', '1.5px')
         .style('fill', d => this.color(d))
-        .style('cursor', 'pointer')
         .style('opacity', 0)
         .transition()
             .duration(100)
