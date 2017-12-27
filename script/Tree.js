@@ -74,6 +74,7 @@ Tree.prototype.click = function (d) {
         d._children = null;
     } else {
     }
+    console.log('id:', d.data.id);
     console.log('path:', d.data.path);
     console.log('statistic:', d.data.statistic);
     this.update();
@@ -81,6 +82,9 @@ Tree.prototype.click = function (d) {
 };
 
 Tree.prototype.hover = function (d) {
+    d3.select(d).transition()
+        .duration(300)
+        .style('opacity', 1);
 };
 
 Tree.prototype.dragstarted = function (d) {
@@ -140,7 +144,7 @@ Tree.prototype.radius = function (d) {
 Tree.prototype.nodeOpacity = function (d) {
     let count = d.data.statistic.added + d.data.statistic.deleted + d.data.statistic.modified;
     if (count === 0) {
-        return '0.5';
+        return '0.3';
     } else {
         return '1';
     }
@@ -171,7 +175,7 @@ Tree.prototype.build = function (data) {
     console.log('root:', this.root);
     this.simulation
         .force('link', d3.forceLink().strength(0.8).id(d => d.id))
-        .force('charge', d3.forceManyBody().strength(-200).distanceMax(300).distanceMin(30))
+        .force('charge', d3.forceManyBody().strength(-100).distanceMax(300).distanceMin(30))
         .force('center', d3.forceCenter(this.width / 2, this.height / 2))
         .force('collide', d3.forceCollide().radius((d) => this.radius(d) - 2))
         .on('tick', () => this.ticked());
@@ -217,6 +221,10 @@ Tree.prototype.update = function () {
 
     this.nodeSvg = this.nodeLayer.selectAll('.node')
         .data(this.nodes, d => d.data.id);
+    this.nodeSvg
+        .transition()
+            .duration(500)
+            .style('opacity', d => this.nodeOpacity(d));
     this.nodeSvg.selectAll('circle')
         .style('fill', d => this.color(d));
     this.nodeSvg.exit()

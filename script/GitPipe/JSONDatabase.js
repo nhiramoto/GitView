@@ -282,7 +282,8 @@ JSONDatabase.prototype.findEntry = function (entryId) {
  */
 JSONDatabase.prototype.hierarchize = function (rootId) {
     let root = this.findEntry(rootId);
-    console.assert(root != undefined, 'JSONDatabase#hierarchize: Error - Entry not found (loose id).');
+    console.log('> hierarchize: ', root);
+    console.assert(root != undefined, '[JSONDatabase#hierarchize] Error: Entry not found (loose id).');
     if (root.isDirectory()) {
         let entriesId = root.entriesId;
         root.entries = [];
@@ -313,17 +314,18 @@ JSONDatabase.prototype.mergeDirectories = function (dir1, dir2) {
     } else {
         if (dir1.name.trim() === dir2.name.trim()) {
             let mergedDir = new JSONDatabase.DirectoryRecord();
-            let toMergeDir1 = dir1.entries.filter(e1 => e1.isDirectory() && dir2.entries.map(e2 => e2.name).includes(e1.name));
+            let toMergeDir1 = dir1.entries.filter(e1 => e1.isDirectory() && dir2.entries.filter(ef2 => ef2.isDirectory).map(e2 => e2.name).includes(e1.name));
             let toMergeDir2 = dir2.entries.filter(e2 => e2.isDirectory() && toMergeDir1.map(e1 => e1.name).includes(e2.name));
             mergedDir.id = dir1.id + ':' + dir2.id;
             mergedDir.name = dir1.name;
-            mergedDir.path = dir2.path;
-            mergedDir.statistic = new JSONDatabase.Statistic(dir1.added + dir2.added, dir1.deleted + dir2.deleted, dir1.modified + dir2.modified);
-            mergedDir.entries = dir1.entries.filter(e1 => !toMergeDir1.includes(e1)).concat(dir2.entries.filter(e2 => !toMergeDir2.includes(e2)));
+            mergedDir.path = dir1.path;
+            mergedDir.statistic =
+                new JSONDatabase.Statistic(dir1.statistic.added + dir2.statistic.added, dir1.statistic.deleted + dir2.statistic.deleted, dir1.statistic.modified + dir2.statistic.modified);
+            mergedDir.entries = dir1.entries.filter(e1 => !toMergeDir1.includes(e1)).concat(dir2.entries.filter(e2 => !toMergeDir2.includes(e2) && !toMergeDir1.includes(e2)));
             toMergeDir1.forEach(e1 => {
                 let e2 = toMergeDir2.find(v => v.name === e1.name);
-                let mergedEntries = this.mergeDirectories(e1, e2);
                 console.assert(e1.isDirectory() && e2.isDirectory(), '[JSONDatabase#mergeDirectories] Error: Entries is not directories.');
+                let mergedEntries = this.mergeDirectories(e1, e2);
                 mergedDir.entries.push(mergedEntries);
             });
             return mergedDir;
