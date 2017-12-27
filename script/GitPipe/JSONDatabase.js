@@ -71,7 +71,6 @@ JSONDatabase.prototype.saveToDisk = function () {
         });
     }
     this.saved = !error;
-    console.log('< saveToDisk()');
     return this.saved;
 };
 
@@ -282,7 +281,6 @@ JSONDatabase.prototype.findEntry = function (entryId) {
  */
 JSONDatabase.prototype.hierarchize = function (rootId) {
     let root = this.findEntry(rootId);
-    console.log('> hierarchize: ', root);
     console.assert(root != undefined, '[JSONDatabase#hierarchize] Error: Entry not found (loose id).');
     if (root.isDirectory()) {
         let entriesId = root.entriesId;

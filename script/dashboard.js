@@ -64,6 +64,7 @@ $(document).ready(() => {
             if (saved) {
                 return gitPipe.getHeadDiffTree();
             } else {
+                console.error('Database not saved.');
                 return new Promise(resolve => resolve(null));
             }
         }).then(diffDir => {
@@ -74,7 +75,7 @@ $(document).ready(() => {
                 tree = new Tree(container, svgWidth, svgHeight);
                 tree.build(diffDir);
             } else {
-                console.error('Error: diffDir is null.');
+                console.error('diffDir is null.');
             }
         }).catch(err => {
             if (err) console.error('[dashboard.js] ', err);

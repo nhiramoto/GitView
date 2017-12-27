@@ -45,7 +45,7 @@ GitPipe.prototype.openRepository = function (repositoryPath) {
         this.db.setRepository(repoRec);
         return dbPath;
     }).catch(err => {
-        if (err) console.log('Error:', err);
+        if (err) console.error('Error:', err);
     });
 };
 
@@ -190,28 +190,39 @@ GitPipe.prototype.parseDiffs = function () {
  */
 GitPipe.prototype.parseDiff = function (oldCommit, recentCommit, gitDiff) {
     return gitDiff.patches().then(patches => {
-        let parsePatchPromises = [];
-        patches.forEach(patch => {
-            let prom = this.parsePatch(oldCommit, recentCommit, patch);
-            parsePatchPromises.push(prom);
-        });
-        return Promise.all(parsePatchPromises);
-    }).then(dirRecs => {
-        let f = dirRecs.filter(d => d.path === '.');
-        console.assert(f.length === dirRecs.length, 'GitPipe#parseDiff: Error - Returned directories is not all root.');
-        return dirRecs[0];
+        return this.parsePatches(oldCommit, recentCommit, patches);
     }).catch(err => {
         console.error(err);
     });
 };
 
 /**
+ * Chama parsePatch syncronamente entre os elementos de patch.
+ * @param {Git.Commit} oldCommit Commit mais antigo do diff.
+ * @param {Git.Commit} recentCommit Commit mais recent do diff.
+ * @param {Array<Git.Patch>} patches Lista de patches a serem analisados.
+ * @return {Promise<JSONDatabase.DirectoryRecord} Retorna o registro do
+ *   diretório raíz.
+ */
+GitPipe.prototype.parsePatches = function (oldCommit, recentCommit, patches) {
+    let patch = patches.shift();
+    return this.parsePatch(oldCommit, recentCommit, patch).then(dirRec => {
+        if (patches.length <= 0) {
+            return dirRec;
+        } else {
+            return this.parsePatches(oldCommit, recentCommit, patches);
+        }
+    });
+};
+
+/**
  * Analisa o objeto patch e registra os diretórios e arquivos
  * com o estado da modificação.
- * @param {Git.Commit} oldCommit
- * @param {Git.Commit} recentCommit
- * @param {Git.ConvenientPatch} patch
- * @return {Array<JSONDatabase.DirectoryRecord>}
+ * @param {Git.Commit} oldCommit Commit mais antigo do diff.
+ * @param {Git.Commit} recentCommit Commit mais recent do diff.
+ * @param {Git.ConvenientPatch} patch Patch a ser analisado.
+ * @return {Array<JSONDatabase.DirectoryRecord>} Retorna o registro do
+ *   diretório raíz criado.
  */
 GitPipe.prototype.parsePatch = function (oldCommit, recentCommit, patch) {
     return this.createFile(patch).then(child => {
@@ -221,9 +232,9 @@ GitPipe.prototype.parsePatch = function (oldCommit, recentCommit, patch) {
 };
 
 /**
- * Cria registro do arquivo relacionado ao patch.
+ * Cria registro do arquivo relacionado ao patch e adiciona à base de dados.
  * @param  {Git.ConvenientPatch} patch - Objeto patch com as modificações do arquivo.
- * @return {Promise} Um promise que retorna o registro do arquivo criado.
+ * @return {Promise} Retorna o registro do arquivo criado.
  */
 GitPipe.prototype.createFile = function (patch) {
     let newFileId = patch.newFile().id().toString();
@@ -283,6 +294,11 @@ GitPipe.prototype.createFile = function (patch) {
     });
 };
 
+/**
+ * Analisa e cria o registro das linhas do patch relacionado.
+ * @param {JSONDatabase.FileRecord} fileRec Arquivo onde as linhas criadas serão associadas.
+ * @param {Array<Git.DiffLine>} lines Conjunto das linhas.
+ */
 GitPipe.prototype.parseLines = function(fileRec, lines) {
     //console.log('> parseLines');
     let addedLines = [];
@@ -420,7 +436,7 @@ GitPipe.prototype.parseLines = function(fileRec, lines) {
 };
 
 /**
- * Cria registro de diretórios recursivamente (dos filhos à raiz).
+ * Cria registro dos diretórios recursivamente (dos filhos à raiz).
  * @param {Git.Commit} oldCommit - Recupera objetos tree mais antigos pelo path
  * @param {Git.Commit} recentCommit - Recupera objetos tree mais recentes pelo path
  * @param {String} dirPath - Caminho do diretório a ser criado/atualizado.
@@ -512,7 +528,7 @@ GitPipe.prototype.createDirectory = function (oldCommit, recentCommit, dirPath, 
                             foundDirRec.statistic.modified++;
                         }
                     } else {
-                        console.log(foundDirRec.path + ' statistic:', foundDirRec.statistic);
+                        //console.log(foundDirRec.path + ' statistic:', foundDirRec.statistic);
                         foundDirRec.statistic.added += child.statistic.added;
                         foundDirRec.statistic.deleted += child.statistic.deleted;
                         foundDirRec.statistic.modified += child.statistic.modified;
@@ -569,38 +585,48 @@ GitPipe.prototype.getHeadDiffTree = function () {
             console.error('[GitPipe#getHeadDiffTree] Error: Repository not opened.');
             return null;
         } else {
-            //console.log('  -> repoRec:', repoRec)
             let headId = repoRec.head;
             let commit = this.db.findCommit(headId);
-            //console.log('  -> head commit:', commit);
+            console.log('  -> head commit:', commit);
             let parentIds = commit.parents;
-            let _parentId = parentIds[0];
-            //console.log('    -> parentId:', _parentId);
-            let diff = this.db.findDiff(_parentId, headId);
-            //console.log('    -> diff:', diff);
-            console.assert(diff != null, '[GitPipe#getHeadDiffTree] Error: head commit diff is null.');
-            let rootDirId = diff.rootDirId;
-            //console.log('    -> rootDirId:', rootDirId);
-            let diffDir = this.db.hierarchize(rootDirId);
-            console.assert(diffDir != null, '[GitPipe#getHeadDiffTree] Error: diffDir is null.');
-            //console.log('    -> diffDir:', diffDir);
+            let diff = null;
+            let diffDir = null;
+            let rootDirId = null;
             let rootDir = null;
-            parentIds.slice(1).forEach(parentId => {
+            parentIds.forEach(parentId => {
                 //console.log('    -> parentId:', parentId);
                 diff = this.db.findDiff(parentId, headId);
                 //console.log('    -> diff:', diff);
-                // diff == null -> There is no changes.
-                if (diff != null) {
+                if (diff != undefined) {
                     rootDirId = diff.rootDirId;
                     //console.log('    -> rootDirId:', rootDirId);
-                    rootDir = this.db.hierarchize(rootDirId);
-                    console.assert(rootDir != null, '[GitPipe#getHeadDiffTree] Error: rootDir is null.');
-                    //console.log('    -> rootDir:', rootDir);
-                    diffDir = this.db.mergeDirectories(diffDir, rootDir);
-                    console.assert(diffDir != null, '[GitPipe#getHeadDiffTree] Error: diffDir is null.');
-                    //console.log('    -> diffDir:', diffDir);
+                    let ids = rootDirId.split(':');
+                    if (ids[0] !== ids[1]) {
+                        if (diffDir != null) {
+                            rootDir = this.db.hierarchize(rootDirId);
+                            console.assert(rootDir != null, '[GitPipe#getHeadDiffTree] Error: rootDir is null.');
+                            //console.log('    -> rootDir:', rootDir);
+                            diffDir = this.db.mergeDirectories(diffDir, rootDir);
+                            console.assert(diffDir != null, '[GitPipe#getHeadDiffTree] Error: diffDir is null.');
+                            //console.log('    -> diffDir:', diffDir);
+                        } else {
+                            diffDir = this.db.hierarchize(rootDirId);
+                            console.assert(diffDir != null, '[GitPipe#getHeadDiffTree] Error: diffDir is null.');
+                        }
+                    } else {
+                        console.log('Unmodified patches, ignoring.');
+                    }
                 }
             });
+            if (diffDir == null) {
+                console.log('There is no changes.');
+                diff = this.db.findDiff(parentIds[0], headId);
+                if (diff != undefined) {
+                    rootDirId = diff.rootDirId;
+                    diffDir = this.db.hierarchize(rootDirId);
+                    console.assert(diffDir != null, '[GitPipe#getHeadDiffTree] Error: diffDir is null.');
+                }
+            }
             return diffDir;
         }
     }
