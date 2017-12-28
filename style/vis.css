@@ -2,16 +2,55 @@
   background: -webkit-radial-gradient(white, lightgray);
 }
 
+.node {
+  -webkit-transition: opacity .5s ease;
+}
+.node text {
+  -webkit-transition: font-size .5s ease;
+}
+.node.focused {
+  opacity: 1 !important;
+  -webkit-transition: opacity .3s ease;
+}
+.node.focused text {
+  font-size: 20px;
+  -webkit-transition: font-size .3s ease;
+}
+.node.node-root {
+  fill: #555;
+}
+.node.node-rootCollapsed {
+  fill: #222;
+}
+.node.node-collapsed {
+  fill: #3182bd;
+}
+.node.node-inner {
+  fill: white;
+}
+.node.node-added {
+  fill: #2fe2a1;
+}
+.node.node-deleted {
+  fill: #d15375;
+}
+.node.node-modified {
+  fill: #dbd825;
+}
+.node.node-unmodified {
+  fill: #7f58d3;
+}
+
 .node circle {
   stroke: #505050;
   stroke-width: 1.5px;
   cursor: pointer;
-  -webkit-transition: stroke .3s ease, stroke-width .3s ease;
+  -webkit-transition: stroke .5s ease, stroke-width .5s ease;
 }
 .node circle:hover {
   stroke: steelblue;
   stroke-width: 2.5px;
-  -webkit-transition: stroke .5s ease, stroke-width .5s ease;
+  -webkit-transition: stroke .3s ease, stroke-width .3s ease;
 }
 
 .node-label {

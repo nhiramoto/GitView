@@ -467,6 +467,26 @@ JSONDatabase.FileRecord = function () {
 JSONDatabase.FileRecord.prototype = Object.create(JSONDatabase.EntryRecord.prototype);
 JSONDatabase.FileRecord.constructor = JSONDatabase.FileRecord;
 
+JSONDatabase.FileRecord.prototype.isAdded = function () {
+    return this.status === JSONDatabase.STATUS.ADDED;
+};
+
+JSONDatabase.FileRecord.prototype.isDeleted = function () {
+    return this.status === JSONDatabase.STATUS.DELETED;
+};
+
+JSONDatabase.FileRecord.prototype.isModified = function () {
+    return this.status === JSONDatabase.STATUS.MODIFIED;
+};
+
+JSONDatabase.FileRecord.prototype.isUnmodified = function () {
+    return this.status === JSONDatabase.STATUS.UNMODIFIED;
+};
+
+JSONDatabase.FileRecord.prototype.isMoved = function () {
+    return this.status === JSONDatabase.STATUS.MOVED;
+};
+
 JSONDatabase.FileRecord.prototype.addBlock = function (oldLines, newLines, status) {
     let blockRec = new JSONDatabase.BlockRecord();
     blockRec.index = ++this.lastBlockIndex;
@@ -493,6 +513,26 @@ JSONDatabase.BlockRecord = function () {
     this.status = -1;
     this.newLines = null;
     this.oldLines = null;
+};
+
+JSONDatabase.BlockRecord.prototype.isAdded = function () {
+    return this.status === JSONDatabase.STATUS.ADDED;
+};
+
+JSONDatabase.BlockRecord.prototype.isDeleted = function () {
+    return this.status === JSONDatabase.STATUS.DELETED;
+};
+
+JSONDatabase.BlockRecord.prototype.isModified = function () {
+    return this.status === JSONDatabase.STATUS.MODIFIED;
+};
+
+JSONDatabase.BlockRecord.prototype.isUnmodified = function () {
+    return this.status === JSONDatabase.STATUS.UNMODIFIED;
+};
+
+JSONDatabase.BlockRecord.prototype.isMoved = function () {
+    return this.status === JSONDatabase.STATUS.MOVED;
 };
 
 /**

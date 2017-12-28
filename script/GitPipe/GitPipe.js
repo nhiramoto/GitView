@@ -227,7 +227,7 @@ GitPipe.prototype.parsePatches = function (oldCommit, recentCommit, patches) {
 GitPipe.prototype.parsePatch = function (oldCommit, recentCommit, patch) {
     return this.createFile(patch).then(child => {
         let dirPath = path.dirname(child.path);
-        return this.createDirectory(oldCommit, recentCommit, dirPath, child);
+        return this.createDirectory(oldCommit, recentCommit, dirPath, child, new JSONDatabase.Statistic(0, 0, 0));
     });
 };
 
@@ -441,9 +441,10 @@ GitPipe.prototype.parseLines = function(fileRec, lines) {
  * @param {Git.Commit} recentCommit - Recupera objetos tree mais recentes pelo path
  * @param {String} dirPath - Caminho do diretório a ser criado/atualizado.
  * @param {JSONDatabase.EntryRecord} child - Filho do diretório a ser criado.
+ * @param {JSONDatabase.Statistic} carryStat Utilizado para atualizar estatísticas dos diretórios já existentes.
  * @return {JSONDatabase.DirectoryRecord} O último diretório criado (diretório raíz).
  */
-GitPipe.prototype.createDirectory = function (oldCommit, recentCommit, dirPath, child) {
+GitPipe.prototype.createDirectory = function (oldCommit, recentCommit, dirPath, child, carryStat) {
     if (dirPath.length <= 0) {
         //console.log('[GitPipe#createDirectory] Invalid dirPath, ignoring directory: "' + dirPath + '"');
         return new Promise(resolve => resolve(null));
@@ -484,12 +485,12 @@ GitPipe.prototype.createDirectory = function (oldCommit, recentCommit, dirPath, 
                 newDirRec.name = isRoot ? '' : path.basename(dirPath);
                 newDirRec.path = dirPath;
                 newDirRec.statistic = new JSONDatabase.Statistic(0, 0, 0);
-                if (child.type === JSONDatabase.ENTRYTYPE.FILE) {
-                    if (child.status === JSONDatabase.STATUS.ADDED) {
+                if (child.isFile()) {
+                    if (child.isAdded()) {
                         newDirRec.statistic.added++;
-                    } else if (child.status === JSONDatabase.STATUS.DELETED) {
+                    } else if (child.isDeleted()) {
                         newDirRec.statistic.deleted++;
-                    } else if (child.status === JSONDatabase.STATUS.MODIFIED) {
+                    } else if (child.isModified()) {
                         newDirRec.statistic.modified++;
                     }
                 } else {
@@ -503,7 +504,7 @@ GitPipe.prototype.createDirectory = function (oldCommit, recentCommit, dirPath, 
             } else { // Diretório já existe, atualiza-o.
                 //console.log('    Directory found ' + dirPath + ' entriesId: ' + foundDirRec.entriesId);
                 // --- By id ---
-                let foundEntry = foundDirRec.entriesId.find(e => e.id === child.id);
+                let foundEntryId = foundDirRec.entriesId.find(eid => (eid === child.id));
                 // --- By name ---
                 //let foundEntry = null;
                 //for (let i = 0; i < foundDirRec.entriesId.length; i++) {
@@ -518,31 +519,34 @@ GitPipe.prototype.createDirectory = function (oldCommit, recentCommit, dirPath, 
                 //    }
                 //}
                 //console.log('      -> foundEntry:', foundEntry);
-                if (foundEntry == undefined) { // Ainda não existe entry
+                if (foundEntryId == undefined) { // Ainda não existe entry
                     if (child.isFile()) {
-                        if (child.status === JSONDatabase.STATUS.ADDED) {
-                            foundDirRec.statistic.added++;
-                        } else if (child.status === JSONDatabase.STATUS.DELETED) {
-                            foundDirRec.statistic.deleted++;
-                        } else if (child.status === JSONDatabase.STATUS.MODIFIED) {
-                            foundDirRec.statistic.modified++;
+                        if (child.isAdded()) {
+                            carryStat.added++;
+                        } else if (child.isDeleted()) {
+                            carryStat.deleted++;
+                        } else if (child.isModified()) {
+                            carryStat.modified++;
                         }
                     } else {
                         //console.log(foundDirRec.path + ' statistic:', foundDirRec.statistic);
-                        foundDirRec.statistic.added += child.statistic.added;
-                        foundDirRec.statistic.deleted += child.statistic.deleted;
-                        foundDirRec.statistic.modified += child.statistic.modified;
+                        carryStat.added += child.statistic.added;
+                        carryStat.deleted += child.statistic.deleted;
+                        carryStat.modified += child.statistic.modified;
                     }
                     //console.log('      Entry' + child.path + ' doesnt exists yet, adding to found dir ' + dirPath);
                     foundDirRec.entriesId.push(child.id);
                 }
+                foundDirRec.statistic.added += carryStat.added;
+                foundDirRec.statistic.deleted += carryStat.deleted;
+                foundDirRec.statistic.modified += carryStat.modified;
                 child = foundDirRec;
             }
             dirPath = path.dirname(dirPath);
             if (isRoot) {
                 return child;
             } else {
-                return this.createDirectory(oldCommit, recentCommit, dirPath, child);
+                return this.createDirectory(oldCommit, recentCommit, dirPath, child, carryStat);
             }
         });
     }
@@ -593,6 +597,7 @@ GitPipe.prototype.getHeadDiffTree = function () {
             let diffDir = null;
             let rootDirId = null;
             let rootDir = null;
+            let count = 0;
             parentIds.forEach(parentId => {
                 //console.log('    -> parentId:', parentId);
                 diff = this.db.findDiff(parentId, headId);
@@ -602,6 +607,7 @@ GitPipe.prototype.getHeadDiffTree = function () {
                     //console.log('    -> rootDirId:', rootDirId);
                     let ids = rootDirId.split(':');
                     if (ids[0] !== ids[1]) {
+                        count++;
                         if (diffDir != null) {
                             rootDir = this.db.hierarchize(rootDirId);
                             console.assert(rootDir != null, '[GitPipe#getHeadDiffTree] Error: rootDir is null.');
@@ -618,6 +624,7 @@ GitPipe.prototype.getHeadDiffTree = function () {
                     }
                 }
             });
+            console.log('-> Merged ' + count + ' directories!');
             if (diffDir == null) {
                 console.log('There is no changes.');
                 diff = this.db.findDiff(parentIds[0], headId);

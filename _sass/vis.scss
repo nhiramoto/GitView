@@ -4,15 +4,54 @@
     }
 }
 
+.node {
+    -webkit-transition: opacity .5s ease;
+    text {
+        -webkit-transition: font-size .5s ease;
+    }
+    &.focused {
+        opacity: 1 !important;
+        -webkit-transition: opacity .3s ease;
+        text {
+            font-size: 20px;
+            -webkit-transition: font-size .3s ease;
+        }
+    }
+    &.node-root {
+        fill: #555;
+    }
+    &.node-rootCollapsed {
+        fill: #222;
+    }
+    &.node-collapsed {
+        fill: #3182bd;
+    }
+    &.node-inner {
+        fill: white;
+    }
+    &.node-added {
+        fill: #2fe2a1;
+    }
+    &.node-deleted {
+        fill: #d15375;
+    }
+    &.node-modified {
+        fill: #dbd825;
+    }
+    &.node-unmodified {
+        fill: #7f58d3;
+    }
+}
+
 .node circle {
     stroke: #505050;
     stroke-width: 1.5px;
     cursor: pointer;
-    -webkit-transition: stroke .3s ease, stroke-width .3s ease;
+    -webkit-transition: stroke .5s ease, stroke-width .5s ease;
     &:hover {
         stroke: steelblue;
         stroke-width: 2.5px;
-        -webkit-transition: stroke .5s ease, stroke-width .5s ease;
+        -webkit-transition: stroke .3s ease, stroke-width .3s ease;
     }
 }
 
