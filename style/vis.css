@@ -16,28 +16,40 @@
   font-size: 20px;
   -webkit-transition: font-size .3s ease;
 }
-.node.node-root {
+
+.node-root circle {
   fill: #555;
+  stroke-width: 1.5px;
 }
-.node.node-rootCollapsed {
+
+.node-rootCollapsed circle {
   fill: #222;
+  stroke-width: 3px !important;
 }
-.node.node-collapsed {
+
+.node-collapsed circle {
   fill: #3182bd;
+  stroke-width: 3px !important;
 }
-.node.node-inner {
+
+.node-inner circle {
   fill: white;
+  stroke-width: 1.5px;
 }
-.node.node-added {
+
+.node-added circle {
   fill: #2fe2a1;
 }
-.node.node-deleted {
+
+.node-deleted circle {
   fill: #d15375;
 }
-.node.node-modified {
+
+.node-modified circle {
   fill: #dbd825;
 }
-.node.node-unmodified {
+
+.node-unmodified circle {
   fill: #7f58d3;
 }
 
@@ -64,7 +76,9 @@
 }
 
 .link {
-  stroke: #ccc;
+  stroke: #505050;
+  stroke-width: 1.5px;
+  fill: none;
 }
 
 /*# sourceMappingURL=vis.css.map */

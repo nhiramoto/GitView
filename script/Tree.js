@@ -30,6 +30,9 @@ function Tree(container, width, height) {
 
     // Label show only on hover
     this.nodeHoverLabel = true;
+
+    // Default depth to collapse nodes
+    this.defaultDepth = 3;
 }
 
 Tree.prototype.zoomed = function () {
@@ -53,13 +56,25 @@ Tree.prototype.ticked = function () {
 Tree.prototype.flatten = function (root) {
     let nodes = [], i = 0;
     function recurse(node) {
-        if (node.children) node.children.forEach(recurse);
+        if (node.children) {
+            node.children.forEach(recurse);
+        }
         if (!node.id) node.id = ++i;
         else ++i;
         nodes.push(node);
     }
     recurse(root);
     return nodes;
+};
+
+Tree.prototype.moveChildren = function (node) {
+    if (node.children) {
+        node.children.forEach(c => this.moveChildren(c));
+        if (node.depth >= this.defaultDepth) {
+            node._children = node.children;
+            node.children = null;
+        }
+    }
 };
 
 //================ Event Handlers ================
@@ -74,9 +89,7 @@ Tree.prototype.click = function (d) {
         d._children = null;
     } else {
     }
-    console.log('id:', d.data.id);
-    console.log('path:', d.data.path);
-    console.log('statistic:', d.data.statistic);
+    console.log('d:', d);
     this.update();
     this.simulation.restart();
 };
@@ -119,9 +132,9 @@ Tree.prototype.stylize = function (d, i) {
     d3.select(this).classed('node-unmodified', false);
     if (d.parent == null) { // Root node
         if (d.children != null) {
-            d3.select(this).classed('node-root', true);
+            d3.select(this).classed('node-root', true).style('fill', '#555');
         } else if (d._children) {
-            d3.select(this).classed('node-rootCollapsed', true);
+            d3.select(this).classed('node-rootCollapsed', true).style('fill', 'red');
         }
     } else if (d._children != null) { // Collapsed node
         d3.select(this).classed('node-collapsed', true);
@@ -140,6 +153,15 @@ Tree.prototype.stylize = function (d, i) {
     }
 };
 
+Tree.prototype.opacity = function (d) {
+    let stat = d.data.statistic.added + d.data.statistic.deleted + d.data.statistic.modified;
+    if (stat === 0) {
+        return 0.3;
+    } else {
+        return 1;
+    }
+};
+
 Tree.prototype.radius = function (d) {
     // By child count
     //if (d.parent == null) {
@@ -154,14 +176,6 @@ Tree.prototype.radius = function (d) {
     return Math.sqrt(stat) + 5;
 };
 
-Tree.prototype.nodeOpacity = function (d) {
-    let count = d.data.statistic.added + d.data.statistic.deleted + d.data.statistic.modified;
-    if (count === 0) {
-        return '0.3';
-    } else {
-        return '1';
-    }
-};
 //=============== Attributes ===============
 
 /**
@@ -185,10 +199,10 @@ Tree.prototype.load = function (dataPath) {
 Tree.prototype.build = function (data) {
     console.log('building data tree..');
     this.root = d3.hierarchy(data, d => d.entries);
-    console.log('root:', this.root);
+    this.moveChildren(this.root);
     this.simulation
         .force('link', d3.forceLink().strength(0.8).id(d => d.id))
-        .force('charge', d3.forceManyBody().strength(-100).distanceMax(300).distanceMin(30))
+        .force('charge', d3.forceManyBody().strength(-100).distanceMax(100).distanceMin(10))
         .force('center', d3.forceCenter(this.width / 2, this.height / 2))
         .force('collide', d3.forceCollide().radius((d) => this.radius(d) - 2))
         .on('tick', () => this.ticked());
@@ -212,6 +226,8 @@ Tree.prototype.update = function () {
 
     this.linkSvg = this.linkLayer.selectAll('.link')
         .data(this.links, (d) => d.target.id);
+    this.linkSvg
+        .style('stroke-opacity', d => this.opacity(d.target));
     this.linkSvg.exit()
         .transition()
             .duration(100)
@@ -220,15 +236,12 @@ Tree.prototype.update = function () {
 
     this.linkEnter = this.linkSvg.enter()
         .append('line')
-        .attr('class', 'link')
-        .style('stroke', '#505050')
-        .style('stroke-width', '1.5px')
-        .style('fill', 'none')
+        .attr('class', 'link');
     this.linkEnter
         .style('stroke-opacity', 0)
         .transition()
             .duration(100)
-            .style('stroke-opacity', d => this.nodeOpacity(d.target));
+            .style('stroke-opacity', d => this.opacity(d.target));
 
     this.linkSvg = this.linkEnter.merge(this.linkSvg);
 
@@ -237,8 +250,8 @@ Tree.prototype.update = function () {
     this.nodeSvg
         .each(this.stylize)
         .transition()
-            .duration(500)
-            .style('opacity', d => this.nodeOpacity(d));
+            .duration(100)
+            .style('opacity', d => this.opacity(d));
     this.nodeSvg.exit()
         .transition()
             .duration(100)
@@ -248,23 +261,23 @@ Tree.prototype.update = function () {
     this.nodeEnter = this.nodeSvg.enter()
         .append('g')
             .attr('class', 'node')
-            .style('opacity', d => this.nodeOpacity(d))
             .on('click', d => this.click(d))
             .on('mouseover', this.handleMouseOver)
             .on('mouseout', this.handleMouseOut)
             .call(drag);
+    this.nodeEnter
+        .each(this.stylize)
+        .style('opacity', 0)
+        .transition()
+            .duration(100)
+            .style('opacity', d => this.opacity(d));
     this.nodeEnter.append('text')
         .attr('class', 'node-label')
         .text(d => d.data.name)
         .attr('dx', d => this.radius(d) + 5)
         .attr('dy', d => this.radius(d) + 5);
     this.nodeEnter.append('circle')
-        .attr('r', d => this.radius(d))
-        .each(this.stylize)
-        .style('opacity', 0)
-        .transition()
-            .duration(100)
-            .style('opacity', 1);
+        .attr('r', d => this.radius(d));
     
     this.nodeSvg = this.nodeEnter.merge(this.nodeSvg);
 };
