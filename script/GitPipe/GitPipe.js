@@ -23,6 +23,30 @@ function GitPipe(dbPath) {
     this.diffOptions.flags = Git.Diff.OPTION.INCLUDE_UNMODIFIED;
 }
 
+GitPipe.prototype.setGitRepository = function (gitRepo) {
+    this.gitRepo = gitRepo;
+};
+
+GitPipe.prototype.getGitRepository = function () {
+    return this.gitRepo;
+};
+
+GitPipe.prototype.setDb = function (db) {
+    this.db = db;
+};
+
+GitPipe.prototype.getDb = function () {
+    return this.db;
+};
+
+GitPipe.prototype.setSelectedCommit = function (selectedCommit) {
+    this.selectedCommit = selectedCommit;
+};
+
+GitPipe.prototype.getSelectedCommit = function () {
+    return this.selectedCommit;
+};
+
 /**
  * Abre o repositório e salva na base de dados.
  * @param {String} repoPath Caminho do repositório.
@@ -92,7 +116,7 @@ GitPipe.prototype.parseCommit = function (commit) {
 /**
  * Registra o diff do commit head com seu antecessor.
  */
-GitPipe.prototype.registerHeadDiff = function () {
+GitPipe.prototype.registerHeadCommitDiff = function () {
     let repoRec = this.db.getRepository();
     let headId = repoRec.head;
     let commitRec = this.db.findCommit(headId);
@@ -645,20 +669,70 @@ GitPipe.prototype.getHeadDiffTree = function () {
     }
 };
 
-GitPipe.prototype.setGitRepository = function (gitRepo) {
-    this.gitRepo = gitRepo;
+GitPipe.prototype.selectCommit = function (commitId) {
+    let selectedCommitId = this.selectedCommit.id;
+    if (selectedCommitId != commitId) {
+        this.selectedCommit = this.db.findCommit(commitId);
+        return this.selectedCommit != undefined;
+    } else {
+        return false;
+    }
 };
 
-GitPipe.prototype.getGitRepository = function () {
-    return this.gitRepo;
+GitPipe.prototype.registerSelectedCommitDiff = function () {
+    return diffCommitWithParents(this.selectedCommit);
 };
 
-GitPipe.prototype.setDb = function (db) {
-    this.db = db;
-};
-
-GitPipe.prototype.getDb = function () {
-    return this.db;
+GitPipe.prototype.getSelectedCommitDiffTree = function () {
+    if (this.db == null) {
+        console.error('[GitPipe#getSelectedCommitDiffTree] Error: Database not set.');
+        return null;
+    } else {
+        let repoRec = this.db.getRepository();
+        if (repoRec == null) {
+            console.error('[GitPipe#getSelectedCommitDiffTree] Error: Repository not opened.');
+            return null;
+        } else {
+            let parentIds = this.selectedCommit.parents;
+            let selectedCommitId = this.selectedCommit.id;
+            let diff = null;
+            let rootDirId = null;
+            let rootDir = null;
+            let count = 0;
+            parentIds.forEach(parentId => {
+                diff = this.db.findDiff(parentId, selectedCommitId);
+                if (diff != undefined) {
+                    rootDirId = diff.rootDirId;
+                    let ids = rootDirId.split(':');
+                    if (ids[0] !== ids[1]) {
+                        count++;
+                        if (diffDir != null) {
+                            rootDir = this.db.hierarchize(rootDirId);
+                            console.assert(rootDir != null, '[GitPipe#getSelectedCommitDiffTree] Error: rootDir is null.');
+                            diffDir = this.db.mergeDirectories(diffDir, rootDir);
+                            console.assert(diffDir != null, '[GitPipe#getSelectedCommitDiffTree] Error: diffDir is null.');
+                        } else {
+                            diffDir = this.db.hierarchize(rootDirId);
+                            console.assert(diffDir != null, '[GitPipe#getSelectedCommitDiffTreel] Error: diffDir is null.');
+                        }
+                    } else {
+                        console.log('Unmodified patches, ignoring.');
+                    }
+                }
+            });
+            console.log('-> Merged ' + count + ' directories!');
+            if (diffDir == null) {
+                console.log('There is no changes.');
+                diff = this.db.findDiff(parentIds[0], selectedCommitId);
+                if (diff != undefined) {
+                    rootDirId = diff.rootDirId;
+                    diffDir = this.db.hierarchize(rootDirId);
+                    console.assert(diffDir != null, '[GitPipe#getHeadDiffTree] Error: diffDir is null.');
+                }
+            }
+            return diffDir;
+        }
+    }
 };
 
 module.exports = GitPipe;

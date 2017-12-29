@@ -25,6 +25,19 @@ body {
   font-weight: bold;
   color: white;
 }
+#mainHeader #infoButton {
+  position: absolute;
+  right: 20px;
+  top: 15px;
+  font-size: 26px;
+  color: white;
+  cursor: pointer;
+  -webkit-transition: color .5s ease;
+}
+#mainHeader #infoButton:hover {
+  color: #2d94d6;
+  -webkit-transition: color .3s ease;
+}
 
 .options {
   position: fixed;
@@ -180,16 +193,18 @@ body {
 }
 
 #info {
-  position: absolute;
+  position: fixed;
   right: 0;
-  top: 10px;
+  top: 60px;
   height: 600px;
   width: 400px;
   padding: 10px;
   border: 1px solid #DDD;
   border-radius: 3px;
+  box-shadow: -1px 0 8px rgba(10, 10, 10, 0.5);
   background: white;
-  z-index: 1;
+  opacity: 0.9;
+  z-index: 10;
 }
 #info #infoTitle {
   position: absolute;

@@ -5,6 +5,7 @@ const main = remote.require('./main');
 const globals = require('./globals');
 const GitPipe = require('./GitPipe/GitPipe');
 const Tree = require('./Tree');
+const dateFormat = require('dateformat');
 
 var repoPath = null;
 var svgWidth = 800, svgHeight = 600;
@@ -42,9 +43,10 @@ var initViz = function (repoPath) {
             let headCommitId = repoRec.head;
             let headCommit = gitPipe.db.findCommit(headCommitId);
             let headCommitDate = headCommit.date;
+            let formattedDate = dateFormat(headCommitDate, 'dd/mm/yyyy hh:MM TT');
             $('#infoTitle').text(repoName);
             $('#repoPath').text(repoPath);
-            $('#lastCommit').text(headCommitDate);
+            $('#lastCommit').text(formattedDate);
             $('#commitCount').text(commitCount);
             return gitPipe.getHeadDiffTree();
         } else {
@@ -93,8 +95,8 @@ $(document).ready(() => {
     ipcRenderer.on('getRepoPath-reply', (event, args) => {
         repoPath = args;
         console.log('repoPath:', repoPath);
-        gitPipe = new GitPipe();
-        initViz(repoPath);
+        //gitPipe = new GitPipe();
+        //initViz(repoPath);
     });
     ipcRenderer.send('getRepoPath');
 
