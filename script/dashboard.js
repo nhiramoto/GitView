@@ -12,6 +12,59 @@ var container = null;
 var tree = null;
 var gitPipe = null;
 var dbPath = null;
+var repoRec = null;
+
+var initViz = function (repoPath) {
+    if (gitPipe == null) {
+        gitPipe = new GitPipe();
+    }
+    return gitPipe.openRepository(repoPath).then(_dbPath => {
+        dbPath = _dbPath;
+        console.log('-> repository opened:', repoPath);
+        repoRec = gitPipe.db.getRepository();
+        $('#repoName').text(repoRec.name);
+        return gitPipe.parseCommitsHistory();
+    }).then(() => {
+        console.log('-> commits parsed.');
+        return gitPipe.registerHeadCommitDiff();
+    }).then(() => {
+        console.log('-> Head commit diff registered.');
+        return gitPipe.parseDiffs();
+    }).then(() => {
+        console.log('-> diffs parsed.');
+        return gitPipe.save();
+    }).then(saved => {
+        console.log('-> database saved=', saved);
+        if (saved) {
+            let repoName = repoRec.name;
+            let repoPath = repoRec.path;
+            let commitCount = repoRec.commitCount;
+            let headCommitId = repoRec.head;
+            let headCommit = gitPipe.db.findCommit(headCommitId);
+            let headCommitDate = headCommit.date;
+            $('#infoTitle').text(repoName);
+            $('#repoPath').text(repoPath);
+            $('#lastCommit').text(headCommitDate);
+            $('#commitCount').text(commitCount);
+            return gitPipe.getHeadDiffTree();
+        } else {
+            console.error('Database not saved.');
+            return new Promise(resolve => resolve(null));
+        }
+    }).then(diffDir => {
+        if (diffDir) {
+            console.log('-> last diff tree got!');
+            console.log('-> diffDir:', diffDir);
+            container = d3.select('#view');
+            tree = new Tree(container, svgWidth, svgHeight);
+            tree.build(diffDir);
+        } else {
+            console.error('diffDir is null.');
+        }
+    }).catch(err => {
+        if (err) console.error('[dashboard.js] ', err);
+    });
+};
 
 $(document).ready(() => {
     $('body').fadeIn('slow');
@@ -41,45 +94,7 @@ $(document).ready(() => {
         repoPath = args;
         console.log('repoPath:', repoPath);
         gitPipe = new GitPipe();
-        gitPipe.openRepository(repoPath).then(_dbPath => {
-            dbPath = _dbPath;
-            console.log('-> repository opened:', repoPath);
-            console.log('   database path:', dbPath);
-            let repoRec = gitPipe.db.getRepository();
-            $('#repoName').text(repoRec.name);
-            return gitPipe.parseCommitsHistory();
-        }).then(() => {
-            console.log('-> commits parsed.');
-            console.log('   commit count:', gitPipe.db.repository.commitCount);
-            return gitPipe.registerHeadDiff();
-        }).then(() => {
-            console.log('-> Head commit diff registered.');
-            return gitPipe.parseDiffs();
-        }).then(() => {
-            console.log('-> diffs parsed.');
-            console.log('   diffs length:', gitPipe.db.diffs.length);
-            return gitPipe.save();
-        }).then(saved => {
-            console.log('-> database saved=', saved);
-            if (saved) {
-                return gitPipe.getHeadDiffTree();
-            } else {
-                console.error('Database not saved.');
-                return new Promise(resolve => resolve(null));
-            }
-        }).then(diffDir => {
-            if (diffDir) {
-                console.log('-> last diff tree got!');
-                console.log('-> diffDir:', diffDir);
-                container = d3.select('#view');
-                tree = new Tree(container, svgWidth, svgHeight);
-                tree.build(diffDir);
-            } else {
-                console.error('diffDir is null.');
-            }
-        }).catch(err => {
-            if (err) console.error('[dashboard.js] ', err);
-        });
+        initViz(repoPath);
     });
     ipcRenderer.send('getRepoPath');
 

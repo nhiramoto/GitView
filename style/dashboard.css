@@ -135,7 +135,6 @@ body {
   right: 0;
   padding: 0;
   width: 100%;
-  background-color: green;
 }
 
 #sidebar {
@@ -164,8 +163,6 @@ body {
   position: absolute;
   margin: 0;
   padding: 0;
-  left: 200px;
-  right: 0;
   top: 0;
   bottom: 0;
   min-width: 300px;
@@ -186,8 +183,8 @@ body {
   position: absolute;
   right: 0;
   top: 10px;
-  height: 500px;
-  width: 350px;
+  height: 600px;
+  width: 400px;
   padding: 10px;
   border: 1px solid #DDD;
   border-radius: 3px;

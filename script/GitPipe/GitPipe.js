@@ -12,6 +12,7 @@ const JSONDatabase = require('./JSONDatabase');
  */
 function GitPipe(dbPath) {
     this.gitRepo = null;
+    this.selectedCommit = null;
     this.diffs = [];
     if (dbPath == undefined) {
         this.db = null;
@@ -23,12 +24,12 @@ function GitPipe(dbPath) {
 }
 
 /**
- * Abre o repositório usando nodegit e salva na base de dados.
- * @param {String} repositoryPath - Caminho do repositório.
+ * Abre o repositório e salva na base de dados.
+ * @param {String} repoPath Caminho do repositório.
  * @return {Promise<String>} Promise que retorna o caminho da base de dados.
  */
-GitPipe.prototype.openRepository = function (repositoryPath) {
-    let pathToRepo = path.resolve(repositoryPath);
+GitPipe.prototype.openRepository = function (repoPath) {
+    let pathToRepo = path.resolve(repoPath);
     let repoRec = null;
     let dbPath = null;
     return Git.Repository.open(pathToRepo).then(repo => {
@@ -95,6 +96,7 @@ GitPipe.prototype.registerHeadDiff = function () {
     let repoRec = this.db.getRepository();
     let headId = repoRec.head;
     let commitRec = this.db.findCommit(headId);
+    this.selectedCommit = commitRec;
     return this.diffCommitWithParents(commitRec);
 };
 
@@ -117,6 +119,10 @@ GitPipe.prototype.diffCommitWithParents = function (commitRec) {
         parentIds.forEach(parentId => {
             let foundDiff = this.diffs.find(diff =>
                 diff.diffRec.oldCommitId === parentId && diff.diffRec.recentCommitId === commitId);
+            if (foundDiff == undefined) {
+                foundDiff = this.db.findDiff(diff =>
+                    diff.diffRec.oldCommitId === parentId && diff.diffRec.recentCommitId === commitId);
+            }
             if (foundDiff == undefined) {
                 parentRec = this.db.findCommit(parentId);
                 parentSnapshotId = parentRec.snapshotId;

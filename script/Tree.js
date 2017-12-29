@@ -202,7 +202,7 @@ Tree.prototype.build = function (data) {
     this.moveChildren(this.root);
     this.simulation
         .force('link', d3.forceLink().strength(0.8).id(d => d.id))
-        .force('charge', d3.forceManyBody().strength(-100).distanceMax(100).distanceMin(10))
+        .force('charge', d3.forceManyBody().strength(-200).distanceMax(200).distanceMin(10))
         .force('center', d3.forceCenter(this.width / 2, this.height / 2))
         .force('collide', d3.forceCollide().radius((d) => this.radius(d) - 2))
         .on('tick', () => this.ticked());
