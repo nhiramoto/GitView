@@ -150,45 +150,72 @@ body {
   width: 100%;
 }
 
-#sidebar {
+#commitBar {
   position: fixed;
   left: 0;
   top: 60px;
   margin: 0;
-  background: -webkit-linear-gradient(left, white, #DFDFDF);
-  box-shadow: 2px 0 3px rgba(10, 10, 10, 0.5);
-  width: 200px;
+  padding: 5px;
+  background: white;
+  border: 1px solid #DDD;
+  width: 250px;
   height: 100%;
   z-index: 2;
 }
-#sidebar .sidebarTitle {
-  position: absolute;
-  display: block;
+#commitBar .commitBarTitle {
   font-weight: bold;
   font-size: 18px;
+  line-height: 18px;
   text-align: center;
-  margin-top: 10px;
+  margin-top: 8px;
   margin-bottom: 10px;
-  width: 100%;
+}
+#commitBar .commit {
+  border: 1px solid #DDD;
+  border-radius: 2px;
+  background: white;
+  padding: 5px;
+  cursor: pointer;
+  -webkit-transition: background .5s ease, box-shadow .5s ease;
+  user-select: none;
+}
+#commitBar .commit .title {
+  display: block;
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+#commitBar .commit .content {
+  display: block;
+  font-weight: normal;
+  font-size: 14px;
+}
+#commitBar .commit:hover {
+  background: #EFEFEF;
+  -webkit-transition: background .3s ease;
+}
+#commitBar .commit:active {
+  box-shadow: inset 0 2px 3px rgba(10, 10, 10, 0.6);
+  -webkit-transition: box-shadow .3s ease;
 }
 
-#view {
-  position: absolute;
+.svg-container {
+  position: relative;
+  display: inline-block;
   margin: 0;
   padding: 0;
-  top: 0;
-  bottom: 0;
-  min-width: 300px;
-  min-height: 300px;
+  height: 100%;
+  width: 100%;
+  vertical-align: top;
+  overflow: hidden;
   background: white;
   z-index: 0;
 }
-#view svg {
+.svg-container .svg-content {
   position: absolute;
-  top: 30px;
-  left: 30px;
+  display: inline-block;
   box-shadow: inset 0 0 3px rgba(10, 10, 10, 0.6);
-  border-radius: 5px;
+  border-radius: 3px;
   margin: 0;
 }
 
@@ -196,8 +223,10 @@ body {
   position: fixed;
   right: 0;
   top: 60px;
+  right: -405px;
   height: 600px;
   width: 400px;
+  min-width: 0;
   padding: 10px;
   border: 1px solid #DDD;
   border-radius: 3px;
@@ -205,6 +234,7 @@ body {
   background: white;
   opacity: 0.9;
   z-index: 10;
+  -webkit-transition: right .5s ease;
 }
 #info #infoTitle {
   position: absolute;
@@ -220,6 +250,11 @@ body {
   margin-top: 60px;
   width: 100%;
   font-size: 12px;
+}
+
+#info.visible {
+  right: 0;
+  -webkit-transition: right .3s ease;
 }
 
 /*# sourceMappingURL=dashboard.css.map */

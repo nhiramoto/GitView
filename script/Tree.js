@@ -7,10 +7,12 @@ function Tree(container, width, height) {
     this.height = height;
     this.nodeRadius = 8;
     this.svg = container.append('svg')
-        .attr('width', this.width)
-        .attr('height', this.height)
-        .attr('class', 'viewSvg')
-        .call(d3.zoom().scaleExtent([1 / 2, 8]).on("zoom", () => this.zoomed()))
+        //.attr('width', this.width)
+        //.attr('height', this.height)
+        .attr('preserveAspectRatio', 'xMinYMin meet')
+        .attr('viewBox', '0 0 300 300')
+        .classed('svg-content', true)
+        .call(d3.zoom().scaleExtent([0.2, 15]).on("zoom", () => this.zoomed()))
       .append('g')
         .attr('class', 'viewG');
         //.attr('transform', 'translate(' + this.width / 2 + ',' + this.height / 2 + ')');
@@ -203,7 +205,8 @@ Tree.prototype.build = function (data) {
     this.simulation
         .force('link', d3.forceLink().strength(0.8).id(d => d.id))
         .force('charge', d3.forceManyBody().strength(-200).distanceMax(200).distanceMin(10))
-        .force('center', d3.forceCenter(this.width / 2, this.height / 2))
+        //.force('center', d3.forceCenter(this.width / 2, this.height / 2))
+        .force('center', d3.forceCenter(100, 100))
         .force('collide', d3.forceCollide().radius((d) => this.radius(d) - 2))
         .on('tick', () => this.ticked());
     this.update();

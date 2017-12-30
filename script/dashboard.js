@@ -58,7 +58,7 @@ var initViz = function (repoPath) {
             console.log('-> last diff tree got!');
             console.log('-> diffDir:', diffDir);
             container = d3.select('#view');
-            tree = new Tree(container, svgWidth, svgHeight);
+            tree = new Tree(container);
             tree.build(diffDir);
         } else {
             console.error('diffDir is null.');
@@ -92,11 +92,27 @@ $(document).ready(() => {
             });
     });
 
+    let isInfoPaneHide = false;
+    $('#infoButton').click(event => {
+        if (isInfoPaneHide) {
+            $('#info').addClass('visible');
+            $('#infoButton .fa')
+                .removeClass('fa-plus-square-o')
+                .addClass('fa-minus-square-o');
+        } else {
+            $('#info').removeClass('visible');
+            $('#infoButton .fa')
+                .removeClass('fa-minus-square-o')
+                .addClass('fa-plus-square-o');
+        }
+        isInfoPaneHide = !isInfoPaneHide;
+    });
+
     ipcRenderer.on('getRepoPath-reply', (event, args) => {
         repoPath = args;
         console.log('repoPath:', repoPath);
-        //gitPipe = new GitPipe();
-        //initViz(repoPath);
+        gitPipe = new GitPipe();
+        initViz(repoPath);
     });
     ipcRenderer.send('getRepoPath');
 
