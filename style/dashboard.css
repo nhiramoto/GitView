@@ -160,7 +160,8 @@ body {
   border: 1px solid #DDD;
   width: 250px;
   height: 100%;
-  z-index: 2;
+  overflow: scroll;
+  z-index: 0;
 }
 #commitBar .commitBarTitle {
   font-weight: bold;
@@ -170,33 +171,38 @@ body {
   margin-top: 8px;
   margin-bottom: 10px;
 }
-#commitBar .commit {
+#commitBar .commitItem {
   border: 1px solid #DDD;
   border-radius: 2px;
   background: white;
+  margin-top: 10px;
   padding: 5px;
   cursor: pointer;
   -webkit-transition: background .5s ease, box-shadow .5s ease;
   user-select: none;
 }
-#commitBar .commit .title {
+#commitBar .commitItem .title {
   display: block;
   font-weight: bold;
   font-size: 16px;
   margin-bottom: 5px;
 }
-#commitBar .commit .content {
+#commitBar .commitItem .content {
   display: block;
   font-weight: normal;
   font-size: 14px;
 }
-#commitBar .commit:hover {
+#commitBar .commitItem:hover {
   background: #EFEFEF;
   -webkit-transition: background .3s ease;
 }
-#commitBar .commit:active {
+#commitBar .commitItem:active {
   box-shadow: inset 0 2px 3px rgba(10, 10, 10, 0.6);
   -webkit-transition: box-shadow .3s ease;
+}
+
+#view {
+  left: 250px;
 }
 
 .svg-container {

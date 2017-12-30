@@ -201,4 +201,19 @@ input[type="button"].red:hover {
   transition: transform .1s linear;
 }
 
+*::-webkit-scrollbar-track {
+  border-radius: 10px;
+  background-color: #F5F5F5;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  background-color: #F5F5F5;
+}
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background-color: #8F8F8F;
+}
+
 /*# sourceMappingURL=mainStyle.css.map */

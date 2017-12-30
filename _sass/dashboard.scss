@@ -164,12 +164,12 @@ body {
     top: $headerHeight;
     margin: 0;
     padding: 5px;
-    //background: -webkit-linear-gradient(left, white, #EFEFEF);
     background: white;
     border: 1px solid $lightBorder;
     width: $commitBarWidth;
     height: 100%;
-    z-index: 2;
+    overflow: scroll;
+    z-index: 0;
     .commitBarTitle {
         font-weight: bold;
         font-size: 18px;
@@ -178,10 +178,11 @@ body {
         margin-top: 8px;
         margin-bottom: 10px;
     }
-    .commit {
+    .commitItem {
         border: 1px solid $lightBorder;
         border-radius: 2px;
         background: white;
+        margin-top: 10px;
         padding: 5px;
         cursor: pointer;
         -webkit-transition: background .5s ease, box-shadow .5s ease;
@@ -206,6 +207,10 @@ body {
             -webkit-transition: box-shadow .3s ease;
         }
     }
+}
+
+#view {
+    left: $commitBarWidth;
 }
 
 .svg-container {

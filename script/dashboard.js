@@ -14,6 +14,7 @@ var tree = null;
 var gitPipe = null;
 var dbPath = null;
 var repoRec = null;
+var commits = null;
 
 var initViz = function (repoPath) {
     if (gitPipe == null) {
@@ -63,6 +64,20 @@ var initViz = function (repoPath) {
         } else {
             console.error('diffDir is null.');
         }
+    }).then(() => {
+        $('#commitBar').children('.commitItem').remove();
+        // Adiciona lista de commits na commitBar
+        commits = gitPipe.getCommits();
+        commits.forEach(commit => {
+            let commitItem = document.createElement('div');
+            let title = document.createElement('span');
+            let content = document.createElement('span');
+            let commitId = commit.id.substring(0, 8);
+            $(title).addClass('title').text(commitId);
+            $(content).addClass('content').text(commit.message);
+            $(commitItem).addClass('commitItem').append(title).append(content);
+            $('#commitBar').append(commitItem);
+        });
     }).catch(err => {
         if (err) console.error('[dashboard.js] ', err);
     });

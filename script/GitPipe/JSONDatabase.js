@@ -146,7 +146,7 @@ JSONDatabase.prototype.getRepository = function () {
 };
 
 JSONDatabase.prototype.getCommits = function () {
-    return this.commits;
+    return this.commits.slice(0);
 };
 
 JSONDatabase.prototype.addCommit = function (commitRec) {

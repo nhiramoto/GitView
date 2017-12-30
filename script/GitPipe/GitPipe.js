@@ -669,6 +669,10 @@ GitPipe.prototype.getHeadDiffTree = function () {
     }
 };
 
+GitPipe.prototype.getCommits = function () {
+    return this.db.getCommits();
+};
+
 GitPipe.prototype.selectCommit = function (commitId) {
     let selectedCommitId = this.selectedCommit.id;
     if (selectedCommitId != commitId) {
