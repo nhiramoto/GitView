@@ -45,7 +45,7 @@ body {
     }
 }
 
-.options {
+#options {
     position: fixed;
     height: 100%;
     width: $optionWidth;
@@ -127,7 +127,7 @@ body {
             height: 2px;
             background: white;
             border-radius: 1px;
-            -webkit-transition: background .4s ease;
+            -webkit-transition: background .5s ease, width .5s ease;
         }
         &:hover {
             cursor: pointer;
@@ -138,11 +138,15 @@ body {
         }
     }
     #optionButton.active {
-        &:first-child(span) {
-            background: red;
+        span {
+            width: 50%;
+            -webkit-transition: width .3s ease;
         }
-        &:last-child(span) {
-            background: magenta;
+        span:first-child {
+            width: 100%;
+        }
+        span:last-child {
+            width: 30%;
         }
     }
 }
@@ -165,11 +169,12 @@ body {
     margin: 0;
     padding: 5px;
     background: white;
+    opacity: .8;
     border: 1px solid $lightBorder;
     width: $commitBarWidth;
     height: 100%;
     overflow: scroll;
-    z-index: 0;
+    z-index: 1;
     .commitBarTitle {
         font-weight: bold;
         font-size: 18px;
@@ -196,7 +201,8 @@ body {
         .content {
             display: block;
             font-weight: normal;
-            font-size: 14px;
+            font-size: 12px;
+            color: #555;
         }
         &:hover {
             background: #EFEFEF;
@@ -235,43 +241,52 @@ body {
     }
 }
 
-$infoWidth: 400px;
-$infoHeight: 600px;
+$infoBarWidth: 400px;
+$infoBarHeight: 600px;
 
-#info {
+#infoBar {
     position: fixed;
     right: 0;
     top: $headerHeight;
-    right: -$infoWidth - 5px;
-    height: $infoHeight;
-    width: $infoWidth;
+    right: -$infoBarWidth - 5px;
+    height: $infoBarHeight;
+    width: $infoBarWidth;
     min-width: 0;
     padding: 10px;
-    border: 1px solid $lightBorder;
+    border: 1px solid red;
     border-radius: 3px;
     box-shadow: -1px 0 8px rgba(10, 10, 10, 0.5); 
     background: white;
-    opacity: 0.9;
+    opacity: 0.8;
     z-index: 10;
     -webkit-transition: right .5s ease;
-    #infoTitle {
-        position: absolute;
+    .infoCard {
+        margin-bottom: 20px;
+        border: 1px solid pink;
+    }
+    .infoTitle {
+        //position: absolute;
         display: block;
         font-weight: bold;
-        font-size: 20px;
+        font-size: 18px;
+        line-height: 18px;
         text-align: center;
         width: 100%;
-        margin-top: 20px;
-        margin-bottom: 20px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        margin: 0;
+        border: 1px solid magenta;
     }
-    table {
-        margin-top: 60px;
+    .infoBody {
+        display: block;
+        margin-top: 10px;
         width: 100%;
         font-size: 12px;
+        border: 1px solid darkred;
     }
 }
 
-#info.visible {
+#infoBar.visible {
     right: 0;
     -webkit-transition: right .3s ease;
 }

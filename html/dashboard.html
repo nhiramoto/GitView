@@ -24,7 +24,7 @@
         <div id="mainHeader">
             <span class="title">Repositório: <span id="repoName">Nome do repositório</span></span> <span id="infoButton"><i class="fa fa-plus-square-o" aria-hidden="true"></i></span>
         </div>
-        <div class="options">
+        <div id="options">
             <div id="optionButton">
                 <span></span>
                 <span></span>
@@ -49,28 +49,72 @@
             </div>
             <div id="view" class="svg-container">
             </div>
-            <div id="info">
-                <span id="infoTitle">Nome do Repositório</span>
-                <table>
-                    <tr>
-                        <td>Local:</td>
-                        <td>
-                            <span id="repoPath"></span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Último <i>commit</i>:</td>
-                        <td>
-                            <span id="lastCommit"></span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Quantidade de <i>commits</i></td>
-                        <td>
-                            <span id="commitCount"></span>
-                        </td>
-                    </tr>
-                </table>
+            <div id="infoBar" class="visible">
+                <div id="repositoryInfo" class="infoCard">
+                    <span id="repoName" class="infoTitle">Repositório</span>
+                    <table class="infoBody">
+                        <tr>
+                            <td>Local:</td>
+                            <td>
+                                <span id="repoPath"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Último <i>commit</i>:</td>
+                            <td>
+                                <span id="lastCommit"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Quantidade de <i>commits</i></td>
+                            <td>
+                                <span id="commitCount"></span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <hr>
+                <div id="commitInfo" class="infoCard">
+                    <span id="commitMsg" class="infoTitle"><i>Commit</i></span>
+                    <table class="infoBody">
+                        <tr>
+                            <td>ID:</td>
+                            <td>
+                                <span id="commitId"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Mensagem:</td>
+                            <td>
+                                <span id="commitMessage"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Autor:</td>
+                            <td>
+                                <span id="commitAuthor"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Data:</td>
+                            <td>
+                                <span id="commitDate"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>ID do <i>Snapshot</i>:</td>
+                            <td>
+                                <span id="commitSnapshotId"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Parentes:</td>
+                            <td>
+                                <span id="commitParents"></span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

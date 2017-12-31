@@ -45,7 +45,7 @@ var initViz = function (repoPath) {
             let headCommit = gitPipe.db.findCommit(headCommitId);
             let headCommitDate = headCommit.date;
             let formattedDate = dateFormat(headCommitDate, 'dd/mm/yyyy hh:MM TT');
-            $('#infoTitle').text(repoName);
+            $('#repoName').text(repoName);
             $('#repoPath').text(repoPath);
             $('#lastCommit').text(formattedDate);
             $('#commitCount').text(commitCount);
@@ -65,6 +65,7 @@ var initViz = function (repoPath) {
             console.error('diffDir is null.');
         }
     }).then(() => {
+        // Limpa lista de commits
         $('#commitBar').children('.commitItem').remove();
         // Adiciona lista de commits na commitBar
         commits = gitPipe.getCommits();
@@ -73,8 +74,14 @@ var initViz = function (repoPath) {
             let title = document.createElement('span');
             let content = document.createElement('span');
             let commitId = commit.id.substring(0, 8);
-            $(title).addClass('title').text(commitId);
-            $(content).addClass('content').text(commit.message);
+            let commitMsg = null;
+            if (commit.message.length >= 23) {
+                commitMsg = commit.message.substring(0, 23) + '...';
+            } else {
+                commitMsg = commit.message;
+            }
+            $(title).addClass('title').text(commitMsg);
+            $(content).addClass('content').text(commit.authorEmail);
             $(commitItem).addClass('commitItem').append(title).append(content);
             $('#commitBar').append(commitItem);
         });
@@ -88,11 +95,11 @@ $(document).ready(() => {
     let optionActive = false;
     $('#optionButton').click(event => {
         if (optionActive) {
-            $(event.target).removeClass('active');
-            $('.options').removeClass('active');
+            $('#optionButton').removeClass('active');
+            $('#options').removeClass('active');
         } else {
-            $(event.target).addClass('active');
-            $('.options').addClass('active');
+            $('#optionButton').addClass('active');
+            $('#options').addClass('active');
         }
         optionActive = !optionActive;
     });
@@ -110,12 +117,12 @@ $(document).ready(() => {
     let isInfoPaneHide = false;
     $('#infoButton').click(event => {
         if (isInfoPaneHide) {
-            $('#info').addClass('visible');
+            $('#infoBar').addClass('visible');
             $('#infoButton .fa')
                 .removeClass('fa-plus-square-o')
                 .addClass('fa-minus-square-o');
         } else {
-            $('#info').removeClass('visible');
+            $('#infoBar').removeClass('visible');
             $('#infoButton .fa')
                 .removeClass('fa-minus-square-o')
                 .addClass('fa-plus-square-o');
