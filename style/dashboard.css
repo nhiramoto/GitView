@@ -183,8 +183,8 @@ body {
   margin-top: 10px;
   padding: 5px;
   cursor: pointer;
-  -webkit-transition: background .5s ease, box-shadow .5s ease;
   user-select: none;
+  -webkit-transition: background .5s ease, box-shadow .5s ease;
 }
 #commitBar .commitItem .title {
   display: block;
@@ -203,8 +203,9 @@ body {
   -webkit-transition: background .3s ease;
 }
 #commitBar .commitItem:active {
+  background: #DFDFDF;
   box-shadow: inset 0 2px 3px rgba(10, 10, 10, 0.6);
-  -webkit-transition: box-shadow .3s ease;
+  -webkit-transition: box-shadow .3s ease, background .3s ease;
 }
 
 #view {
@@ -240,7 +241,6 @@ body {
   width: 400px;
   min-width: 0;
   padding: 10px;
-  border: 1px solid red;
   border-radius: 3px;
   box-shadow: -1px 0 8px rgba(10, 10, 10, 0.5);
   background: white;
@@ -250,26 +250,59 @@ body {
 }
 #infoBar .infoCard {
   margin-bottom: 20px;
-  border: 1px solid pink;
+  box-shadow: 0 3px 3px rgba(0, 0, 0, 0.3);
 }
-#infoBar .infoTitle {
-  display: block;
-  font-weight: bold;
-  font-size: 18px;
-  line-height: 18px;
-  text-align: center;
+#infoBar .infoHeader {
   width: 100%;
   padding-top: 10px;
   padding-bottom: 10px;
   margin: 0;
-  border: 1px solid magenta;
+  cursor: pointer;
+  border: 1px solid #DDD;
+  background: white;
+  -webkit-transition: background .5s ease;
+}
+#infoBar .infoHeader:hover {
+  background: #DFDFDF;
+  -webkit-transition: background .3s ease;
+}
+#infoBar .infoHeader:active {
+  background: #ADADAD;
+  -webkit-transition: background .3s ease;
+}
+#infoBar .infoHeader .infoTitle {
+  display: inline-block;
+  height: 100%;
+  width: 90%;
+  font-weight: bold;
+  font-size: 18px;
+  line-height: 18px;
+  text-align: center;
+}
+#infoBar .infoHeader .infoArrow {
+  display: inline-block;
+  height: 100%;
+  width: 10%;
+  text-align: center;
+  font-size: 14px;
+  color: #707070;
+}
+#infoBar .infoArrow {
+  color: black;
 }
 #infoBar .infoBody {
-  display: block;
   margin-top: 10px;
   width: 100%;
   font-size: 12px;
-  border: 1px solid darkred;
+}
+#infoBar .infoBody table {
+  width: 100%;
+}
+#infoBar .infoBody table tr {
+  background: white;
+}
+#infoBar .infoBody table tr:hover {
+  background: #EFEFEF;
 }
 
 #infoBar.visible {

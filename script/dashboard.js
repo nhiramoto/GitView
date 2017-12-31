@@ -45,7 +45,7 @@ var initViz = function (repoPath) {
             let headCommit = gitPipe.db.findCommit(headCommitId);
             let headCommitDate = headCommit.date;
             let formattedDate = dateFormat(headCommitDate, 'dd/mm/yyyy hh:MM TT');
-            $('#repoName').text(repoName);
+            $('#repoInfoName').text(repoName);
             $('#repoPath').text(repoPath);
             $('#lastCommit').text(formattedDate);
             $('#commitCount').text(commitCount);
@@ -128,6 +128,42 @@ $(document).ready(() => {
                 .addClass('fa-plus-square-o');
         }
         isInfoPaneHide = !isInfoPaneHide;
+    });
+
+    let isRepoInfoHide = false;
+    $('#repoInfoTitle').click(event => {
+        if (isRepoInfoHide) {
+            $('#repoInfoBody').addClass('visible');
+            $('#repoInfoBody').slideDown();
+            $('#repoInfoArrow .fa')
+                .removeClass('fa-chevron-up')
+                .addClass('fa-chevron-down');
+        } else {
+            $('#repoInfoBody').removeClass('visible');
+            $('#repoInfoBody').slideUp();
+            $('#repoInfoArrow .fa')
+                .removeClass('fa-chevron-down')
+                .addClass('fa-chevron-up');
+        }
+        isRepoInfoHide = !isRepoInfoHide;
+    });
+
+    let isCommitInfoHide = false;
+    $('#commitInfoTitle').click(event => {
+        if (isCommitInfoHide) {
+            $('#commitInfoBody').addClass('visible');
+            $('#commitInfoBody').slideDown();
+            $('#commitInfoArrow .fa')
+                .removeClass('fa-chevron-up')
+                .addClass('fa-chevron-down');
+        } else {
+            $('#commitInfoBody').removeClass('visible');
+            $('#commitInfoBody').slideUp();
+            $('#commitInfoArrow .fa')
+                .removeClass('fa-chevron-down')
+                .addClass('fa-chevron-up');
+        }
+        isCommitInfoHide = !isCommitInfoHide;
     });
 
     ipcRenderer.on('getRepoPath-reply', (event, args) => {

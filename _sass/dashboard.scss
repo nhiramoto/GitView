@@ -190,8 +190,8 @@ body {
         margin-top: 10px;
         padding: 5px;
         cursor: pointer;
-        -webkit-transition: background .5s ease, box-shadow .5s ease;
         user-select: none;
+        -webkit-transition: background .5s ease, box-shadow .5s ease;
         .title {
             display: block;
             font-weight: bold;
@@ -209,8 +209,9 @@ body {
             -webkit-transition: background .3s ease;
         }
         &:active {
+            background: #DFDFDF;
             box-shadow: inset 0 2px 3px rgba(10, 10, 10, 0.6);
-            -webkit-transition: box-shadow .3s ease;
+            -webkit-transition: box-shadow .3s ease, background .3s ease;
         }
     }
 }
@@ -253,7 +254,6 @@ $infoBarHeight: 600px;
     width: $infoBarWidth;
     min-width: 0;
     padding: 10px;
-    border: 1px solid red;
     border-radius: 3px;
     box-shadow: -1px 0 8px rgba(10, 10, 10, 0.5); 
     background: white;
@@ -262,27 +262,67 @@ $infoBarHeight: 600px;
     -webkit-transition: right .5s ease;
     .infoCard {
         margin-bottom: 20px;
-        border: 1px solid pink;
+        box-shadow: 0 3px 3px rgba(0, 0, 0, .3);
+        //border-radius: 5px;
     }
-    .infoTitle {
+    .infoHeader {
         //position: absolute;
-        display: block;
-        font-weight: bold;
-        font-size: 18px;
-        line-height: 18px;
-        text-align: center;
         width: 100%;
         padding-top: 10px;
         padding-bottom: 10px;
         margin: 0;
-        border: 1px solid magenta;
+        cursor: pointer;
+        border: 1px solid $lightBorder;
+        background: white;
+        -webkit-transition: background .5s ease;
+        &:hover {
+            background: #DFDFDF;
+            -webkit-transition: background .3s ease;
+        }
+        &:active {
+            background: #ADADAD;
+            -webkit-transition: background .3s ease;
+        }
+        .infoTitle {
+            display: inline-block;
+            height: 100%;
+            width: 90%;
+            font-weight: bold;
+            font-size: 18px;
+            line-height: 18px;
+            text-align: center;
+        }
+        .infoArrow {
+            display: inline-block;
+            height: 100%;
+            width: 10%;
+            text-align: center;
+            font-size: 14px;
+            color: #707070;
+        }
+    }
+    .infoArrow {
+        color: black;
     }
     .infoBody {
-        display: block;
         margin-top: 10px;
         width: 100%;
         font-size: 12px;
-        border: 1px solid darkred;
+        table {
+            width: 100%;
+        }
+        table tr {
+            background: white;
+            &:hover {
+                background: #EFEFEF;
+            }
+        }
+        //table tr td:first-child {
+        //    white-space: nowrap;
+        //}
+        //table tr td:last-child {
+        //    width: 100%;
+        //}
     }
 }
 

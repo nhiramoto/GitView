@@ -51,69 +51,83 @@
             </div>
             <div id="infoBar" class="visible">
                 <div id="repositoryInfo" class="infoCard">
-                    <span id="repoName" class="infoTitle">Repositório</span>
-                    <table class="infoBody">
-                        <tr>
-                            <td>Local:</td>
-                            <td>
-                                <span id="repoPath"></span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Último <i>commit</i>:</td>
-                            <td>
-                                <span id="lastCommit"></span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Quantidade de <i>commits</i></td>
-                            <td>
-                                <span id="commitCount"></span>
-                            </td>
-                        </tr>
-                    </table>
+                    <div class="infoHeader" id="repoInfoTitle">
+                        <span class="infoTitle">Repositório</span><span id="repoInfoArrow" class="infoArrow"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
+                    </div>
+                    <div class="infoBody visible" id="repoInfoBody">
+                        <table>
+                            <tr>
+                                <td>Nome:</td>
+                                <td>
+                                    <span id="repoInfoName"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Local (Não remoto):</td>
+                                <td>
+                                    <span id="repoPath"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Último <i>commit</i>:</td>
+                                <td>
+                                    <span id="lastCommit"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Quantidade de <i>commits</i></td>
+                                <td>
+                                    <span id="commitCount"></span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
                 </div>
                 <hr>
                 <div id="commitInfo" class="infoCard">
-                    <span id="commitMsg" class="infoTitle"><i>Commit</i></span>
-                    <table class="infoBody">
-                        <tr>
-                            <td>ID:</td>
-                            <td>
-                                <span id="commitId"></span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Mensagem:</td>
-                            <td>
-                                <span id="commitMessage"></span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Autor:</td>
-                            <td>
-                                <span id="commitAuthor"></span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Data:</td>
-                            <td>
-                                <span id="commitDate"></span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>ID do <i>Snapshot</i>:</td>
-                            <td>
-                                <span id="commitSnapshotId"></span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Parentes:</td>
-                            <td>
-                                <span id="commitParents"></span>
-                            </td>
-                        </tr>
-                    </table>
+                    <div class="infoHeader" id="commitInfoTitle">
+                        <span class="infoTitle"><i>Commit</i></span><span id="commitInfoArrow" class="infoArrow"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
+                    </div>
+                    <div class="infoBody visible" id="commitInfoBody">
+                        <table>
+                            <tr>
+                                <td>ID:</td>
+                                <td>
+                                    <span id="commitId"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Mensagem:</td>
+                                <td>
+                                    <span id="commitMessage"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Autor:</td>
+                                <td>
+                                    <span id="commitAuthor"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Data:</td>
+                                <td>
+                                    <span id="commitDate"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>ID do <i>Snapshot</i>:</td>
+                                <td>
+                                    <span id="commitSnapshotId"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Parentes:</td>
+                                <td>
+                                    <span id="commitParents"></span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
