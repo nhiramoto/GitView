@@ -725,7 +725,7 @@ GitPipe.prototype.selectCommit = function (commitId) {
  * @async
  */
 GitPipe.prototype.registerSelectedCommitDiff = function () {
-    return diffCommitWithParents(this.selectedCommit);
+    return this.diffCommitWithParents(this.selectedCommit);
 };
 
 /**
@@ -745,6 +745,7 @@ GitPipe.prototype.getSelectedCommitDiffTree = function () {
             let parentIds = this.selectedCommit.parents;
             let selectedCommitId = this.selectedCommit.id;
             let diff = null;
+            let diffDir = null;
             let rootDirId = null;
             let rootDir = null;
             let count = 0;

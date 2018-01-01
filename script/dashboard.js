@@ -149,6 +149,40 @@ var diffCommit = function (commitId) {
                     Promise.reject('selectedCommit is null.');
                 }
             }
+        }).then(() => {
+            if (selected) {
+                console.log('selected commit recovered.');
+                return gitPipe.registerSelectedCommitDiff();
+            } else {
+                return null;
+            }
+        }).then(() => {
+            if (selected) {
+                console.log('Selected commit diff registered.');
+                return gitPipe.parseDiffs();
+            } else {
+                return null;
+            }
+        }).then(() => {
+            if (selected) {
+                console.log('Diffs parsed!');
+                return gitPipe.save();
+            } else {
+                return null;
+            }
+        }).then(saved => {
+            if (selected && saved) {
+                console.log('Database saved.');
+                return gitPipe.getSelectedCommitDiffTree();
+            } else {
+                return null;
+            }
+        }).then(diffDir => {
+            if (diffDir != null) {
+                console.log('Selected commit diff dir got!');
+                console.log('diffDir:', diffDir);
+                tree.build(diffDir);
+            }
         }).catch(err => {
             if (err) console.error(err);
         });

@@ -182,7 +182,7 @@ Tree.prototype.radius = function (d) {
 
 /**
  * Carrega os dados do arquivo.
- * @param {String} dataPath - Caminho para o arquivo de dados.
+ * @param {String} dataPath Caminho para o arquivo de dados.
  */
 Tree.prototype.load = function (dataPath) {
     console.log('loading data from file:', dataPath);
@@ -195,8 +195,8 @@ Tree.prototype.load = function (dataPath) {
 };
 
 /**
- * Contrói a árvore basedo nos dados.
- * @param data - Dados a serem representados na visualização.
+ * Contrói a árvore baseado nos dados.
+ * @param data Dados a serem representados na visualização.
  */
 Tree.prototype.build = function (data) {
     console.log('building data tree..');
@@ -228,7 +228,7 @@ Tree.prototype.update = function () {
         .links(this.links);
 
     this.linkSvg = this.linkLayer.selectAll('.link')
-        .data(this.links, (d) => d.target.id);
+        .data(this.links, (d) => d.target.data.id);
     this.linkSvg
         .style('stroke-opacity', d => this.opacity(d.target));
     this.linkSvg.exit()
@@ -255,6 +255,9 @@ Tree.prototype.update = function () {
         .transition()
             .duration(100)
             .style('opacity', d => this.opacity(d));
+    this.nodeSvg
+        .select('circle')
+            .attr('r', d => this.radius(d));
     this.nodeSvg.exit()
         .transition()
             .duration(100)
