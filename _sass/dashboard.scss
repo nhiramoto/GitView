@@ -5,6 +5,7 @@ $optionWidth: 300px;
 $commitBarWidth: 250px;
 
 * {
+    outline-color: lightblue;
     box-sizing: border-box;
 }
 
@@ -191,7 +192,7 @@ body {
         padding: 5px;
         cursor: pointer;
         user-select: none;
-        -webkit-transition: background .5s ease, box-shadow .5s ease;
+        -webkit-transition: all .5s ease;
         .title {
             display: block;
             font-weight: bold;
@@ -206,13 +207,18 @@ body {
         }
         &:hover {
             background: #EFEFEF;
-            -webkit-transition: background .3s ease;
+            -webkit-transition: all .3s ease;
         }
         &:active {
             background: #DFDFDF;
             box-shadow: inset 0 2px 3px rgba(10, 10, 10, 0.6);
-            -webkit-transition: box-shadow .3s ease, background .3s ease;
+            -webkit-transition: all .3s ease;
         }
+    }
+    .commitItem.selected {
+        box-shadow: 0 0 5px rgba(0, 0, 255, .8);
+        border: 1px solid blue;
+        -webkit-transition: all .3s ease;
     }
 }
 

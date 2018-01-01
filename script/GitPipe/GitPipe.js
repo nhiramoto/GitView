@@ -47,10 +47,15 @@ GitPipe.prototype.getSelectedCommit = function () {
     return this.selectedCommit;
 };
 
+GitPipe.prototype.findAuthor = function (authorEmail) {
+    return this.db.findAuthor(authorEmail);
+};
+
 /**
  * Abre o repositório e salva na base de dados.
+ * @async
  * @param {String} repoPath Caminho do repositório.
- * @return {Promise<String>} Promise que retorna o caminho da base de dados.
+ * @return {Promise<String>} Caminho da base de dados.
  */
 GitPipe.prototype.openRepository = function (repoPath) {
     let pathToRepo = path.resolve(repoPath);
@@ -77,6 +82,7 @@ GitPipe.prototype.openRepository = function (repoPath) {
 /**
  * Utiliza o event emitter history para caminhar no histórico de commits.
  * A partir da branch master.
+ * @async
  */
 GitPipe.prototype.parseCommitsHistory = function () {
     return this.gitRepo.getHeadCommit().then(commit => {
@@ -101,7 +107,8 @@ GitPipe.prototype.parseCommitsHistory = function () {
 
 /**
  * Cria registro do commit.
- * @param {Git.Commit} commit - Commit a ser analisado.
+ * @sync
+ * @param {Git.Commit} commit Commit a ser analisado.
  */
 GitPipe.prototype.parseCommit = function (commit) {
     let commitRec = new JSONDatabase.CommitRecord(commit);
@@ -115,6 +122,7 @@ GitPipe.prototype.parseCommit = function (commit) {
 
 /**
  * Registra o diff do commit head com seu antecessor.
+ * @async
  */
 GitPipe.prototype.registerHeadCommitDiff = function () {
     let repoRec = this.db.getRepository();
@@ -126,7 +134,9 @@ GitPipe.prototype.registerHeadCommitDiff = function () {
 
 /**
  * Cria registro do diff com commits pai.
- * @param {JSONDatabase.CommitRecord} commitRec
+ * @async
+ * @param {JSONDatabase.CommitRecord} commitRec Commit a partir
+ *   do qual será criado o diff.
  */
 GitPipe.prototype.diffCommitWithParents = function (commitRec) {
     let commitId = commitRec.id;
@@ -176,6 +186,7 @@ GitPipe.prototype.diffCommitWithParents = function (commitRec) {
 
 /**
  * Analisa os diffs salvos temporariamente e insere na base de dados.
+ * @async
  */
 GitPipe.prototype.parseDiffs = function () {
     let patchesPromises = [];
@@ -214,6 +225,7 @@ GitPipe.prototype.parseDiffs = function () {
 
 /**
  * Analisa cada objeto diff.
+ * @async
  * @param {Git.Commit} oldCommit - Objeto commit mais antigo do diff.
  * @param {Git.Commit} recentCommit - Objeto commit mais recente do diff.
  * @param {Git.Diff} gitDiff - Objeto com os dados do diff.
@@ -228,6 +240,7 @@ GitPipe.prototype.parseDiff = function (oldCommit, recentCommit, gitDiff) {
 
 /**
  * Chama parsePatch syncronamente entre os elementos de patch.
+ * @async
  * @param {Git.Commit} oldCommit Commit mais antigo do diff.
  * @param {Git.Commit} recentCommit Commit mais recent do diff.
  * @param {Array<Git.Patch>} patches Lista de patches a serem analisados.
@@ -248,6 +261,7 @@ GitPipe.prototype.parsePatches = function (oldCommit, recentCommit, patches) {
 /**
  * Analisa o objeto patch e registra os diretórios e arquivos
  * com o estado da modificação.
+ * @async
  * @param {Git.Commit} oldCommit Commit mais antigo do diff.
  * @param {Git.Commit} recentCommit Commit mais recent do diff.
  * @param {Git.ConvenientPatch} patch Patch a ser analisado.
@@ -263,6 +277,7 @@ GitPipe.prototype.parsePatch = function (oldCommit, recentCommit, patch) {
 
 /**
  * Cria registro do arquivo relacionado ao patch e adiciona à base de dados.
+ * @async
  * @param  {Git.ConvenientPatch} patch - Objeto patch com as modificações do arquivo.
  * @return {Promise} Retorna o registro do arquivo criado.
  */
@@ -326,7 +341,8 @@ GitPipe.prototype.createFile = function (patch) {
 
 /**
  * Analisa e cria o registro das linhas do patch relacionado.
- * @param {JSONDatabase.FileRecord} fileRec Arquivo onde as linhas criadas serão associadas.
+ * @sync
+ * @param {JSONDatabase.FileRecord} fileRec Arquivo com o qual as linhas criadas serão associadas.
  * @param {Array<Git.DiffLine>} lines Conjunto das linhas.
  */
 GitPipe.prototype.parseLines = function(fileRec, lines) {
@@ -467,6 +483,7 @@ GitPipe.prototype.parseLines = function(fileRec, lines) {
 
 /**
  * Cria registro dos diretórios recursivamente (dos filhos à raiz).
+ * @async
  * @param {Git.Commit} oldCommit - Recupera objetos tree mais antigos pelo path
  * @param {Git.Commit} recentCommit - Recupera objetos tree mais recentes pelo path
  * @param {String} dirPath - Caminho do diretório a ser criado/atualizado.
@@ -584,6 +601,7 @@ GitPipe.prototype.createDirectory = function (oldCommit, recentCommit, dirPath, 
 
 /**
  * Salva a base de dados em arquivo.
+ * @sync
  * @return Sucesso na escrita no arquivo.
  *  ou false caso contrário.
  */
@@ -598,6 +616,7 @@ GitPipe.prototype.save = function () {
 
 /**
  * Carrega a base de dados do arquivo.
+ * @sync
  * @return Sucesso na leitura do arquivo.
  */
 GitPipe.prototype.load = function () {
@@ -609,6 +628,10 @@ GitPipe.prototype.load = function () {
     }
 };
 
+/**
+ * Recupera as diferenças do último commit do repositório.
+ * @sync
+ */
 GitPipe.prototype.getHeadDiffTree = function () {
     if (this.db == null) {
         console.error('[GitPipe#getHeadDiffTree] Error: Database not set.');
@@ -669,24 +692,46 @@ GitPipe.prototype.getHeadDiffTree = function () {
     }
 };
 
+/**
+ * Recupera todos commits da base de dados.
+ * @sync
+ */
 GitPipe.prototype.getCommits = function () {
     return this.db.getCommits();
 };
 
+/**
+ * Salva temporariamente um commit para ser usado posteriormente.
+ * @async
+ */
 GitPipe.prototype.selectCommit = function (commitId) {
-    let selectedCommitId = this.selectedCommit.id;
-    if (selectedCommitId != commitId) {
-        this.selectedCommit = this.db.findCommit(commitId);
-        return this.selectedCommit != undefined;
-    } else {
-        return false;
-    }
+    return new Promise((resolve, reject) => {
+        let previousSelectedCommit = this.selectedCommit.id;
+        if (previousSelectedCommit != commitId) {
+            this.selectedCommit = this.db.findCommit(commitId);
+            if (this.selectedCommit != undefined) {
+                resolve(true);
+            } else {
+                reject('Commit not found.');
+            }
+        } else {
+            resolve(false);
+        }
+    });
 };
 
+/**
+ * Cria o diff do commit atualmente selecionado, se houver.
+ * @async
+ */
 GitPipe.prototype.registerSelectedCommitDiff = function () {
     return diffCommitWithParents(this.selectedCommit);
 };
 
+/**
+ * Recupera as diferenças do commit selecionado.
+ * @sync
+ */
 GitPipe.prototype.getSelectedCommitDiffTree = function () {
     if (this.db == null) {
         console.error('[GitPipe#getSelectedCommitDiffTree] Error: Database not set.');

@@ -15,79 +15,144 @@ var gitPipe = null;
 var dbPath = null;
 var repoRec = null;
 var commits = null;
+var headCommit = null;
 
 var initViz = function (repoPath) {
-    if (gitPipe == null) {
-        gitPipe = new GitPipe();
-    }
-    return gitPipe.openRepository(repoPath).then(_dbPath => {
-        dbPath = _dbPath;
-        console.log('-> repository opened:', repoPath);
-        repoRec = gitPipe.db.getRepository();
-        $('#repoName').text(repoRec.name);
-        return gitPipe.parseCommitsHistory();
-    }).then(() => {
-        console.log('-> commits parsed.');
-        return gitPipe.registerHeadCommitDiff();
-    }).then(() => {
-        console.log('-> Head commit diff registered.');
-        return gitPipe.parseDiffs();
-    }).then(() => {
-        console.log('-> diffs parsed.');
-        return gitPipe.save();
-    }).then(saved => {
-        console.log('-> database saved=', saved);
-        if (saved) {
-            let repoName = repoRec.name;
-            let repoPath = repoRec.path;
-            let commitCount = repoRec.commitCount;
-            let headCommitId = repoRec.head;
-            let headCommit = gitPipe.db.findCommit(headCommitId);
-            let headCommitDate = headCommit.date;
-            let formattedDate = dateFormat(headCommitDate, 'dd/mm/yyyy hh:MM TT');
-            $('#repoInfoName').text(repoName);
-            $('#repoPath').text(repoPath);
-            $('#lastCommit').text(formattedDate);
-            $('#commitCount').text(commitCount);
-            return gitPipe.getHeadDiffTree();
-        } else {
-            console.error('Database not saved.');
-            return new Promise(resolve => resolve(null));
-        }
-    }).then(diffDir => {
-        if (diffDir) {
-            console.log('-> last diff tree got!');
-            console.log('-> diffDir:', diffDir);
-            container = d3.select('#view');
-            tree = new Tree(container);
-            tree.build(diffDir);
-        } else {
-            console.error('diffDir is null.');
-        }
-    }).then(() => {
-        // Limpa lista de commits
-        $('#commitBar').children('.commitItem').remove();
-        // Adiciona lista de commits na commitBar
-        commits = gitPipe.getCommits();
-        commits.forEach(commit => {
-            let commitItem = document.createElement('div');
-            let title = document.createElement('span');
-            let content = document.createElement('span');
-            let commitId = commit.id.substring(0, 8);
-            let commitMsg = null;
-            if (commit.message.length >= 23) {
-                commitMsg = commit.message.substring(0, 23) + '...';
+    if (gitPipe != null) {
+        return gitPipe.openRepository(repoPath).then(_dbPath => {
+            dbPath = _dbPath;
+            console.log('-> repository opened:', repoPath);
+            repoRec = gitPipe.db.getRepository();
+            $('#repoName').text(repoRec.name);
+            return gitPipe.parseCommitsHistory();
+        }).then(() => {
+            console.log('-> commits parsed.');
+            return gitPipe.registerHeadCommitDiff();
+        }).then(() => {
+            console.log('-> Head commit diff registered.');
+            return gitPipe.parseDiffs();
+        }).then(() => {
+            console.log('-> diffs parsed.');
+            return gitPipe.save();
+        }).then(saved => {
+            console.log('-> database saved=', saved);
+            if (saved) {
+                let repoName = repoRec.name;
+                let repoPath = repoRec.path;
+                let commitCount = repoRec.commitCount;
+                let headCommitId = repoRec.head;
+                headCommit = gitPipe.db.findCommit(headCommitId);
+                let headCommitDate = headCommit.date;
+                let formattedDate = dateFormat(headCommitDate, 'dd/mm/yyyy hh:MM TT');
+                $('#repoInfoName').text(repoName);
+                $('#repoPath').text(repoPath);
+                $('#lastCommit').text(formattedDate);
+                $('#commitCount').text(commitCount);
+
+                let commitId = headCommit.id;
+                let commitMsg = headCommit.message;
+                let author = gitPipe.findAuthor(headCommit.authorEmail);
+                let commitAuthor = author.name + ' <' + author.email + '>';
+                let commitDate = dateFormat(headCommit.date, 'dd/mm/yyyy hh:MM TT');
+                let commitSnapshotId = headCommit.snapshotId;
+                let commitParents = '';
+                headCommit.parents.forEach(parentId => {
+                    commitParents += parentId + ',';
+                });
+                commitParents = commitParents.slice(0, -2);
+                $('#commitId').text(commitId);
+                $('#commitMessage').text(commitMsg);
+                $('#commitAuthor').text(commitAuthor);
+                $('#commitDate').text(commitDate);
+                $('#commitSnapshotId').text(commitSnapshotId);
+                $('#commitParents').text(commitParents);
+
+                return gitPipe.getHeadDiffTree();
             } else {
-                commitMsg = commit.message;
+                console.error('Database not saved.');
+                return new Promise(resolve => resolve(null));
             }
-            $(title).addClass('title').text(commitMsg);
-            $(content).addClass('content').text(commit.authorEmail);
-            $(commitItem).addClass('commitItem').append(title).append(content);
-            $('#commitBar').append(commitItem);
+        }).then(diffDir => {
+            if (diffDir) {
+                console.log('-> last diff tree got!');
+                console.log('-> diffDir:', diffDir);
+                container = d3.select('#view');
+                tree = new Tree(container);
+                tree.build(diffDir);
+            } else {
+                console.error('diffDir is null.');
+            }
+        }).then(() => {
+            // Limpa lista de commits
+            $('#commitBar').children('.commitItem').remove();
+            // Adiciona lista de commits na commitBar
+            commits = gitPipe.getCommits();
+            commits.forEach(commit => {
+                let commitItem = document.createElement('div');
+                let title = document.createElement('span');
+                let content = document.createElement('span');
+                let commitId = commit.id;
+                let commitMsg = null;
+                if (commit.message.length >= 23) {
+                    commitMsg = commit.message.substring(0, 23) + '...';
+                } else {
+                    commitMsg = commit.message;
+                }
+                $(title).addClass('title').text(commitMsg);
+                $(content).addClass('content').text(commit.authorEmail);
+                $(commitItem).addClass('commitItem').attr('id', commitId).append(title).append(content);
+                $(commitItem).click(event => {
+                    $('#commitBar .selected').removeClass('selected');
+                    $(commitItem).addClass('selected');
+                    let commitId = $(commitItem).attr('id');
+                    console.log('commitId:', commitId);
+                    diffCommit(commitId);
+                });
+                $('#commitBar').append(commitItem);
+            });
+            $('#commitBar #' + headCommit.id).addClass('selected');
+        }).catch(err => {
+            if (err) console.error(err);
         });
-    }).catch(err => {
-        if (err) console.error('[dashboard.js] ', err);
-    });
+    }
+};
+
+var diffCommit = function (commitId) {
+    let selected = null;
+    if (gitPipe != null) {
+        return gitPipe.selectCommit(commitId).then(res => {
+            selected = res;
+            console.log('selected:', selected);
+            return gitPipe.getSelectedCommit();
+        }).then(selectedCommit => {
+            if (selected) {
+                console.log('selectedCommit:', selectedCommit);
+                if (selectedCommit != null) {
+                    let commitId = selectedCommit.id;
+                    let commitMsg = selectedCommit.message;
+                    let author = gitPipe.findAuthor(selectedCommit.authorEmail);
+                    let commitAuthor = author.name + ' <' + author.email + '>';
+                    let commitDate = dateFormat(selectedCommit.date, 'dd/mm/yyyy hh:MM TT');
+                    let commitSnapshotId = selectedCommit.snapshotId;
+                    let commitParents = '';
+                    selectedCommit.parents.forEach(parentId => {
+                        commitParents += parentId + ',';
+                    });
+                    commitParents = commitParents.slice(0, -2);
+                    $('#commitId').text(commitId);
+                    $('#commitMessage').text(commitMsg);
+                    $('#commitAuthor').text(commitAuthor);
+                    $('#commitDate').text(commitDate);
+                    $('#commitSnapshotId').text(commitSnapshotId);
+                    $('#commitParents').text(commitParents);
+                } else {
+                    Promise.reject('selectedCommit is null.');
+                }
+            }
+        }).catch(err => {
+            if (err) console.error(err);
+        });
+    }
 };
 
 $(document).ready(() => {
