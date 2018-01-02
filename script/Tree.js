@@ -91,7 +91,7 @@ Tree.prototype.click = function (d) {
         d._children = null;
     } else {
     }
-    console.log('d:', d);
+    console.log('d.data:', d.data);
     this.update();
     this.simulation.restart();
 };
@@ -207,9 +207,18 @@ Tree.prototype.build = function (data) {
         .force('charge', d3.forceManyBody().strength(-200).distanceMax(200).distanceMin(10))
         //.force('center', d3.forceCenter(this.width / 2, this.height / 2))
         .force('center', d3.forceCenter(100, 100))
-        .force('collide', d3.forceCollide().radius((d) => this.radius(d) - 2))
+        .force('collide', d3.forceCollide().radius(d => this.radius(d) - 2))
         .on('tick', () => this.ticked());
     this.update();
+};
+
+Tree.prototype.rebuild = function (data) {
+    console.log('rebuilding data tree...');
+    this.root = d3.hierarchy(data, d => d.entries);
+    this.moveChildren(this.root);
+    this.simulation
+        .force('collide', d3.forceCollide().radius(d => this.radius(d) - 2));
+    this.simulation.restart();
 };
 
 Tree.prototype.update = function () {
@@ -283,7 +292,10 @@ Tree.prototype.update = function () {
         .attr('dx', d => this.radius(d) + 5)
         .attr('dy', d => this.radius(d) + 5);
     this.nodeEnter.append('circle')
-        .attr('r', d => this.radius(d));
+        .attr('r', 0)
+        .transition()
+            .duration(500)
+            .attr('r', d => this.radius(d));
     
     this.nodeSvg = this.nodeEnter.merge(this.nodeSvg);
 };
