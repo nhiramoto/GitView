@@ -176,7 +176,7 @@ var diffCommit = function (commitId) {
         }).then(diffDir => {
             console.log('Selected commit diff tree got!');
             console.log('diffDir:', diffDir);
-            tree.rebuild(diffDir);
+            tree.build(diffDir);
         }).catch(err => {
             if (err) console.error(err);
         });
