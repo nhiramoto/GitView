@@ -200,6 +200,7 @@ Tree.prototype.load = function (dataPath) {
  */
 Tree.prototype.build = function (data) {
     console.log('building data tree..');
+    data = data || [];
     this.root = d3.hierarchy(data, d => d.entries);
     this.moveChildren(this.root);
     this.simulation
@@ -210,14 +211,6 @@ Tree.prototype.build = function (data) {
         .force('collide', d3.forceCollide().radius(d => this.radius(d) - 2))
         .on('tick', () => this.ticked());
     this.update();
-};
-
-Tree.prototype.rebuild = function (data) {
-    console.log('rebuilding data tree...');
-    this.root = d3.hierarchy(data, d => d.entries);
-    this.moveChildren(this.root);
-    this.simulation
-        .force('collide', d3.forceCollide().radius(d => this.radius(d) - 2));
     this.simulation.restart();
 };
 
@@ -237,7 +230,7 @@ Tree.prototype.update = function () {
         .links(this.links);
 
     this.linkSvg = this.linkLayer.selectAll('.link')
-        .data(this.links, (d) => d.target.data.id);
+        .data(this.links, d => d.target.data.id);
     this.linkSvg
         .style('stroke-opacity', d => this.opacity(d.target));
     this.linkSvg.exit()
@@ -266,10 +259,16 @@ Tree.prototype.update = function () {
             .style('opacity', d => this.opacity(d));
     this.nodeSvg
         .select('circle')
-            .attr('r', d => this.radius(d));
+            .attr('r', 0)
+            .transition()
+                .duration(300)
+                .attr('r', d => this.radius(d));
     this.nodeSvg.exit()
         .transition()
-            .duration(100)
+            .duration(300)
+            .style('background', 'red')
+        .transition()
+            .duration(300)
             .style('opacity', 0)
             .remove();
 
