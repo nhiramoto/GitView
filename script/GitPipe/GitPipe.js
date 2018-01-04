@@ -200,7 +200,11 @@ GitPipe.prototype.parseDiffs = function () {
             let oldCommit = null;
             return self.gitRepo.getCommit(recentCommitId).then(c1 => {
                 recentCommit = c1;
-                return self.gitRepo.getCommit(oldCommitId);
+                if (oldCommitId != null) {
+                    return self.gitRepo.getCommit(oldCommitId);
+                } else {
+                    return new Promise(resolve => resolve(null));
+                }
             }).then(c2 => {
                 oldCommit = c2;
                 return self.parseDiff(oldCommit, recentCommit, gitDiff);
@@ -504,13 +508,21 @@ GitPipe.prototype.createDirectory = function (oldCommit, recentCommit, dirPath, 
         let oldTree = null;
         let newTree = null;
         if (isRoot) {
-            getOldTreePromise = oldCommit.getTree();
+            if (oldCommit != null) {
+                getOldTreePromise = oldCommit.getTree();
+            } else {
+                getOldTreePromise = new Promise(resolve => resolve(null));
+            }
             getNewTreePromise = recentCommit.getTree();
         } else {
-            getOldTreePromise = oldCommit.getEntry(dirPath).then(e1 => {
-                console.assert(e1.isTree(), '[GitPipe#createDirectory] Error: Entry is not a tree.');
-                return e1.getTree();
-            });
+            if (oldCommit != null) {
+                getOldTreePromise = oldCommit.getEntry(dirPath).then(e1 => {
+                    console.assert(e1.isTree(), '[GitPipe#createDirectory] Error: Entry is not a tree.');
+                    return e1.getTree();
+                });
+            } else {
+                getOldTreePromise = new Promise(resolve => resolve(null));
+            }
             getNewTreePromise = recentCommit.getEntry(dirPath).then(e2 => {
                 console.assert(e2.isTree(), '[GitPipe#createDirectory] Error: Entry is not a tree.');
                 return e2.getTree();
@@ -521,9 +533,17 @@ GitPipe.prototype.createDirectory = function (oldCommit, recentCommit, dirPath, 
             return getNewTreePromise;
         }).then(t2 => {
             newTree = t2;
-            let oldTreeId = oldTree.id().toString();
+            let oldTreeId = null;
+            if (oldTree != null) {
+                oldTreeId = oldTree.id().toString();
+            }
             let newTreeId = newTree.id().toString();
-            let newId = oldTreeId + ':' + newTreeId;
+            let newId = null;
+            if (oldTreeId != null) {
+                newId = oldTreeId + ':' + newTreeId;
+            } else {
+                newId = newTreeId;
+            }
             let foundDirRec = this.db.findDirectory(newId);
             if (foundDirRec == undefined) { // Diretório ainda não existe
                 //console.log('    Directory ' + dirPath + ' doesnt exists yet. Creating a new one.');
