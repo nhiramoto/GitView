@@ -51,7 +51,7 @@ Tree.prototype.ticked = function () {
     }
     if (this.nodeSvg != null) {
         this.nodeSvg
-            .attr('transform', (d) => 'translate(' + d.x + ', ' + d.y + ')');
+            .attr('transform', d => 'translate(' + d.x + ', ' + d.y + ')');
     }
 };
 
@@ -156,7 +156,10 @@ Tree.prototype.stylize = function (d, i) {
 };
 
 Tree.prototype.opacity = function (d) {
-    let stat = d.data.statistic.added + d.data.statistic.deleted + d.data.statistic.modified;
+    let stat = 0;
+    if (d.data.statistic != null) {
+        stat = d.data.statistic.added + d.data.statistic.deleted + d.data.statistic.modified;
+    }
     if (stat === 0) {
         return 0.3;
     } else {
@@ -174,8 +177,12 @@ Tree.prototype.radius = function (d) {
     //    return Math.sqrt(d.data.blocks.length) * 5 + 5;
     //}
     // By Statistic
-    let stat = d.data.statistic.added + d.data.statistic.deleted + d.data.statistic.modified;
-    return Math.sqrt(stat) + 5;
+    if (d.data.statistic != null) {
+        let stat = d.data.statistic.added + d.data.statistic.deleted + d.data.statistic.modified;
+        return Math.sqrt(stat) + 5;
+    } else {
+        return 5;
+    }
 };
 
 //=============== Attributes ===============
@@ -200,6 +207,9 @@ Tree.prototype.load = function (dataPath) {
  */
 Tree.prototype.build = function (data) {
     console.log('building data tree..');
+    console.log('  data:', data);
+    data = data || [];
+    console.log('  -> data:', data);
     this.root = d3.hierarchy(data, d => d.entries);
     this.moveChildren(this.root);
     this.simulation
@@ -210,14 +220,6 @@ Tree.prototype.build = function (data) {
         .force('collide', d3.forceCollide().radius(d => this.radius(d) - 2))
         .on('tick', () => this.ticked());
     this.update();
-};
-
-Tree.prototype.rebuild = function (data) {
-    console.log('rebuilding data tree...');
-    this.root = d3.hierarchy(data, d => d.entries);
-    this.moveChildren(this.root);
-    this.simulation
-        .force('collide', d3.forceCollide().radius(d => this.radius(d) - 2));
     this.simulation.restart();
 };
 
@@ -237,7 +239,7 @@ Tree.prototype.update = function () {
         .links(this.links);
 
     this.linkSvg = this.linkLayer.selectAll('.link')
-        .data(this.links, (d) => d.target.data.id);
+        .data(this.links, d => d.target.data.id);
     this.linkSvg
         .style('stroke-opacity', d => this.opacity(d.target));
     this.linkSvg.exit()
@@ -264,13 +266,17 @@ Tree.prototype.update = function () {
         .transition()
             .duration(100)
             .style('opacity', d => this.opacity(d));
-    this.nodeSvg
-        .select('circle')
-            .attr('r', d => this.radius(d));
+    //this.nodeSvg
+    //    .select('circle')
+    //        .attr('r', 0)
+    //        .transition()
+    //            .duration(300)
+    //            .attr('r', d => this.radius(d));
     this.nodeSvg.exit()
-        .transition()
-            .duration(100)
-            .style('opacity', 0)
+        .style('opacity', 0)
+        //.transition()
+        //    .duration(300)
+        //    .attr('r', 0)
             .remove();
 
     this.nodeEnter = this.nodeSvg.enter()

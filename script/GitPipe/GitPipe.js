@@ -142,46 +142,66 @@ GitPipe.prototype.diffCommitWithParents = function (commitRec) {
     let commitId = commitRec.id;
     let commitSnapshotId = commitRec.snapshotId;
     let commitTree = null;
+    let commit = null;
     let parentRec = null;
     let parentSnapshotId = null;
-    let parentIds = null;
+    let parentIds = commitRec.parents;
     let diffRec = null;
-    return this.gitRepo.getTree(commitSnapshotId).then(tree1 => {
-        commitTree = tree1;
-        let createDiffPromises = [];
-        parentIds = commitRec.parents;
-        parentIds.forEach(parentId => {
-            let foundDiff = this.diffs.find(diff =>
-                diff.diffRec.oldCommitId === parentId && diff.diffRec.recentCommitId === commitId);
-            if (foundDiff == undefined) {
-                foundDiff = this.db.findDiff(diff =>
-                    diff.diffRec.oldCommitId === parentId && diff.diffRec.recentCommitId === commitId);
+    if (parentIds.length > 0) {
+        return this.gitRepo.getTree(commitSnapshotId).then(tree1 => {
+            commitTree = tree1;
+            let createDiffPromises = [];
+            if (parentIds.length > 0) {
+                parentIds.forEach(parentId => {
+                    let foundDiff = this.diffs.find(diff =>
+                        diff.diffRec.oldCommitId === parentId && diff.diffRec.recentCommitId === commitId);
+                    if (foundDiff == undefined) {
+                        foundDiff = this.db.findDiff(diff =>
+                            diff.diffRec.oldCommitId === parentId && diff.diffRec.recentCommitId === commitId);
+                    }
+                    if (foundDiff == undefined) {
+                        parentRec = this.db.findCommit(parentId);
+                        parentSnapshotId = parentRec.snapshotId;
+                        diffRec = new JSONDatabase.DiffRecord();
+                        diffRec.oldCommitId = parentId;
+                        diffRec.recentCommitId = commitId;
+                        let prom = (function (self, diffRec, parentSnapshotId, commitTree) {
+                            let parentTree;
+                            return self.gitRepo.getTree(parentSnapshotId).then(tree2 => {
+                                parentTree = tree2;
+                                return Git.Diff.treeToTree(self.gitRepo, parentTree, commitTree, self.diffOptions);
+                            }).then(gitDiff => {
+                                self.diffs.push({
+                                    gitDiff: gitDiff,
+                                    diffRec: diffRec
+                                });
+                            });
+                        })(this, diffRec, parentSnapshotId, commitTree);
+                        createDiffPromises.push(prom);
+                    }
+                });
             }
-            if (foundDiff == undefined) {
-                parentRec = this.db.findCommit(parentId);
-                parentSnapshotId = parentRec.snapshotId;
-                diffRec = new JSONDatabase.DiffRecord();
-                diffRec.oldCommitId = parentId;
-                diffRec.recentCommitId = commitId;
-                let prom = (function (self, diffRec, parentSnapshotId, commitTree) {
-                    let parentTree;
-                    return self.gitRepo.getTree(parentSnapshotId).then(tree2 => {
-                        parentTree = tree2;
-                        return Git.Diff.treeToTree(self.gitRepo, parentTree, commitTree, self.diffOptions);
-                    }).then(gitDiff => {
-                        self.diffs.push({
-                            gitDiff: gitDiff,
-                            diffRec: diffRec
-                        });
-                    });
-                })(this, diffRec, parentSnapshotId, commitTree);
-                createDiffPromises.push(prom);
-            }
+            return Promise.all(createDiffPromises);
+        }).catch(err => {
+            console.error(err);
         });
-        return Promise.all(createDiffPromises);
-    }).catch(err => {
-        console.error(err);
-    });
+    } else {
+        return this.gitRepo.getCommit(commitId).then(commit => {
+            return commit.getDiffWithOptions(this.diffOptions)
+        }).then(diffs => {
+            console.log('diffCommitWithParents -> diffs:', diffs);
+            console.assert(diffs.length === 1, '[GitPipe#diffCommitWithParents] Error: Unexpected number of diffs on first commit.');
+            diffRec = new JSONDatabase.DiffRecord();
+            diffRec.oldCommitId = null;
+            diffRec.recentCommitId = commitId;
+            this.diffs.push({
+                gitDiff: diffs[0],
+                diffRec: diffRec
+            });
+        }).catch(err => {
+            console.error(err);
+        });
+    }
 };
 
 /**
