@@ -81,4 +81,15 @@
   fill: none;
 }
 
+.tooltip {
+  position: absolute;
+  text-align: center;
+  padding: 8px;
+  font: 14px sans-serif;
+  background: #FFE7A4;
+  border: 1px solid #aaa;
+  border-radius: 8px;
+  pointer-events: none;
+}
+
 /*# sourceMappingURL=vis.css.map */

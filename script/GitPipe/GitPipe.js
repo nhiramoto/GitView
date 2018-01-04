@@ -748,8 +748,9 @@ GitPipe.prototype.selectCommit = function (commitId) {
     return new Promise((resolve, reject) => {
         if (this.selectedCommit != null) {
             let previousSelectedCommitId = this.selectedCommit.id;
-            if (previousSelectedCommitId != commitId) {
+            if (previousSelectedCommitId == commitId) {
                 resolve(false);
+                return;
             }
         }
         this.selectedCommit = this.db.findCommit(commitId);

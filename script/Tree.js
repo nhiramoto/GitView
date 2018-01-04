@@ -26,6 +26,10 @@ function Tree(container, width, height) {
     this.nodeSvg = null;
     this.nodeEnter = null;
     this.root = null;
+    this.tooltip = d3.select('body')
+        .append('div')
+        .classed('tooltip', true)
+        .style('opacity', 0);
 
     // Text showing on node label
     this.labelAttribute = 'name';
@@ -115,10 +119,33 @@ Tree.prototype.dragended = function (d) {
 
 Tree.prototype.handleMouseOver = function (d, i) {
     d3.select(this).classed('focused', true);
+    if (d.data.statistic != null) {
+        d3.select('.tooltip').transition()
+            .duration(300)
+            .style('opacity', 1);
+    }
+};
+
+Tree.prototype.handleMouseMove = function (d, i) {
+    let info = null;
+    if (d.data.statistic != null) {
+        info = 'Added: ' + d.data.statistic.added
+            + '\nDeleted: ' + d.data.statistic.deleted
+            + '\nModified: ' + d.data.statistic.modified;
+    }
+    let x = d3.event.pageX;
+    let y = d3.event.pageY;
+    d3.select('.tooltip')
+        .text(info)
+        .style('left', x + 'px')
+        .style('top', y + 'px');
 };
 
 Tree.prototype.handleMouseOut = function (d, i) {
     d3.select(this).classed('focused', false)
+    d3.select('.tooltip').transition()
+        .duration(300)
+        .style('opacity', 0);
 };
 //================ Event Handlers ================
 
@@ -284,6 +311,7 @@ Tree.prototype.update = function () {
             .attr('class', 'node')
             .on('click', d => this.click(d))
             .on('mouseover', this.handleMouseOver)
+            .on('mousemove', this.handleMouseMove)
             .on('mouseout', this.handleMouseOut)
             .call(drag);
     this.nodeEnter

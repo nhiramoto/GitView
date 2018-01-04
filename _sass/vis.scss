@@ -1,3 +1,5 @@
+@import 'colors';
+
 .viewSvg {
     .viewG {
         background: -webkit-radial-gradient(white, lightgray);
@@ -90,4 +92,17 @@
     stroke: #505050;
     stroke-width: 1.5px;
     fill: none;
+}
+
+.tooltip {
+    position: absolute;
+    text-align: center;
+    //width: 100px;
+    //height: 10px;
+    padding: 8px;
+    font: 14px sans-serif;
+    background: $tooltipBackground;
+    border: 1px solid #aaa;
+    border-radius: 8px;
+    pointer-events: none;
 }

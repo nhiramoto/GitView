@@ -172,7 +172,7 @@ input[type="button"].red:hover {
   left: 50%;
   margin-left: -100px;
   padding: 20px;
-  z-index: 10;
+  z-index: 20;
   transform: translateY(-110%);
   transition: transform .5s ease-out;
 }
