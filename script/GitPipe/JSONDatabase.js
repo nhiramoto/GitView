@@ -17,6 +17,7 @@ function JSONDatabase (rootPath) {
     this.dirs = [];
     this.files = [];
     this.saved = true;
+    console.log('creating database directory:', rootPath);
     fs.mkdir(this.rootPath, () => {});
 }
 
@@ -182,8 +183,18 @@ JSONDatabase.prototype.addDiff = function (diffRec) {
 };
 
 JSONDatabase.prototype.findDiff = function (oldCommitId, recentCommitId) {
-    return this.diffs.find(diff =>
-        diff.oldCommitId === oldCommitId && diff.recentCommitId === recentCommitId);
+    if (recentCommitId == null) {
+        console.error('[JSONDatabase#findDiff] Error: recentCommitId is null.');
+        return undefined;
+    } else {
+        if (oldCommitId == null) {
+            return this.diffs.find(diff =>
+                diff.oldCommitId == null && diff.recentCommitId === recentCommitId);
+        } else {
+            return this.diffs.find(diff =>
+                diff.oldCommitId === oldCommitId && diff.recentCommitId === recentCommitId);
+        }
+    }
 };
 
 JSONDatabase.prototype.deleteDiff = function (oldCommitId, recentCommitId) {

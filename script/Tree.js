@@ -302,7 +302,7 @@ Tree.prototype.update = function () {
         .transition()
             .duration(500)
             .attr('r', d => this.radius(d));
-    
+
     this.nodeSvg = this.nodeEnter.merge(this.nodeSvg);
 };
 
