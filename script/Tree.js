@@ -30,6 +30,7 @@ function Tree(container, width, height) {
         .append('div')
         .classed('tooltip', true)
         .style('opacity', 0);
+    this.radius = null;
 
     // Text showing on node label
     this.labelAttribute = 'name';
@@ -194,24 +195,6 @@ Tree.prototype.opacity = function (d) {
     }
 };
 
-Tree.prototype.radius = function (d) {
-    // By child count
-    //if (d.parent == null) {
-    //    return 10;
-    //} else if (d.children != null || d._children != null) {
-    //    return Math.sqrt(d.data.entries.length) * 5 + 5;
-    //} else {
-    //    return Math.sqrt(d.data.blocks.length) * 5 + 5;
-    //}
-    // By Statistic
-    if (d.data.statistic != null) {
-        let stat = d.data.statistic.added + d.data.statistic.deleted + d.data.statistic.modified;
-        return Math.sqrt(stat) + 5;
-    } else {
-        return 5;
-    }
-};
-
 //=============== Attributes ===============
 
 /**
@@ -323,8 +306,8 @@ Tree.prototype.update = function () {
     this.nodeEnter.append('text')
         .attr('class', 'node-label')
         .text(d => d.data.name)
-        .attr('dx', d => this.radius(d) + 5)
-        .attr('dy', d => this.radius(d) + 5);
+        .attr('dx', d => 0)
+        .attr('dy', d => -this.radius(d) - 5);
     this.nodeEnter.append('circle')
         .attr('r', 0)
         .transition()

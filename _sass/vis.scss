@@ -81,6 +81,7 @@
 .node-label {
     font-family: sans-serif;
     font-size: 10px;
+    text-anchor: middle;
     pointer-events: none;
     &:hover {
         stroke: black;
