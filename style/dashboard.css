@@ -159,13 +159,13 @@ body {
   position: fixed;
   left: 0;
   top: 60px;
+  bottom: 0;
   margin: 0;
   padding: 5px;
   background: white;
   opacity: .8;
   border: 1px solid #DDD;
   width: 250px;
-  height: 100%;
   overflow: scroll;
   z-index: 1;
 }
@@ -242,8 +242,8 @@ body {
   position: fixed;
   right: 0;
   top: 60px;
+  bottom: 0;
   right: -405px;
-  height: 600px;
   width: 400px;
   min-width: 0;
   padding: 10px;
@@ -299,6 +299,7 @@ body {
 #infoBar .infoBody {
   margin-top: 10px;
   width: 100%;
+  max-width: 400px;
   font-size: 12px;
 }
 #infoBar .infoBody table {

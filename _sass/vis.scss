@@ -35,8 +35,8 @@
 }
 .node-collapsed {
     circle {
-        fill: #3182bd;
-        stroke-width: 3px !important;
+        fill: #DFDFDF;
+        stroke-width: 4px !important;
     }
 }
 .node-inner {
@@ -55,6 +55,11 @@
         fill: #d15375;
     }
 }
+.node-moved {
+    circle {
+        fill: #7f58d3;
+    }
+}
 .node-modified {
     circle {
         fill: #dbd825;
@@ -62,7 +67,7 @@
 }
 .node-unmodified {
     circle {
-        fill: #7f58d3;
+        fill: #004EFF;
     }
 }
 
@@ -95,7 +100,7 @@
     fill: none;
 }
 
-.tooltip {
+#tooltip {
     position: absolute;
     text-align: center;
     //width: 100px;
@@ -104,6 +109,6 @@
     font: 14px sans-serif;
     background: $tooltipBackground;
     border: 1px solid #aaa;
-    border-radius: 8px;
+    border-radius: 3px;
     pointer-events: none;
 }

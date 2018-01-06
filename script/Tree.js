@@ -12,7 +12,7 @@ function Tree(container, width, height) {
         .attr('preserveAspectRatio', 'xMinYMin meet')
         .attr('viewBox', '0 0 300 300')
         .classed('svg-content', true)
-        .call(d3.zoom().scaleExtent([0.2, 15]).on("zoom", () => this.zoomed()))
+        .call(d3.zoom().scaleExtent([0.2, 40]).on("zoom", () => this.zoomed()))
       .append('g')
         .attr('class', 'viewG');
         //.attr('transform', 'translate(' + this.width / 2 + ',' + this.height / 2 + ')');
@@ -28,8 +28,13 @@ function Tree(container, width, height) {
     this.root = null;
     this.tooltip = d3.select('body')
         .append('div')
-        .classed('tooltip', true)
+        .attr('id', 'tooltip')
         .style('opacity', 0);
+    this.tooltip.append('span').attr('id', 'added');
+    this.tooltip.append('br');
+    this.tooltip.append('span').attr('id', 'deleted');
+    this.tooltip.append('br');
+    this.tooltip.append('span').attr('id', 'modified');
     //this.radius = null;
     // Default radius scale
     this.radiusScale = n => {
@@ -142,6 +147,11 @@ Tree.prototype.dragstarted = function (d) {
 Tree.prototype.dragged = function (d) {
     d.fx = d3.event.x;
     d.fy = d3.event.y;
+    let x = d3.event.pageX + 20;
+    let y = d3.event.pageY + 20;
+    d3.select('#tooltip')
+        .style('left', x + 'px')
+        .style('top', y + 'px');
 };
 
 Tree.prototype.dragended = function (d) {
@@ -153,7 +163,7 @@ Tree.prototype.dragended = function (d) {
 Tree.prototype.handleMouseOver = function (d, i) {
     d3.select(this).classed('focused', true);
     if (d.data.statistic != null) {
-        d3.select('.tooltip').transition()
+        d3.select('#tooltip').transition()
             .duration(300)
             .style('opacity', 1);
     }
@@ -172,19 +182,19 @@ Tree.prototype.handleMouseMove = function (d, i) {
         deletedLabel = 'Deletado: 0';
         modifiedLabel = 'Modificado: 0';
     }
-    let x = d3.event.pageX;
-    let y = d3.event.pageY;
-    let tooltip = d3.select('.tooltip')
+    let x = d3.event.pageX + 20;
+    let y = d3.event.pageY + 20;
+    let tooltip = d3.select('#tooltip')
         .style('left', x + 'px')
         .style('top', y + 'px');
-    tooltip.append('span').text(addedLabel).append('br');
-    tooltip.append('span').text(deletedLabel).append('br');
-    tooltip.append('span').text(modifiedLabel).append('br');
+    tooltip.select('#added').text(addedLabel);
+    tooltip.select('#deleted').text(deletedLabel);
+    tooltip.select('#modified').text(modifiedLabel);
 };
 
 Tree.prototype.handleMouseOut = function (d, i) {
     d3.select(this).classed('focused', false)
-    d3.select('.tooltip').transition()
+    d3.select('#tooltip').transition()
         .duration(300)
         .style('opacity', 0);
 };
@@ -211,13 +221,16 @@ Tree.prototype.stylize = function (d, i) {
     } else if (d.children != null) { // Inner node
         d3.select(this).classed('node-inner', true);
     } else { // Leaf node
-        if (d.data.status == JSONDatabase.STATUS.ADDED) {
+        if (d.data.isAdded()) {
             d3.select(this).classed('node-added', true);
-        } else if (d.data.status == JSONDatabase.STATUS.DELETED) {
+        } else if (d.data.isDeleted()) {
             d3.select(this).classed('node-deleted', true);
-        } else if (d.data.status == JSONDatabase.STATUS.MODIFIED) {
+        } else if (d.data.isModified()) {
             d3.select(this).classed('node-modified', true);
+        } else if (d.data.isMoved()) {
+            d3.select(this).classed('node-moved', true);
         } else {
+            console.assert(d.data.isUnmodified(), '[Tree#stylize] Invalid file status.');
             d3.select(this).classed('node-unmodified', true);
         }
     }
@@ -236,8 +249,10 @@ Tree.prototype.radius = function (d) {
 
 Tree.prototype.opacity = function (d) {
     let stat = 0;
-    if (d.data.statistic != null) {
+    if (d.data.isDirectory() && d.data.statistic != null) {
         stat = d.data.statistic.added + d.data.statistic.deleted + d.data.statistic.modified;
+    } else if (!d.data.isUnmodified()) {
+        stat = 1;
     }
     if (stat === 0) {
         return 0.3;
@@ -273,21 +288,21 @@ Tree.prototype.build = function (data) {
     console.log('  -> data:', data);
     this.root = d3.hierarchy(data, d => d.entries);
     this.moveChildren(this.root);
-    let bigger = this.biggerNode(this.root);
-    let biggerWeight = bigger.data.statistic.added
-        + bigger.data.statistic.deleted
-        + bigger.data.statistic.modified;
-    console.log('biggerWeight:', biggerWeight);
     this.radiusScale = d3.scalePow().exponent(0.5)
         .domain([0, 30])
         .range([3, 10]);
-    console.log('this.radiusScale(100):', this.radiusScale(100));
     this.simulation
-        .force('link', d3.forceLink().strength(0.8).id(d => d.id))
-        .force('charge', d3.forceManyBody().strength(-200).distanceMax(200).distanceMin(10))
+        .force('link', d3.forceLink()
+                .distance(d => this.radius(d.source) + this.radius(d.target))
+                .strength(0.8).id(d => d.id))
+        .force('charge', d3.forceManyBody()
+                .strength(-200)
+                .distanceMax(400)
+                .distanceMin(10))
         //.force('center', d3.forceCenter(this.width / 2, this.height / 2))
         .force('center', d3.forceCenter(100, 100))
-        .force('collide', d3.forceCollide().radius(d => this.radius(d) - 2))
+        .force('collide', d3.forceCollide()
+                .radius(d => this.radius(d) - 2))
         .on('tick', () => this.ticked());
     this.update();
     this.simulation.restart();
@@ -295,9 +310,9 @@ Tree.prototype.build = function (data) {
 
 Tree.prototype.update = function () {
     var drag = d3.drag()
-        .on('start', (d) => this.dragstarted(d))
-        .on('drag', (d) => this.dragged(d))
-        .on('end', (d) => this.dragended(d));
+        .on('start', d => this.dragstarted(d))
+        .on('drag', d => this.dragged(d))
+        .on('end', d => this.dragended(d));
 
     this.nodes = this.flatten(this.root);
     this.links = this.root.links();
@@ -365,7 +380,13 @@ Tree.prototype.update = function () {
             .style('opacity', d => this.opacity(d));
     this.nodeEnter.append('text')
         .attr('class', 'node-label')
-        .text(d => d.data.name)
+        .text(d => {
+            if (d.parent != null) {
+                return d.data.name;
+            } else {
+                return '<root>';
+            }
+        })
         .attr('dx', d => 0)
         .attr('dy', d => -this.radius(d) - 5);
     this.nodeEnter.append('circle')

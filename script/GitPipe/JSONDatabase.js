@@ -471,12 +471,17 @@ JSONDatabase.DirectoryRecord.constructor = JSONDatabase.DirectoryRecord;
 JSONDatabase.FileRecord = function () {
     JSONDatabase.EntryRecord.call(this, JSONDatabase.ENTRYTYPE.FILE);
     this.oldFileId = null;
+    this.isBinary = false;
     this.status = -1;
     this.blocks = [];
     this.lastBlockIndex = -1;
 };
 JSONDatabase.FileRecord.prototype = Object.create(JSONDatabase.EntryRecord.prototype);
 JSONDatabase.FileRecord.constructor = JSONDatabase.FileRecord;
+
+JSONDatabase.FileRecord.prototype.isBinary = function () {
+    return this.isBinary;
+};
 
 JSONDatabase.FileRecord.prototype.isAdded = function () {
     return this.status === JSONDatabase.STATUS.ADDED;
