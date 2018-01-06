@@ -30,7 +30,15 @@ function Tree(container, width, height) {
         .append('div')
         .classed('tooltip', true)
         .style('opacity', 0);
-    this.radius = null;
+    //this.radius = null;
+    // Default radius scale
+    this.radiusScale = n => {
+        if (n) {
+            return Math.sqrt(n) * 3 + 5;
+        } else {
+            return 5;
+        }
+    };
 
     // Text showing on node label
     this.labelAttribute = 'name';
@@ -84,6 +92,30 @@ Tree.prototype.moveChildren = function (node) {
     }
 };
 
+Tree.prototype.biggerNode = function (root) {
+    let bigger = null;
+    let biggerWeight = 0;
+    function searchBigger (node) {
+        if (node.data && node.data.statistic) {
+            let nodeWeight = node.data.statistic.added
+                + node.data.statistic.deleted
+                + node.data.statistic.modified;
+            if ((bigger != null && nodeWeight > biggerWeight)
+                || bigger == null) {
+                bigger = node;
+                biggerWeight = nodeWeight;
+            }
+            if (node.children) {
+                node.children.forEach(searchBigger);
+            } else if (node._children) {
+                node._children.forEach(searchBigger);
+            }
+        }
+    }
+    searchBigger(root);
+    return bigger;
+};
+
 //================ Event Handlers ================
 Tree.prototype.click = function (d) {
     if (d.children) {
@@ -128,18 +160,26 @@ Tree.prototype.handleMouseOver = function (d, i) {
 };
 
 Tree.prototype.handleMouseMove = function (d, i) {
-    let info = null;
+    let addedLabel = null;
+    let deletedLabel = null;
+    let modifiedLabel = null;
     if (d.data.statistic != null) {
-        info = 'Added: ' + d.data.statistic.added
-            + '\nDeleted: ' + d.data.statistic.deleted
-            + '\nModified: ' + d.data.statistic.modified;
+        addedLabel = 'Adicionado: ' + d.data.statistic.added;
+        deletedLabel = 'Deletado: ' + d.data.statistic.deleted;
+        modifiedLabel = 'Modificado: ' + d.data.statistic.modified;
+    } else {
+        addedLabel = 'Adicionado: 0';
+        deletedLabel = 'Deletado: 0';
+        modifiedLabel = 'Modificado: 0';
     }
     let x = d3.event.pageX;
     let y = d3.event.pageY;
-    d3.select('.tooltip')
-        .text(info)
+    let tooltip = d3.select('.tooltip')
         .style('left', x + 'px')
         .style('top', y + 'px');
+    tooltip.append('span').text(addedLabel).append('br');
+    tooltip.append('span').text(deletedLabel).append('br');
+    tooltip.append('span').text(modifiedLabel).append('br');
 };
 
 Tree.prototype.handleMouseOut = function (d, i) {
@@ -183,6 +223,17 @@ Tree.prototype.stylize = function (d, i) {
     }
 };
 
+Tree.prototype.radius = function (d) {
+    if (d.data && d.data.statistic) {
+        let weight = d.data.statistic.added
+            + d.data.statistic.deleted
+            + d.data.statistic.modified;
+        return this.radiusScale(weight);
+    } else {
+        return this.radiusScale(0);
+    }
+};
+
 Tree.prototype.opacity = function (d) {
     let stat = 0;
     if (d.data.statistic != null) {
@@ -222,6 +273,15 @@ Tree.prototype.build = function (data) {
     console.log('  -> data:', data);
     this.root = d3.hierarchy(data, d => d.entries);
     this.moveChildren(this.root);
+    let bigger = this.biggerNode(this.root);
+    let biggerWeight = bigger.data.statistic.added
+        + bigger.data.statistic.deleted
+        + bigger.data.statistic.modified;
+    console.log('biggerWeight:', biggerWeight);
+    this.radiusScale = d3.scalePow().exponent(0.5)
+        .domain([0, 30])
+        .range([3, 10]);
+    console.log('this.radiusScale(100):', this.radiusScale(100));
     this.simulation
         .force('link', d3.forceLink().strength(0.8).id(d => d.id))
         .force('charge', d3.forceManyBody().strength(-200).distanceMax(200).distanceMin(10))
