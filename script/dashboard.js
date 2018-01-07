@@ -17,6 +17,37 @@ var repoRec = null;
 var commits = null;
 var headCommit = null;
 
+var fillFileInfo = function (fileData) {
+    if (fileData != null) {
+        $('#fileId').text(fileData.id);
+        $('#fileName').text(fileData.name);
+        $('#filePath').text(fileData.path);
+        if (fileData.statistic != null) {
+            $('#fileStAdded').text(fileData.statistic.added);
+            $('#fileStDeleted').text(fileData.statistic.deleted);
+            $('#fileStModified').text(fileData.statistic.modified);
+        }
+        $('#oldFileId').text(fileData.oldFileId);
+        $('#fileIsBinary').text(fileData.isBinary ? 'Sim': 'Não');
+        let fileStatus = null;
+        $('#statisticRow').removeClass('disabled');
+        if (fileData.isAdded()) {
+            fileStatus = 'Adicionado';
+        } else if (fileData.isDeleted()) {
+            fileStatus = 'Deletado';
+        } else if (fileData.isModified()) {
+            fileStatus = 'Modificado';
+        } else if (fileData.isUnmodified()) {
+            fileStatus = 'Não Modificado';
+            $('#statisticRow').addClass('disabled');
+        } else {
+            console.assert(fileData.isMoved(), '[dashboard#fileNodeClickHandler] Invalid file status.');
+            fileStatus = 'Movido';
+        }
+        $('#fileStatus').text(fileStatus);
+    }
+};
+
 var initViz = function (repoPath) {
     if (gitPipe != null) {
         return gitPipe.openRepository(repoPath).then(_dbPath => {
@@ -78,6 +109,7 @@ var initViz = function (repoPath) {
                 console.log('-> diffDir:', diffDir);
                 container = d3.select('#view');
                 tree = new Tree(container);
+                tree.fillFileInfoFunction = fillFileInfo;
                 tree.build(diffDir);
             } else {
                 console.error('diffDir is null.');
@@ -257,6 +289,24 @@ $(document).ready(() => {
                 .addClass('fa-chevron-up');
         }
         isCommitInfoHide = !isCommitInfoHide;
+    });
+
+    let isFileInfoHide = false;
+    $('#fileInfoTitle').click(event => {
+        if (isFileInfoHide) {
+            $('#fileInfoBody').addClass('visible');
+            $('#fileInfoBody').slideDown();
+            $('#fileInfoArrow .fa')
+                .removeClass('fa-chevron-up')
+                .addClass('fa-chevron-down');
+        } else {
+            $('#fileInfoBody').removeClass('visible');
+            $('#fileInfoBody').slideUp();
+            $('#fileInfoArrow .fa')
+                .removeClass('fa-chevron-down')
+                .addClass('fa-chevron-up');
+        }
+        isFileInfoHide = !isFileInfoHide;
     });
 
     ipcRenderer.on('getRepoPath-reply', (event, args) => {

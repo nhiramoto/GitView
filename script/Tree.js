@@ -53,6 +53,8 @@ function Tree(container, width, height) {
 
     // Default depth to collapse nodes
     this.defaultDepth = 3;
+
+    this.fillFileInfoFunction = null;
 }
 
 Tree.prototype.zoomed = function () {
@@ -132,6 +134,9 @@ Tree.prototype.click = function (d) {
         d.children = d._children;
         d._children = null;
     } else {
+        if (this.fillFileInfoFunction != null) {
+            this.fillFileInfoFunction(d.data);
+        }
     }
     console.log('d.data:', d.data);
     this.update();
@@ -302,7 +307,7 @@ Tree.prototype.build = function (data) {
         //.force('center', d3.forceCenter(this.width / 2, this.height / 2))
         .force('center', d3.forceCenter(100, 100))
         .force('collide', d3.forceCollide()
-                .radius(d => this.radius(d) - 2))
+                .radius(d => this.radius(d) + 2))
         .on('tick', () => this.ticked());
     this.update();
     this.simulation.restart();
