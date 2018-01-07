@@ -28,7 +28,7 @@ function Tree(container, width, height) {
     this.root = null;
     this.tooltip = d3.select('body')
         .append('div')
-        .attr('id', 'tooltip')
+        .attr('id', 'nodeTooltip')
         .style('opacity', 0);
     this.tooltip.append('span').attr('id', 'added');
     this.tooltip.append('br');
@@ -154,7 +154,7 @@ Tree.prototype.dragged = function (d) {
     d.fy = d3.event.y;
     let x = d3.event.pageX + 20;
     let y = d3.event.pageY + 20;
-    d3.select('#tooltip')
+    d3.select('#nodeTooltip')
         .style('left', x + 'px')
         .style('top', y + 'px');
 };
@@ -168,7 +168,7 @@ Tree.prototype.dragended = function (d) {
 Tree.prototype.handleMouseOver = function (d, i) {
     d3.select(this).classed('focused', true);
     if (d.data.statistic != null) {
-        d3.select('#tooltip').transition()
+        d3.select('#nodeTooltip').transition()
             .duration(300)
             .style('opacity', 1);
     }
@@ -189,7 +189,7 @@ Tree.prototype.handleMouseMove = function (d, i) {
     }
     let x = d3.event.pageX + 20;
     let y = d3.event.pageY + 20;
-    let tooltip = d3.select('#tooltip')
+    let tooltip = d3.select('#nodeTooltip')
         .style('left', x + 'px')
         .style('top', y + 'px');
     tooltip.select('#added').text(addedLabel);
@@ -199,7 +199,7 @@ Tree.prototype.handleMouseMove = function (d, i) {
 
 Tree.prototype.handleMouseOut = function (d, i) {
     d3.select(this).classed('focused', false)
-    d3.select('#tooltip').transition()
+    d3.select('#nodeTooltip').transition()
         .duration(300)
         .style('opacity', 0);
 };

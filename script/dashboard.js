@@ -30,7 +30,7 @@ var fillFileInfo = function (fileData) {
         $('#oldFileId').text(fileData.oldFileId);
         $('#fileIsBinary').text(fileData.isBinary ? 'Sim': 'Não');
         let fileStatus = null;
-        $('#statisticRow').removeClass('disabled');
+        $('.statisticRow').removeClass('disabled');
         if (fileData.isAdded()) {
             fileStatus = 'Adicionado';
         } else if (fileData.isDeleted()) {
@@ -39,7 +39,7 @@ var fillFileInfo = function (fileData) {
             fileStatus = 'Modificado';
         } else if (fileData.isUnmodified()) {
             fileStatus = 'Não Modificado';
-            $('#statisticRow').addClass('disabled');
+            $('.statisticRow').addClass('disabled');
         } else {
             console.assert(fileData.isMoved(), '[dashboard#fileNodeClickHandler] Invalid file status.');
             fileStatus = 'Movido';

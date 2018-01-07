@@ -86,7 +86,7 @@
   fill: none;
 }
 
-#tooltip {
+#nodeTooltip {
   position: absolute;
   text-align: center;
   padding: 8px;

@@ -100,14 +100,14 @@
     fill: none;
 }
 
-#tooltip {
+#nodeTooltip {
     position: absolute;
     text-align: center;
     //width: 100px;
     //height: 10px;
     padding: 8px;
     font: 14px sans-serif;
-    background: $tooltipBackground;
+    background: $nodeTooltipBackground;
     border: 1px solid #aaa;
     border-radius: 3px;
     pointer-events: none;

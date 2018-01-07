@@ -22,7 +22,7 @@
     </div>
     <div class="background">
         <div id="mainHeader">
-            <span class="title">Repositório: <span id="repoName">Nome do repositório</span></span> <span id="infoButton"><i class="fa fa-plus-square-o" aria-hidden="true"></i></span>
+            <span class="title">Repositório: <span id="repoName">Nome do repositório</span></span> <span id="legendButton"><i class="fa fa-question" aria-hidden="true"></i></span> <span id="infoButton"><i class="fa fa-plus-square-o" aria-hidden="true"></i></span>
         </div>
         <div id="options">
             <div id="optionButton">
@@ -135,47 +135,52 @@
                         <table>
                             <tr>
                                 <td>ID:</td>
-                                <td>
+                                <td colspan="2">
                                     <span id="fileId"></span>
                                 </td>
                             </tr>
                             <tr>
                                 <td>Nome:</td>
-                                <td>
+                                <td colspan="2">
                                     <span id="fileName"></span>
                                 </td>
                             </tr>
                             <tr>
                                 <td>Caminho:</td>
-                                <td>
+                                <td colspan="2">
                                     <span id="filePath"></span>
                                 </td>
                             </tr>
                             <tr>
                                 <td>ID da versão anterior:</td>
-                                <td>
+                                <td colspan="2">
                                     <span id="oldFileId"></span>
                                 </td>
                             </tr>
                             <tr>
                                 <td>É Arquivo Binário?</td>
-                                <td>
+                                <td colspan="2">
                                     <span id="fileIsBinary"></span>
                                 </td>
                             </tr>
                             <tr>
                                 <td><i>Status</i>:</td>
-                                <td>
+                                <td colspan="2">
                                     <span id="fileStatus"></span>
                                 </td>
                             </tr>
-                            <tr id='statisticRow'>
-                                <td>Estatística:</td>
-                                <td>
-                                    Linhas adicionadas: <span id="fileStAdded"></span><br>
-                                    Linhas deletadas: <span id="fileStDeleted"></span><br>
-                                    Linhas modificadas: <span id="fileStModified"></span>
-                                </td>
+                            <tr class="statisticRow">
+                                <td rowspan="3">Estatística:</td>
+                                <td>Linhas adicionadas:</td>
+                                <td><span id="fileStAdded"></span></td>
+                            </tr>
+                            <tr class="statisticRow">
+                                <td>Linhas deletadas:</td>
+                                <td><span id="fileStDeleted"></span></td>
+                            </tr>
+                            <tr class="statisticRow">
+                                <td>Linhas modificadas:</td>
+                                <td><span id="fileStModified"></span></td>
                             </tr>
                         </table>
                     </div>

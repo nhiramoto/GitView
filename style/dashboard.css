@@ -26,6 +26,20 @@ body {
   font-weight: bold;
   color: white;
 }
+#mainHeader #legendButton {
+  position: absolute;
+  right: 70px;
+  top: 15px;
+  font-size: 26px;
+  line-height: 26px;
+  color: white;
+  cursor: pointer;
+  -webkit-transition: color .5s ease;
+}
+#mainHeader #legendButton:hover {
+  color: #2d94d6;
+  -webkit-transition: color .3s ease;
+}
 #mainHeader #infoButton {
   position: absolute;
   right: 20px;
