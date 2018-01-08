@@ -254,10 +254,14 @@ Tree.prototype.radius = function (d) {
 
 Tree.prototype.opacity = function (d) {
     let stat = 0;
-    if (d.data.isDirectory() && d.data.statistic != null) {
-        stat = d.data.statistic.added + d.data.statistic.deleted + d.data.statistic.modified;
-    } else if (!d.data.isUnmodified()) {
-        stat = 1;
+    if (d.data != null) {
+        if (d.data.isDirectory()) {
+            if (d.data.statistic != null) {
+                stat = d.data.statistic.added + d.data.statistic.deleted + d.data.statistic.modified;
+            }
+        } else if (!d.data.isUnmodified()) {
+            stat = 1;
+        }
     }
     if (stat === 0) {
         return 0.3;

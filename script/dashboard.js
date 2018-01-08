@@ -16,6 +16,7 @@ var dbPath = null;
 var repoRec = null;
 var commits = null;
 var headCommit = null;
+var pulseInfoButton = () => {};
 
 var fillFileInfo = function (fileData) {
     if (fileData != null) {
@@ -45,6 +46,7 @@ var fillFileInfo = function (fileData) {
             fileStatus = 'Movido';
         }
         $('#fileStatus').text(fileStatus);
+        pulseInfoButton();
     }
 };
 
@@ -97,6 +99,8 @@ var initViz = function (repoPath) {
                 $('#commitDate').text(commitDate);
                 $('#commitSnapshotId').text(commitSnapshotId);
                 $('#commitParents').text(commitParents);
+
+                pulseInfoButton();
 
                 return gitPipe.getHeadDiffTree();
             } else {
@@ -177,6 +181,8 @@ var diffCommit = function (commitId) {
                     $('#commitDate').text(commitDate);
                     $('#commitSnapshotId').text(commitSnapshotId);
                     $('#commitParents').text(commitParents);
+
+                    pulseInfoButton();
                 } else {
                     Promise.reject('selectedCommit is null.');
                 }
@@ -217,6 +223,24 @@ var diffCommit = function (commitId) {
 
 $(document).ready(() => {
     $('body').fadeIn('slow');
+
+    pulseInfoButton = function () {
+        // Pulse when info bar is hidden
+        if (!$('#infoBar').hasClass('visible')) {
+            console.log('pulsing....');
+            $('#infoButton').animate({
+                color: 'yellow',
+                background: 'red'
+            }, 1000, () => {
+                //$('#infoButton').animate({
+                //    color: 'white',
+                //    background: 'magenta'
+                //}, 1000);
+            });
+        } else {
+            console.log('info bar is visible');
+        }
+    };
     let optionActive = false;
     $('#optionButton').click(event => {
         if (optionActive) {
