@@ -253,6 +253,8 @@ Tree.prototype.radius = function (d) {
 };
 
 Tree.prototype.opacity = function (d) {
+    console.log('opacity(d = ' + d + ')');
+    console.log('d.data:', d.data);
     let stat = 0;
     if (d.data != null) {
         if (d.data.isDirectory()) {

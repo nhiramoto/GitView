@@ -21,7 +21,9 @@ function GitPipe(dbPath) {
         this.db = new JSONDatabase(dbPath);
     }
     this.diffOptions = new Git.DiffOptions();
-    this.diffOptions.flags = Git.Diff.OPTION.INCLUDE_UNMODIFIED;
+    this.diffOptions.flags = Git.Diff.OPTION.INCLUDE_UNMODIFIED
+        + Git.Diff.OPTION.IGNORE_SUBMODULES
+        + Git.Diff.OPTION.INCLUDE_UNTRACKED;
 }
 
 GitPipe.prototype.setGitRepository = function (gitRepo) {
@@ -106,6 +108,8 @@ GitPipe.prototype.parseCommitsHistory = function () {
         });
         history.start();
         return retPromise;
+    }).catch(err => {
+        console.error(err);
     });
 };
 
@@ -282,6 +286,8 @@ GitPipe.prototype.parsePatches = function (oldCommit, recentCommit, patches) {
         } else {
             return this.parsePatches(oldCommit, recentCommit, patches);
         }
+    }).catch(err => {
+        console.error(err);
     });
 };
 
@@ -299,6 +305,8 @@ GitPipe.prototype.parsePatch = function (oldCommit, recentCommit, patch) {
     return this.createFile(patch).then(child => {
         let dirPath = path.dirname(child.path);
         return this.createDirectory(oldCommit, recentCommit, dirPath, child, new JSONDatabase.Statistic(0, 0, 0));
+    }).catch(err => {
+        console.error(err);
     });
 };
 
@@ -309,20 +317,26 @@ GitPipe.prototype.parsePatch = function (oldCommit, recentCommit, patch) {
  * @return {Promise} Retorna o registro do arquivo criado.
  */
 GitPipe.prototype.createFile = function (patch) {
+    console.log('> createFile()');
     let newFileId = patch.newFile().id().toString();
     let oldFileId = patch.oldFile().id().toString();
+    if (newFileId == 0) {
+        newFileId = '0';
+    }
     if (oldFileId == 0) {
         oldFileId = '0';
     }
     let diffFileId = oldFileId + ':' + newFileId;
+    console.log('  diffFileId:', diffFileId);
     let foundFile = this.db.findFile(diffFileId);
     let fileRec = null;
-    let binaryCheckProm = new Promise(resolve => resolve(null));
+    let binaryCheckProm = patch.hunks();
     if (foundFile == undefined) {
         let newPath = patch.newFile().path();
         let oldPath = patch.oldFile().path();
+        console.log('  newPath:', newPath);
         let patchStatus = null;
-        if (oldPath != newPath) {
+        if (oldPath != null && newPath != null && oldPath != newPath) {
             patchStatus = JSONDatabase.STATUS.MOVED;
         } else if (patch.isAdded()) {
             patchStatus = JSONDatabase.STATUS.ADDED;
@@ -337,25 +351,34 @@ GitPipe.prototype.createFile = function (patch) {
         let statistic = new JSONDatabase.Statistic(0, 0, 0);
         fileRec = new JSONDatabase.FileRecord();
         fileRec.id = diffFileId;
-        fileRec.path = newPath;
-        fileRec.name = path.basename(newPath);
+        if (newPath != null) {
+            fileRec.path = newPath;
+        } else {
+            fileRec.path = oldPath;
+        }
+        fileRec.name = path.basename(fileRec.path);
         fileRec.oldFileId = oldFileId;
         fileRec.status = patchStatus;
         fileRec.statistic = statistic;
-        binaryCheckProm = this.gitRepo.getBlob(newFileId);
-    } else fileRec = foundFile;
-    return binaryCheckProm.then(blob => {
-        if (blob != null) {
-            fileRec.isBinary = blob.isBinary();
+        console.log('  binaryCheck -> ', newFileId);
+        if (newFileId != 0) {
+            binaryCheckProm = this.gitRepo.getBlob(newFileId).then(blob => {
+                console.log('  blob:', blob);
+                if (blob != null) {
+                    fileRec.isBinary = blob.isBinary();
+                }
+                return patch.hunks();
+            }).catch(err => console.error(err));
         }
-        return patch.hunks();
-    }).then(hunks => {
+    } else fileRec = foundFile;
+    return binaryCheckProm.then(hunks => {
         let hunkPromises = [];
         hunks.forEach(hunk => {
             hunkPromises.push(hunk.lines());
         });
         return Promise.all(hunkPromises);
     }).then(listLines => {
+        console.log('  listLines:', listLines);
         listLines.forEach(lines => {
             this.parseLines(fileRec, lines);
         });
@@ -363,6 +386,8 @@ GitPipe.prototype.createFile = function (patch) {
             this.db.addFile(fileRec);
         }
         return fileRec;
+    }).catch(err => {
+        console.error(err);
     });
 };
 
@@ -373,7 +398,7 @@ GitPipe.prototype.createFile = function (patch) {
  * @param {Array<Git.DiffLine>} lines Conjunto das linhas.
  */
 GitPipe.prototype.parseLines = function(fileRec, lines) {
-    //console.log('> parseLines');
+    console.log('> parseLines');
     let addedLines = [];
     let deletedLines = [];
     let lastLine = null;
@@ -532,42 +557,67 @@ GitPipe.prototype.createDirectory = function (oldCommit, recentCommit, dirPath, 
         let newTree = null;
         if (isRoot) {
             if (oldCommit != null) {
-                getOldTreePromise = oldCommit.getTree();
+                getOldTreePromise = oldCommit.getTree().then(oct => {
+                    oldTree = oct;
+                });
             } else {
-                getOldTreePromise = new Promise(resolve => resolve(null));
+                getOldTreePromise = new Promise(resolve => {
+                    oldTree = null;
+                });
             }
-            getNewTreePromise = recentCommit.getTree();
+            getNewTreePromise = recentCommit.getTree().then(rct => {
+                newTree = rct;
+            });
         } else {
             if (oldCommit != null) {
                 getOldTreePromise = oldCommit.getEntry(dirPath).then(e1 => {
                     console.assert(e1.isTree(), '[GitPipe#createDirectory] Error: Entry is not a tree.');
                     return e1.getTree();
+                }).then(e1t => {
+                    oldTree = e1t;
                 });
             } else {
-                getOldTreePromise = new Promise(resolve => resolve(null));
+                getOldTreePromise = new Promise(resolve => {
+                    oldTree = null;
+                });
             }
             getNewTreePromise = recentCommit.getEntry(dirPath).then(e2 => {
                 console.assert(e2.isTree(), '[GitPipe#createDirectory] Error: Entry is not a tree.');
                 return e2.getTree();
+            }).then(e2t => {
+                newTree = e2t;
+            }).catch(err => {
+                newTree = null;
             });
         }
         return getOldTreePromise.then(t1 => {
-            oldTree = t1;
             return getNewTreePromise;
         }).then(t2 => {
-            newTree = t2;
+            console.log('  oldTree:', oldTree);
+            console.log('  newTree:', newTree);
             let oldTreeId = null;
             if (oldTree != null) {
                 oldTreeId = oldTree.id().toString();
             }
-            let newTreeId = newTree.id().toString();
-            let newId = null;
-            if (oldTreeId != null) {
-                newId = oldTreeId + ':' + newTreeId;
-            } else {
-                newId = newTreeId;
+            let newTreeId = null;
+            if (newTree != null) {
+                newTreeId = newTree.id().toString();
             }
+            let newId = null;
+            if (oldTreeId == null) {
+                if (newTreeId != null) {
+                    newId = '0:' + newTreeId;
+                } else {
+                    newId = '0';
+                }
+            } else if (newTreeId == null) {
+                newId = oldTreeId + ':0';
+            } else {
+                newId = oldTreeId + ':' + newTreeId;
+            }
+            console.log('  newId:', newId);
             let foundDirRec = this.db.findDirectory(newId);
+            console.log('  foundDirRec:', foundDirRec);
             if (foundDirRec == undefined) { // Diretório ainda não existe
                 //console.log('    Directory ' + dirPath + ' doesnt exists yet. Creating a new one.');
                 let newDirRec = new JSONDatabase.DirectoryRecord();
@@ -595,6 +645,7 @@ GitPipe.prototype.createDirectory = function (oldCommit, recentCommit, dirPath, 
                 //console.log('    Directory found ' + dirPath + ' entriesId: ' + foundDirRec.entriesId);
                 // --- By id ---
                 let foundEntryId = foundDirRec.entriesId.find(eid => (eid === child.id));
+                console.log('  foundEntryId:', foundEntryId);
                 // --- By name ---
                 //let foundEntry = null;
                 //for (let i = 0; i < foundDirRec.entriesId.length; i++) {
@@ -638,6 +689,8 @@ GitPipe.prototype.createDirectory = function (oldCommit, recentCommit, dirPath, 
             } else {
                 return this.createDirectory(oldCommit, recentCommit, dirPath, child, carryStat);
             }
+        }).catch(err => {
+            console.error(err);
         });
     }
 };
@@ -759,6 +812,8 @@ GitPipe.prototype.selectCommit = function (commitId) {
         } else {
             reject('Selected commit not found.');
         }
+    }).catch(err => {
+        console.error(err);
     });
 };
 
