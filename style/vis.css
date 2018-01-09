@@ -1,4 +1,4 @@
-.viewSvg .viewG {
+.svg-g {
   background: -webkit-radial-gradient(white, lightgray);
 }
 
@@ -87,14 +87,33 @@
 }
 
 #nodeTooltip {
-  position: absolute;
+  position: fixed;
   text-align: center;
   padding: 8px;
   font: 14px sans-serif;
-  background: #D0EDFF;
+  background: #E9F3FF;
   border: 1px solid #aaa;
   border-radius: 3px;
   pointer-events: none;
+}
+#nodeTooltip #tooltipHeader {
+  font: 16px sans-serif;
+  text-shadow: 0 0 1px black;
+}
+#nodeTooltip #tooltipHeader.added {
+  color: darkgreen;
+}
+#nodeTooltip #tooltipHeader.deleted {
+  color: darkred;
+}
+#nodeTooltip #tooltipHeader.modified {
+  color: darkgoldenrod;
+}
+#nodeTooltip #tooltipHeader.unmodified {
+  color: #010021;
+}
+#nodeTooltip #tooltipHeader.moved {
+  color: purple;
 }
 
 /*# sourceMappingURL=vis.css.map */

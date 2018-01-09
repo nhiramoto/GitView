@@ -1,9 +1,7 @@
 @import 'colors';
 
-.viewSvg {
-    .viewG {
-        background: -webkit-radial-gradient(white, lightgray);
-    }
+.svg-g {
+    background: -webkit-radial-gradient(white, lightgray);
 }
 
 .node {
@@ -101,7 +99,7 @@
 }
 
 #nodeTooltip {
-    position: absolute;
+    position: fixed;
     text-align: center;
     //width: 100px;
     //height: 10px;
@@ -111,4 +109,24 @@
     border: 1px solid #aaa;
     border-radius: 3px;
     pointer-events: none;
+    #tooltipHeader {
+        //font-weight: bold;
+        font: 16px sans-serif;
+        text-shadow: 0 0 1px black;
+    }
+    #tooltipHeader.added {
+        color: darkgreen;
+    }
+    #tooltipHeader.deleted {
+        color: darkred;
+    }
+    #tooltipHeader.modified {
+        color: darkgoldenrod;
+    }
+    #tooltipHeader.unmodified {
+        color: #010021;
+    }
+    #tooltipHeader.moved {
+        color: purple;
+    }
 }

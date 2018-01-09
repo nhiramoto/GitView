@@ -14,7 +14,7 @@ function Tree(container, width, height) {
         .classed('svg-content', true)
         .call(d3.zoom().scaleExtent([0.2, 40]).on("zoom", () => this.zoomed()))
       .append('g')
-        .attr('class', 'viewG');
+        .attr('class', 'svg-g');
         //.attr('transform', 'translate(' + this.width / 2 + ',' + this.height / 2 + ')');
     this.linkLayer = this.svg.append('g');
     this.nodeLayer = this.svg.append('g');
@@ -30,6 +30,8 @@ function Tree(container, width, height) {
         .append('div')
         .attr('id', 'nodeTooltip')
         .style('opacity', 0);
+    this.tooltip.append('span').attr('id', 'tooltipHeader');
+    this.tooltip.append('hr');
     this.tooltip.append('span').attr('id', 'added');
     this.tooltip.append('br');
     this.tooltip.append('span').attr('id', 'deleted');
@@ -152,11 +154,6 @@ Tree.prototype.dragstarted = function (d) {
 Tree.prototype.dragged = function (d) {
     d.fx = d3.event.x;
     d.fy = d3.event.y;
-    let x = d3.event.pageX + 20;
-    let y = d3.event.pageY + 20;
-    d3.select('#nodeTooltip')
-        .style('left', x + 'px')
-        .style('top', y + 'px');
 };
 
 Tree.prototype.dragended = function (d) {
@@ -168,30 +165,77 @@ Tree.prototype.dragended = function (d) {
 Tree.prototype.handleMouseOver = function (d, i) {
     d3.select(this).classed('focused', true);
     if (d.data.statistic != null) {
-        d3.select('#nodeTooltip').transition()
-            .duration(300)
-            .style('opacity', 1);
+        d3.select('#nodeTooltip')
+            .transition()
+                .duration(300)
+                .style('opacity', 1);
+    }
+    if (d.data != null && d.data.isFile()) {
+        d3.select('#nodeTooltip').select('#tooltipHeader').style('display', 'inline');
+        d3.select('#nodeTooltip').select('hr').style('display', 'block');
+    } else {
+        d3.select('#nodeTooltip').select('#tooltipHeader').style('display', 'none');
+        d3.select('#nodeTooltip').select('hr').style('display', 'none');
     }
 };
 
 Tree.prototype.handleMouseMove = function (d, i) {
-    let addedLabel = null;
-    let deletedLabel = null;
-    let modifiedLabel = null;
-    if (d.data.statistic != null) {
-        addedLabel = 'Adicionado: ' + d.data.statistic.added;
-        deletedLabel = 'Deletado: ' + d.data.statistic.deleted;
-        modifiedLabel = 'Modificado: ' + d.data.statistic.modified;
-    } else {
-        addedLabel = 'Adicionado: 0';
-        deletedLabel = 'Deletado: 0';
-        modifiedLabel = 'Modificado: 0';
+    let fileStatus = null;
+    let fileClass = null;
+    let addedLabel = 'Adicionado: 0';
+    let deletedLabel = 'Deletado: 0';
+    let modifiedLabel = 'Modificado: 0';
+    if (d.data != null) {
+        if (d.data.isFile()) {
+            if (d.data.isAdded()) {
+                fileStatus = 'Adicionado';
+                fileClass = 'added';
+            } else if (d.data.isDeleted()) {
+                fileStatus = 'Deletado';
+                fileClass = 'deleted';
+            } else if (d.data.isModified()) {
+                fileStatus = 'Modificado';
+                fileClass = 'modified';
+            } else if (d.data.isUnmodified()) {
+                fileStatus = 'Não modificado';
+                fileClass = 'unmodified';
+            } else {
+                console.assert(d.data.isMoved(), '[Tree#handleMouseMove] Error: Invalid file status.');
+                fileStatus = 'Movido';
+                fileClass = 'moved';
+            }
+            if (d.data.statistic != null) {
+                addedLabel = 'Linhas adicionadas: ' + d.data.statistic.added;
+                deletedLabel = 'Linhas deletadas: ' + d.data.statistic.deleted;
+                modifiedLabel = 'Linhas modificadas: ' + d.data.statistic.modified;
+            }
+        } else {
+            if (d.data.statistic != null) {
+                addedLabel = 'Arquivos adicionados: ' + d.data.statistic.added;
+                deletedLabel = 'Arquivos deletadas: ' + d.data.statistic.deleted;
+                modifiedLabel = 'Arquivos modificados: ' + d.data.statistic.modified;
+            }
+        }
     }
     let x = d3.event.pageX + 20;
     let y = d3.event.pageY + 20;
     let tooltip = d3.select('#nodeTooltip')
         .style('left', x + 'px')
         .style('top', y + 'px');
+    let tooltipHeader = tooltip.select('#tooltipHeader');
+    tooltipHeader.classed('added', false);
+    tooltipHeader.classed('deleted', false);
+    tooltipHeader.classed('modified', false);
+    tooltipHeader.classed('unmodified', false);
+    tooltipHeader.classed('moved', false);
+    if (fileStatus != null) {
+        tooltip.select('#tooltipHeader')
+            .classed(fileClass, true)
+            .text(fileStatus);
+    } else {
+        tooltip.select('#tooltipHeader').style('display', 'none');
+        tooltip.select('hr').style('display', 'none');
+    }
     tooltip.select('#added').text(addedLabel);
     tooltip.select('#deleted').text(deletedLabel);
     tooltip.select('#modified').text(modifiedLabel);
@@ -253,8 +297,6 @@ Tree.prototype.radius = function (d) {
 };
 
 Tree.prototype.opacity = function (d) {
-    console.log('opacity(d = ' + d + ')');
-    console.log('d.data:', d.data);
     let stat = 0;
     if (d.data != null) {
         if (d.data.isDirectory()) {
@@ -294,7 +336,6 @@ Tree.prototype.load = function (dataPath) {
  */
 Tree.prototype.build = function (data) {
     console.log('building data tree..');
-    console.log('  data:', data);
     data = data || [];
     console.log('  -> data:', data);
     this.root = d3.hierarchy(data, d => d.entries);
