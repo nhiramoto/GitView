@@ -97,7 +97,7 @@
   pointer-events: none;
 }
 #nodeTooltip #tooltipHeader {
-  font: 16px sans-serif;
+  font: 14px sans-serif;
   text-shadow: 0 0 1px black;
 }
 #nodeTooltip #tooltipHeader.added {

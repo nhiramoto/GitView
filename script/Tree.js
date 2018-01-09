@@ -212,7 +212,7 @@ Tree.prototype.handleMouseMove = function (d, i) {
         } else {
             if (d.data.statistic != null) {
                 addedLabel = 'Arquivos adicionados: ' + d.data.statistic.added;
-                deletedLabel = 'Arquivos deletadas: ' + d.data.statistic.deleted;
+                deletedLabel = 'Arquivos deletados: ' + d.data.statistic.deleted;
                 modifiedLabel = 'Arquivos modificados: ' + d.data.statistic.modified;
             }
         }
