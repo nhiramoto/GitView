@@ -368,7 +368,9 @@ GitPipe.prototype.createFile = function (patch) {
                     fileRec.isBinary = blob.isBinary();
                 }
                 return patch.hunks();
-            }).catch(err => console.error(err));
+            }).catch(err => {
+                return patch.hunks();
+            });
         }
     } else fileRec = foundFile;
     return binaryCheckProm.then(hunks => {
