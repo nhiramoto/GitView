@@ -16,6 +16,7 @@ function JSONDatabase (rootPath) {
     this.authors = [];
     this.dirs = [];
     this.files = [];
+    this.submodules = [];
     this.saved = true;
     console.log('creating database directory:', rootPath);
     fs.mkdir(this.rootPath, () => {});
@@ -273,6 +274,28 @@ JSONDatabase.prototype.deleteFile = function (fileId) {
     } else return null;
 };
 
+JSONDatabase.prototype.addSubmodule = function (submoduleRec) {
+    let foundSubmodule = this.findSubmodule(submoduleRec.id);
+    if (foundSubmodule == undefined) {
+        this.submodules.push(submoduleRec);
+        this.saved = false;
+        return true;
+    } else return false;
+};
+
+JSONDatabase.prototype.findSubmodule = function (submoduleId) {
+    return this.submodules.find(sub => sub.id === submoduleId);
+};
+
+JSONDatabase.prototype.deleteSubmodule = function (submoduleId) {
+    let foundSubmodule = this.findSubmodule(submoduleId);
+    if (foundSubmodule != undefined) {
+        this.submodules.splice(this.submodules.indexOf(foundSubmodule), 1);
+        this.saved = false;
+        return foundSubmodule;
+    } else return null;
+};
+
 /**
  * Pesquisa por um diretório ou arquivo na base de dados.
  * @param {String} entryId - Chave de pesquisa.
@@ -453,6 +476,10 @@ JSONDatabase.EntryRecord.prototype.isDirectory = function () {
     return this.type === JSONDatabase.ENTRYTYPE.DIRECTORY;
 };
 
+JSONDatabase.EntryRecord.prototype.isSubmodule = function () {
+    return this.type === JSONDatabase.ENTRYTYPE.SUBMODULE;
+};
+
 /**
  * Registro do diretório.
  * @constructor
@@ -521,6 +548,17 @@ JSONDatabase.FileRecord.prototype.addBlock = function (oldLines, newLines, statu
 };
 
 /**
+ * Registro do submódulo.
+ * @param {NodeGit.Submodule} submodule Submódulo do repositório git.
+ */
+JSONDatabase.SubmoduleRecord = function (submodule) {
+    JSONDatabase.EntryRecord.call(this, JSONDatabase.ENTRYTYPE.SUBMODULE);
+    this.url = null;
+};
+JSONDatabase.SubmoduleRecord.prototype = Object.create(JSONDatabase.EntryRecord.prototype);
+JSONDatabase.SubmoduleRecord.constructor = JSONDatabase.SubmoduleRecord;
+
+/**
  * Registro do bloco do arquivo, com as linhas que foram modificadas.
  *
  */
@@ -566,7 +604,8 @@ JSONDatabase.LineRecord = function () {
  */
 JSONDatabase.ENTRYTYPE = {
     FILE: 0,
-    DIRECTORY: 1
+    DIRECTORY: 1,
+    SUBMODULE: 2
 };
 
 JSONDatabase.STATUS = {
