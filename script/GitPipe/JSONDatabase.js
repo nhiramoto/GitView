@@ -304,8 +304,9 @@ JSONDatabase.prototype.deleteSubmodule = function (submoduleId) {
  */
 JSONDatabase.prototype.findEntry = function (entryId) {
     let result = this.findDirectory(entryId);
-    if (result == undefined) return this.findFile(entryId);
-    else return result;
+    if (result == undefined) result = this.findFile(entryId);
+    if (result == undefined) result = this.findSubmodule(entryId);
+    return result;
 };
 
 /**
@@ -320,7 +321,7 @@ JSONDatabase.prototype.hierarchize = function (rootId) {
         let entriesId = root.entriesId;
         root.entries = [];
         entriesId.forEach(entryId => {
-            console.assert(typeof(entryId) === 'string', '[JSONDatabase#hierarchize] Error: Entry id is not a id.');
+            console.assert(typeof(entryId) === 'string', '[JSONDatabase#hierarchize] Error: Entry id is not a string.');
             let entry = this.hierarchize(entryId);
             root.entries.push(entry);
         });
@@ -338,8 +339,8 @@ JSONDatabase.prototype.mergeDirectories = function (dir1, dir2) {
     if (dir1 == null || dir2 == null) {
         console.error('[JSONDatabase#mergeDirectories] Error: Cannot merge null directories.');
         return null;
-    } else if (dir1.isFile() || dir2.isFile()) {
-        console.error('[JSONDatabase#mergeDirectories] Error: Cannot merge files.');
+    } else if (!dir1.isDirectory() || !dir2.isDirectory()) {
+        console.error('[JSONDatabase#mergeDirectories] Error: Cannot merge non directories.');
         return null;
     } else if (dir1.entries == undefined || dir2.entries == undefined) {
         console.error('[JSONDatabase#mergeDirectories] Error: The directories must be hierarchized.');
@@ -551,8 +552,9 @@ JSONDatabase.FileRecord.prototype.addBlock = function (oldLines, newLines, statu
  * Registro do submódulo.
  * @param {NodeGit.Submodule} submodule Submódulo do repositório git.
  */
-JSONDatabase.SubmoduleRecord = function (submodule) {
+JSONDatabase.SubmoduleRecord = function () {
     JSONDatabase.EntryRecord.call(this, JSONDatabase.ENTRYTYPE.SUBMODULE);
+    this.status = -1;
     this.url = null;
 };
 JSONDatabase.SubmoduleRecord.prototype = Object.create(JSONDatabase.EntryRecord.prototype);
