@@ -577,6 +577,8 @@ GitPipe.prototype.createDirectory = function (oldCommit, recentCommit, dirPath, 
                     return e1.getTree();
                 }).then(e1t => {
                     oldTree = e1t;
+                }).catch(err => {
+                    oldTree = null;
                 });
             } else {
                 getOldTreePromise = new Promise(resolve => {

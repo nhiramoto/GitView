@@ -203,11 +203,10 @@ input[type="button"].red:hover {
 
 *::-webkit-scrollbar-track {
   border-radius: 10px;
-  background-color: #F5F5F5;
 }
 
 *::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
   background-color: #F5F5F5;
 }
 

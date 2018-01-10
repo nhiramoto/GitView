@@ -72,12 +72,13 @@
 .node circle {
     stroke: #505050;
     stroke-width: 1.5px;
+    -webkit-transition: stroke .5s ease, stroke-width .5s ease, transform .5s ease;
     cursor: pointer;
-    -webkit-transition: stroke .5s ease, stroke-width .5s ease;
     &:hover {
         stroke: steelblue;
-        stroke-width: 2.5px;
-        -webkit-transition: stroke .3s ease, stroke-width .3s ease;
+        //stroke-width: 2.5px;
+        //transform: scale(1.4);
+        -webkit-transition: stroke .3s ease, stroke-width .3s ease, transform .3s ease;
     }
 }
 

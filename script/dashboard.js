@@ -25,15 +25,10 @@ $(document).ready(() => {
         // Pulse when info bar is hidden
         if (!$('#infoBar').hasClass('visible')) {
             console.log('pulsing....');
-            $('#infoButton').animate({
-                color: 'yellow',
-                background: 'red'
-            }, 1000, () => {
-                //$('#infoButton').animate({
-                //    color: 'white',
-                //    background: 'magenta'
-                //}, 1000);
-            });
+            $('#infoButton').addClass('pulsing');
+            setTimeout(() => {
+                $('#infoButton').removeClass('pulsing');
+            }, 1000);
         } else {
             console.log('info bar is visible');
         }
@@ -60,9 +55,9 @@ $(document).ready(() => {
             });
     });
 
-    let isInfoPaneHide = false;
+    let isInfoBarHide = $('#infoBar').hasClass('visible');
     $('#infoButton').click(event => {
-        if (isInfoPaneHide) {
+        if (isInfoBarHide) {
             $('#infoBar').addClass('visible');
             $('#infoButton .fa')
                 .removeClass('fa-plus-square-o')
@@ -73,10 +68,10 @@ $(document).ready(() => {
                 .removeClass('fa-minus-square-o')
                 .addClass('fa-plus-square-o');
         }
-        isInfoPaneHide = !isInfoPaneHide;
+        isInfoBarHide = !isInfoBarHide;
     });
 
-    let isRepoInfoHide = false;
+    let isRepoInfoHide = $('#repoInfoBody').hasClass('visible');
     $('#repoInfoTitle').click(event => {
         if (isRepoInfoHide) {
             $('#repoInfoBody').addClass('visible');
@@ -94,7 +89,7 @@ $(document).ready(() => {
         isRepoInfoHide = !isRepoInfoHide;
     });
 
-    let isCommitInfoHide = false;
+    let isCommitInfoHide = $('#commitInfoBody').hasClass('visible');
     $('#commitInfoTitle').click(event => {
         if (isCommitInfoHide) {
             $('#commitInfoBody').addClass('visible');

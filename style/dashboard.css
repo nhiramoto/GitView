@@ -7,6 +7,23 @@ body {
   margin: 0;
 }
 
+@keyframes pulseColor {
+  0% {
+    color: white;
+  }
+  10% {
+    color: yellow;
+  }
+  20% {
+    color: white;
+  }
+  30% {
+    color: yellow;
+  }
+  100% {
+    color: white;
+  }
+}
 #mainHeader {
   position: fixed;
   box-sizing: border-box;
@@ -52,6 +69,11 @@ body {
 #mainHeader #infoButton:hover {
   color: #2d94d6;
   -webkit-transition: color .3s ease;
+}
+#mainHeader #infoButton.pulsing {
+  animation-name: pulseColor;
+  animation-duration: 1s;
+  animation-iteration-count: 1;
 }
 
 #options {
@@ -365,6 +387,7 @@ body {
   margin-top: -200px;
   margin-left: -200px;
   background: white;
+  border-radius: 5px;
   box-shadow: 0 3px 5px rgba(0, 0, 0, 0.5);
   z-index: 20;
   -webkit-transition: top .5s ease;
