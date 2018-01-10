@@ -18,6 +18,144 @@ var commits = null;
 var headCommit = null;
 var pulseInfoButton = () => {};
 
+$(document).ready(() => {
+    $('body').fadeIn('slow');
+
+    pulseInfoButton = function () {
+        // Pulse when info bar is hidden
+        if (!$('#infoBar').hasClass('visible')) {
+            console.log('pulsing....');
+            $('#infoButton').animate({
+                color: 'yellow',
+                background: 'red'
+            }, 1000, () => {
+                //$('#infoButton').animate({
+                //    color: 'white',
+                //    background: 'magenta'
+                //}, 1000);
+            });
+        } else {
+            console.log('info bar is visible');
+        }
+    };
+    let optionActive = false;
+    $('#optionButton').click(event => {
+        if (optionActive) {
+            $('#optionButton').removeClass('active');
+            $('#options').removeClass('active');
+        } else {
+            $('#optionButton').addClass('active');
+            $('#options').addClass('active');
+        }
+        optionActive = !optionActive;
+    });
+
+    $('#openRepo').click(event => {
+        globals.input('Abrir Repositório', 'Tem certeza que quer fechar o repositório atual para abrir um novo repositório?')
+            .then(res => {
+                if (res)
+                    $('.background').fadeOut('slow', () => {
+                        main.loadWelcome();
+                    });
+            });
+    });
+
+    let isInfoPaneHide = false;
+    $('#infoButton').click(event => {
+        if (isInfoPaneHide) {
+            $('#infoBar').addClass('visible');
+            $('#infoButton .fa')
+                .removeClass('fa-plus-square-o')
+                .addClass('fa-minus-square-o');
+        } else {
+            $('#infoBar').removeClass('visible');
+            $('#infoButton .fa')
+                .removeClass('fa-minus-square-o')
+                .addClass('fa-plus-square-o');
+        }
+        isInfoPaneHide = !isInfoPaneHide;
+    });
+
+    let isRepoInfoHide = false;
+    $('#repoInfoTitle').click(event => {
+        if (isRepoInfoHide) {
+            $('#repoInfoBody').addClass('visible');
+            $('#repoInfoBody').slideDown();
+            $('#repoInfoArrow .fa')
+                .removeClass('fa-chevron-up')
+                .addClass('fa-chevron-down');
+        } else {
+            $('#repoInfoBody').removeClass('visible');
+            $('#repoInfoBody').slideUp();
+            $('#repoInfoArrow .fa')
+                .removeClass('fa-chevron-down')
+                .addClass('fa-chevron-up');
+        }
+        isRepoInfoHide = !isRepoInfoHide;
+    });
+
+    let isCommitInfoHide = false;
+    $('#commitInfoTitle').click(event => {
+        if (isCommitInfoHide) {
+            $('#commitInfoBody').addClass('visible');
+            $('#commitInfoBody').slideDown();
+            $('#commitInfoArrow .fa')
+                .removeClass('fa-chevron-up')
+                .addClass('fa-chevron-down');
+        } else {
+            $('#commitInfoBody').removeClass('visible');
+            $('#commitInfoBody').slideUp();
+            $('#commitInfoArrow .fa')
+                .removeClass('fa-chevron-down')
+                .addClass('fa-chevron-up');
+        }
+        isCommitInfoHide = !isCommitInfoHide;
+    });
+
+    let isFileInfoHide = false;
+    $('#fileInfoTitle').click(event => {
+        if (isFileInfoHide) {
+            $('#fileInfoBody').addClass('visible');
+            $('#fileInfoBody').slideDown();
+            $('#fileInfoArrow .fa')
+                .removeClass('fa-chevron-up')
+                .addClass('fa-chevron-down');
+        } else {
+            $('#fileInfoBody').removeClass('visible');
+            $('#fileInfoBody').slideUp();
+            $('#fileInfoArrow .fa')
+                .removeClass('fa-chevron-down')
+                .addClass('fa-chevron-up');
+        }
+        isFileInfoHide = !isFileInfoHide;
+    });
+
+    initLegend();
+
+    let isLegendHide = $('#legend').hasClass('visible');
+    $('#legendButton').click(event => {
+        if (isLegendHide) {
+            $('#legend').addClass('visible');
+        } else {
+            $('#legend').removeClass('visible');
+        }
+        isLegendHide = !isLegendHide;
+    });
+    $('#legendCloseBtn').click(event => {
+        isLegendHide = true;
+        $('#legend').removeClass('visible');
+    });
+
+    ipcRenderer.on('getRepoPath-reply', (event, args) => {
+        repoPath = args;
+        console.log('repoPath:', repoPath);
+        gitPipe = new GitPipe();
+        initViz(repoPath);
+    });
+    ipcRenderer.send('getRepoPath');
+
+});
+
 var fillFileInfo = function (fileData) {
     if (fileData != null) {
         $('#fileId').text(fileData.id);
@@ -221,124 +359,113 @@ var diffCommit = function (commitId) {
     }
 };
 
-$(document).ready(() => {
-    $('body').fadeIn('slow');
-
-    pulseInfoButton = function () {
-        // Pulse when info bar is hidden
-        if (!$('#infoBar').hasClass('visible')) {
-            console.log('pulsing....');
-            $('#infoButton').animate({
-                color: 'yellow',
-                background: 'red'
-            }, 1000, () => {
-                //$('#infoButton').animate({
-                //    color: 'white',
-                //    background: 'magenta'
-                //}, 1000);
-            });
-        } else {
-            console.log('info bar is visible');
-        }
-    };
-    let optionActive = false;
-    $('#optionButton').click(event => {
-        if (optionActive) {
-            $('#optionButton').removeClass('active');
-            $('#options').removeClass('active');
-        } else {
-            $('#optionButton').addClass('active');
-            $('#options').addClass('active');
-        }
-        optionActive = !optionActive;
-    });
-
-    $('#openRepo').click(event => {
-        globals.input('Abrir Repositório', 'Tem certeza que quer fechar o repositório atual para abrir um novo repositório?')
-            .then(res => {
-                if (res)
-                    $('.background').fadeOut('slow', () => {
-                        main.loadWelcome();
-                    });
-            });
-    });
-
-    let isInfoPaneHide = false;
-    $('#infoButton').click(event => {
-        if (isInfoPaneHide) {
-            $('#infoBar').addClass('visible');
-            $('#infoButton .fa')
-                .removeClass('fa-plus-square-o')
-                .addClass('fa-minus-square-o');
-        } else {
-            $('#infoBar').removeClass('visible');
-            $('#infoButton .fa')
-                .removeClass('fa-minus-square-o')
-                .addClass('fa-plus-square-o');
-        }
-        isInfoPaneHide = !isInfoPaneHide;
-    });
-
-    let isRepoInfoHide = false;
-    $('#repoInfoTitle').click(event => {
-        if (isRepoInfoHide) {
-            $('#repoInfoBody').addClass('visible');
-            $('#repoInfoBody').slideDown();
-            $('#repoInfoArrow .fa')
-                .removeClass('fa-chevron-up')
-                .addClass('fa-chevron-down');
-        } else {
-            $('#repoInfoBody').removeClass('visible');
-            $('#repoInfoBody').slideUp();
-            $('#repoInfoArrow .fa')
-                .removeClass('fa-chevron-down')
-                .addClass('fa-chevron-up');
-        }
-        isRepoInfoHide = !isRepoInfoHide;
-    });
-
-    let isCommitInfoHide = false;
-    $('#commitInfoTitle').click(event => {
-        if (isCommitInfoHide) {
-            $('#commitInfoBody').addClass('visible');
-            $('#commitInfoBody').slideDown();
-            $('#commitInfoArrow .fa')
-                .removeClass('fa-chevron-up')
-                .addClass('fa-chevron-down');
-        } else {
-            $('#commitInfoBody').removeClass('visible');
-            $('#commitInfoBody').slideUp();
-            $('#commitInfoArrow .fa')
-                .removeClass('fa-chevron-down')
-                .addClass('fa-chevron-up');
-        }
-        isCommitInfoHide = !isCommitInfoHide;
-    });
-
-    let isFileInfoHide = false;
-    $('#fileInfoTitle').click(event => {
-        if (isFileInfoHide) {
-            $('#fileInfoBody').addClass('visible');
-            $('#fileInfoBody').slideDown();
-            $('#fileInfoArrow .fa')
-                .removeClass('fa-chevron-up')
-                .addClass('fa-chevron-down');
-        } else {
-            $('#fileInfoBody').removeClass('visible');
-            $('#fileInfoBody').slideUp();
-            $('#fileInfoArrow .fa')
-                .removeClass('fa-chevron-down')
-                .addClass('fa-chevron-up');
-        }
-        isFileInfoHide = !isFileInfoHide;
-    });
-
-    ipcRenderer.on('getRepoPath-reply', (event, args) => {
-        repoPath = args;
-        console.log('repoPath:', repoPath);
-        gitPipe = new GitPipe();
-        initViz(repoPath);
-    });
-    ipcRenderer.send('getRepoPath');
-
-});
+var initLegend = function () {
+    console.log('initializing legend...');
+    console.log('d3 selection:', d3.select('#legendBody'));
+    let lsvg = d3.select('#legendBody').append('svg')
+            .attr('width', '400px')
+            .attr('height', '372px')
+        .append('g')
+            .classed('legend-elem', true);
+    console.log('lsvg:', lsvg);
+    let nodeRoot = lsvg.append('g')
+        .classed('node', true)
+        .classed('node-root', true)
+        .style('transform', 'translate(30px, 30px)');
+    nodeRoot.append('circle')
+        .attr('r', '8px');
+    nodeRoot.append('text')
+        .classed('legend-node-label', true)
+        .text('Raíz do projeto')
+        .attr('dx', '15px')
+        .attr('dy', '5px');
+    let nodeRootCollapsed = lsvg.append('g')
+        .classed('node', true)
+        .classed('node-rootCollapsed', true)
+        .style('transform', 'translate(30px, 60px)');
+    nodeRootCollapsed.append('circle')
+        .attr('r', '8px');
+    nodeRootCollapsed.append('text')
+        .classed('legend-node-label', true)
+        .text('Raíz do projeto recolhido')
+        .attr('dx', '15px')
+        .attr('dy', '5px');
+    let nodeInner= lsvg.append('g')
+        .classed('node', true)
+        .classed('node-inner', true)
+        .style('transform', 'translate(30px, 90px)');
+    nodeInner.append('circle')
+        .attr('r', '8px');
+    nodeInner.append('text')
+        .classed('legend-node-label', true)
+        .text('Diretório')
+        .attr('dx', '15px')
+        .attr('dy', '5px');
+    let nodeCollapsed = lsvg.append('g')
+        .classed('node', true)
+        .classed('node-collapsed', true)
+        .style('transform', 'translate(30px, 120px)');
+    nodeCollapsed.append('circle')
+        .attr('r', '8px');
+    nodeCollapsed.append('text')
+        .classed('legend-node-label', true)
+        .text('Diretório recolhido')
+        .attr('dx', '15px')
+        .attr('dy', '5px');
+    let nodeAdded = lsvg.append('g')
+        .classed('node', true)
+        .classed('node-added', true)
+        .style('transform', 'translate(30px, 150px)');
+    nodeAdded.append('circle')
+        .attr('r', '8px');
+    nodeAdded.append('text')
+        .classed('legend-node-label', true)
+        .text('Arquivo adicionado')
+        .attr('dx', '15px')
+        .attr('dy', '5px');
+    let nodeDeleted = lsvg.append('g')
+        .classed('node', true)
+        .classed('node-deleted', true)
+        .style('transform', 'translate(30px, 180px)');
+    nodeDeleted.append('circle')
+        .attr('r', '8px');
+    nodeDeleted.append('text')
+        .classed('legend-node-label', true)
+        .text('Arquivo deletado')
+        .attr('dx', '15px')
+        .attr('dy', '5px');
+    let nodeMoved = lsvg.append('g')
+        .classed('node', true)
+        .classed('node-moved', true)
+        .style('transform', 'translate(30px, 210px)');
+    nodeMoved.append('circle')
+        .attr('r', '8px');
+    nodeMoved.append('text')
+        .classed('legend-node-label', true)
+        .text('Arquivo movido')
+        .attr('dx', '15px')
+        .attr('dy', '5px');
+    let nodeModified = lsvg.append('g')
+        .classed('node', true)
+        .classed('node-modified', true)
+        .style('transform', 'translate(30px, 240px)');
+    nodeModified.append('circle')
+        .attr('r', '8px');
+    nodeModified.append('text')
+        .classed('legend-node-label', true)
+        .text('Arquivo modificado')
+        .attr('dx', '15px')
+        .attr('dy', '5px');
+    let nodeUnmodified = lsvg.append('g')
+        .classed('node', true)
+        .classed('node-unmodified', true)
+        .style('transform', 'translate(30px, 270px)');
+    nodeUnmodified.append('circle')
+        .style('opacity', '0.3')
+        .attr('r', '8px');
+    nodeUnmodified.append('text')
+        .classed('legend-node-label', true)
+        .text('Arquivo não modificado')
+        .attr('dx', '15px')
+        .attr('dy', '5px');
+};

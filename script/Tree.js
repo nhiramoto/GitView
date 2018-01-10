@@ -418,7 +418,7 @@ Tree.prototype.update = function () {
 
     this.nodeEnter = this.nodeSvg.enter()
         .append('g')
-            .attr('class', 'node')
+            .classed('node', true)
             .on('click', d => this.click(d))
             .on('mouseover', this.handleMouseOver)
             .on('mousemove', this.handleMouseMove)

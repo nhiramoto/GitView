@@ -254,7 +254,6 @@ body {
 
 #infoBar {
   position: fixed;
-  right: 0;
   top: 60px;
   bottom: 0;
   right: -405px;
@@ -339,6 +338,9 @@ body {
   background: #DFDFDF;
   color: #AFAFAF;
 }
+#infoBar .infoBody table tr.disabled:hover {
+  background: #DFDFDF;
+}
 #infoBar .infoBody table tr td {
   white-space: wrap;
   word-wrap: break-word;
@@ -351,6 +353,62 @@ body {
 #infoBar.visible {
   right: 0;
   -webkit-transition: right .3s ease;
+}
+
+#legend {
+  position: fixed;
+  display: block;
+  width: 400px;
+  height: 400px;
+  top: -400px;
+  left: 50%;
+  margin-top: -200px;
+  margin-left: -200px;
+  background: white;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.5);
+  z-index: 20;
+  -webkit-transition: top .5s ease;
+}
+#legend #legendCloseBtn {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  height: 24px;
+  width: 24px;
+  z-index: 21;
+  border-radius: 50%;
+  color: black;
+  font-size: 24px;
+  line-height: 24px;
+  text-align: center;
+  cursor: pointer;
+  text-shadow: 0 -2px 1px white, 2px 0 1px white, -2px 0 1px white, 0 2px 1px white;
+  -webkit-transition: transform .8s ease;
+}
+#legend #legendCloseBtn:hover {
+  transform: rotate(360deg);
+  -webkit-transition: transform .5s ease;
+}
+#legend #legendTitle {
+  display: block;
+  width: 100%;
+  font-weight: bold;
+  font-size: 18px;
+  line-height: 18px;
+  text-align: center;
+  margin-top: 15px;
+}
+#legend #legendBody {
+  position: absolute;
+  width: 100%;
+  top: 33px;
+  bottom: 0;
+  padding: 5px;
+}
+
+#legend.visible {
+  top: 50%;
+  -webkit-transition: top .3s ease;
 }
 
 /*# sourceMappingURL=dashboard.css.map */

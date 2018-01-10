@@ -80,6 +80,13 @@
   stroke-width: 1;
 }
 
+.legend-node-label {
+  font-family: sans-serif;
+  font-size: 14px;
+  text-anchor: start;
+  pointer-events: none;
+}
+
 .link {
   stroke: #505050;
   stroke-width: 1.5px;

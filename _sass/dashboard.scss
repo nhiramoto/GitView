@@ -266,7 +266,6 @@ $infoBarWidth: 400px;
 
 #infoBar {
     position: fixed;
-    right: 0;
     top: $headerHeight;
     bottom: 0;
     right: -$infoBarWidth - 5px;
@@ -350,6 +349,9 @@ $infoBarWidth: 400px;
         table tr.disabled {
             background: #DFDFDF;
             color: #AFAFAF;
+            &:hover {
+                background: #DFDFDF;
+            }
         }
         table tr td {
             white-space: wrap;
@@ -368,4 +370,64 @@ $infoBarWidth: 400px;
 #infoBar.visible {
     right: 0;
     -webkit-transition: right .3s ease;
+}
+
+$legendWidth: 400px;
+$legendHeight: 400px;
+
+#legend {
+    position: fixed;
+    display: block;
+    width: $legendWidth;
+    height: $legendHeight;
+    top: -$legendHeight;
+    left: 50%;
+    margin-top: -$legendHeight/2;
+    margin-left: -$legendWidth/2;
+    background: white;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.5);
+    z-index: 20;
+    -webkit-transition: top .5s ease;
+    #legendCloseBtn {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        height: 24px;
+        width: 24px;
+        z-index: 21;
+        border-radius: 50%;
+        color: black;
+        font-size: 24px;
+        line-height: 24px;
+        text-align: center;
+        cursor: pointer;
+        text-shadow: 0 -2px 1px white, 2px 0 1px white, -2px 0 1px white, 0 2px 1px white;
+        -webkit-transition: transform .8s ease;
+        &:hover {
+            transform: rotate(360deg);
+            -webkit-transition: transform .5s ease;
+        }
+    }
+    #legendTitle {
+        display: block;
+        width: 100%;
+        //height: 30px;
+        font-weight: bold;
+        font-size: 18px;
+        line-height: 18px;
+        text-align: center;
+        margin-top: 15px;
+    }
+    #legendBody {
+        position: absolute;
+        width: 100%;
+        top: 33px;
+        bottom: 0;
+        padding: 5px;
+    }
+}
+
+#legend.visible {
+    top: 50%;
+    -webkit-transition: top .3s ease;
 }
