@@ -24,13 +24,10 @@ $(document).ready(() => {
     pulseInfoButton = function () {
         // Pulse when info bar is hidden
         if (!$('#infoBar').hasClass('visible')) {
-            console.log('pulsing....');
             $('#infoButton').addClass('pulsing');
             setTimeout(() => {
                 $('#infoButton').removeClass('pulsing');
             }, 1000);
-        } else {
-            console.log('info bar is visible');
         }
     };
     let optionActive = false;
