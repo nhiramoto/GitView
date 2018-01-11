@@ -148,6 +148,17 @@ $(document).ready(() => {
 
 });
 
+var showLoadingScreen = function() {
+    //$('#loadingScreen').removeClass('visible');
+    $('#content').prop('disabled', true);
+    $('#loadingScreen').fadeIn();
+};
+
+var hideLoadingScreen = function () {
+    $('#content').prop('disabled', false);
+    $('#loadingScreen').fadeOut(1000);
+};
+
 var fillFileInfo = function (data) {
     if (data != null) {
         if (data.isFile()) {
@@ -192,6 +203,7 @@ var fillFileInfo = function (data) {
 };
 
 var initViz = function (repoPath) {
+    showLoadingScreen();
     if (gitPipe != null) {
         return gitPipe.openRepository(repoPath).then(_dbPath => {
             dbPath = _dbPath;
@@ -288,6 +300,8 @@ var initViz = function (repoPath) {
                 $('#commitBar').append(commitItem);
             });
             $('#commitBar #' + headCommit.id).addClass('selected');
+        }).then(() => {
+            hideLoadingScreen();
         }).catch(err => {
             if (err) console.error(err);
         });
@@ -296,6 +310,7 @@ var initViz = function (repoPath) {
 
 var diffCommit = function (commitId) {
     let selected = null;
+    showLoadingScreen();
     if (gitPipe != null) {
         return gitPipe.selectCommit(commitId).then(res => {
             selected = res;
@@ -356,6 +371,8 @@ var diffCommit = function (commitId) {
             console.log('Selected commit diff tree got!');
             console.log('diffDir:', diffDir);
             tree.build(diffDir);
+        }).then(() => {
+            hideLoadingScreen();
         }).catch(err => {
             if (err) console.error(err);
         });
