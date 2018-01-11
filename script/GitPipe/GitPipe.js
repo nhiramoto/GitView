@@ -319,16 +319,11 @@ GitPipe.prototype.parsePatch = function (oldCommit, recentCommit, patch) {
  */
 GitPipe.prototype.createFile = function (oldCommit, recentCommit, patch) {
     console.log('> createFile()');
-    let newFileId = patch.newFile().id().toString();
     let oldFileId = patch.oldFile().id().toString();
-    let diffFileId = null;
-    if (oldFileId == null || oldFileId == 0) {
-        diffFileId = '0:' + newFileId;
-    } else if (newFileId == null || newFileId == 0) {
-        diffFileId = oldFileId + ':0';
-    } else {
-        diffFileId = oldFileId + ':' + newFileId;
-    }
+    let newFileId = patch.newFile().id().toString();
+    let oldId = oldFileId != 0 ? oldFileId : '0';
+    let newId = newFileId != 0 ? newFileId : '0';
+    let diffFileId = oldFileId + ':' + newFileId;
     console.log('  diffFileId:', diffFileId);
     let foundFileRec = this.db.findFile(diffFileId);
     if (foundFileRec == undefined) {
@@ -369,13 +364,14 @@ GitPipe.prototype.createFile = function (oldCommit, recentCommit, patch) {
             } else if (entry.isSubmodule()) {
                 isSubmod = true;
                 console.log('  Submodule...');
-                return Git.Submodule.lookup(this.gitRepo, entry.name());
+                //return Git.Submodule.lookup(this.gitRepo, entry.name());
+                return null;
             }
         }).then(entryObject => {
             if (isBlob) {
                 fileRec = new JSONDatabase.FileRecord();
                 fileRec.id = diffFileId;
-                fileRec.oldId = oldFileId;
+                fileRec.oldId = oldId;
                 fileRec.oldName = oldPath != null ? path.basename(oldPath) : null;
                 fileRec.newName = newPath != null ? path.basename(newPath) : null;
                 fileRec.oldPath = oldPath;
@@ -386,12 +382,12 @@ GitPipe.prototype.createFile = function (oldCommit, recentCommit, patch) {
             } else if (isSubmod) {
                 fileRec = new JSONDatabase.SubmoduleRecord();
                 fileRec.id = diffFileId;
-                fileRec.oldId = oldFileId;
+                fileRec.oldId = oldId;
                 fileRec.oldName = oldPath != null ? path.basename(oldPath) : null;
                 fileRec.newName = newPath != null ? path.basename(newPath) : null;
                 fileRec.oldPath = oldPath;
                 fileRec.newPath = newPath;
-                fileRec.url = entryObject.url();
+                //fileRec.url = entryObject.url();
                 fileRec.status = patchStatus;
                 console.log('  submodule url:', fileRec.url);
             }

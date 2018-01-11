@@ -21,8 +21,8 @@ var pulseInfoButton = () => {};
 var fillFileInfo = function (data) {
     if (data != null) {
         if (data.isFile()) {
-            $('#fileInfoTitle').text('Arquivo');
-            $('#fileIsBinary').parent('tr').css('display', '');
+            $('#fileInfoTitle .infoTitle').text('Arquivo');
+            $('#fileIsBinary').closest('tr').css('display', '');
             $('#fileIsBinary').text(data.isBinary ? 'Sim': 'Não');
             if (data.statistic != null) {
                 $('.statisticRow').css('display', '');
@@ -33,8 +33,8 @@ var fillFileInfo = function (data) {
                 $('.statisticRow').css('display', 'none');
             }
         } else if (data.isSubmodule()) {
-            $('#fileInfoTitle').text('Submódulo');
-            $('#fileIsBinary').parent('tr').css('display', 'none');
+            $('#fileInfoTitle .infoTitle').text('Submódulo');
+            $('#fileIsBinary').closest('tr').css('display', 'none');
             $('.statisticRow').css('display', 'none');
         }
         $('#fileId').text(data.id);

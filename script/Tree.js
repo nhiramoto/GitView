@@ -188,7 +188,7 @@ Tree.prototype.handleMouseOver = function (d, i) {
             tooltipStatus = 'Movido';
             tooltipClass = 'moved';
         }
-        if (d.data.isFile() && d.data.statistic != null) {
+        if (d.data.isFile() && !d.data.isBinary && d.data.statistic != null) {
             addedLabel = 'Linhas adicionadas: ' + d.data.statistic.added;
             deletedLabel = 'Linhas deletadas: ' + d.data.statistic.deleted;
             modifiedLabel = 'Linhas modificadas: ' + d.data.statistic.modified;
@@ -216,30 +216,23 @@ Tree.prototype.handleMouseOver = function (d, i) {
         tooltip.select('#tooltipHeader').style('display', 'none');
         tooltip.select('hr').style('display', 'none');
     }
-    if (addedLabel != null) {
+    if (addedLabel != null && deletedLabel != null && modifiedLabel != null) {
+        tooltip.select('hr').style('display', 'block')
         tooltip.select('#added').style('display', 'inline');
-        tooltip.select('#added').text(addedLabel);
-    } else {
-        tooltip.select('#added').style('display', 'none');
-    }
-    if (deletedLabel != null) {
         tooltip.select('#deleted').style('display', 'inline');
-        tooltip.select('#deleted').text(deletedLabel);
-    } else {
-        tooltip.select('#deleted').style('display', 'none');
-    }
-    if (modifiedLabel != null) {
         tooltip.select('#modified').style('display', 'inline');
+        tooltip.select('#added').text(addedLabel);
+        tooltip.select('#deleted').text(deletedLabel);
         tooltip.select('#modified').text(modifiedLabel);
     } else {
+        tooltip.select('hr').style('display', 'none')
+        tooltip.select('#added').style('display', 'none');
+        tooltip.select('#deleted').style('display', 'none');
         tooltip.select('#modified').style('display', 'none');
     }
-    if (d.data.statistic != null) {
-        d3.select('#nodeTooltip')
-            .transition()
-                .duration(300)
-                .style('opacity', 1);
-    }
+    tooltip.transition()
+        .duration(300)
+        .style('opacity', 1);
 };
 
 Tree.prototype.handleMouseMove = function (d, i) {
