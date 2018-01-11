@@ -107,7 +107,7 @@ $(document).ready(() => {
         isCommitInfoHide = !isCommitInfoHide;
     });
 
-    let isFileInfoHide = false;
+    let isFileInfoHide = $('#fileInfoBody').hasClass('visible');
     $('#fileInfoTitle').click(event => {
         if (isFileInfoHide) {
             $('#fileInfoBody').addClass('visible');
@@ -151,31 +151,42 @@ $(document).ready(() => {
 
 });
 
-var fillFileInfo = function (fileData) {
-    if (fileData != null) {
-        $('#fileId').text(fileData.id);
-        $('#fileName').text(fileData.name);
-        $('#filePath').text(fileData.path);
-        if (fileData.statistic != null) {
-            $('#fileStAdded').text(fileData.statistic.added);
-            $('#fileStDeleted').text(fileData.statistic.deleted);
-            $('#fileStModified').text(fileData.statistic.modified);
+var fillFileInfo = function (data) {
+    if (data != null) {
+        if (data.isFile()) {
+            $('#fileInfoTitle .infoTitle').text('Arquivo');
+            $('#fileIsBinary').closest('tr').css('display', '');
+            $('#fileIsBinary').text(data.isBinary ? 'Sim': 'Não');
+            if (data.statistic != null) {
+                $('.statisticRow').css('display', '');
+                $('#fileStAdded').text(data.statistic.added);
+                $('#fileStDeleted').text(data.statistic.deleted);
+                $('#fileStModified').text(data.statistic.modified);
+            } else {
+                $('.statisticRow').css('display', 'none');
+            }
+        } else if (data.isSubmodule()) {
+            $('#fileInfoTitle .infoTitle').text('Submódulo');
+            $('#fileIsBinary').closest('tr').css('display', 'none');
+            $('.statisticRow').css('display', 'none');
         }
-        $('#oldFileId').text(fileData.oldFileId);
-        $('#fileIsBinary').text(fileData.isBinary ? 'Sim': 'Não');
+        $('#fileId').text(data.id);
+        $('#fileName').text(data.getName());
+        $('#filePath').text(data.getPath());
+        $('#oldFileId').text(data.oldId);
         let fileStatus = null;
         $('.statisticRow').removeClass('disabled');
-        if (fileData.isAdded()) {
+        if (data.isAdded()) {
             fileStatus = 'Adicionado';
-        } else if (fileData.isDeleted()) {
+        } else if (data.isDeleted()) {
             fileStatus = 'Deletado';
-        } else if (fileData.isModified()) {
+        } else if (data.isModified()) {
             fileStatus = 'Modificado';
-        } else if (fileData.isUnmodified()) {
+        } else if (data.isUnmodified()) {
             fileStatus = 'Não Modificado';
             $('.statisticRow').addClass('disabled');
         } else {
-            console.assert(fileData.isMoved(), '[dashboard#fileNodeClickHandler] Invalid file status.');
+            console.assert(data.isMoved(), '[dashboard#fileNodeClickHandler] Invalid file status.');
             fileStatus = 'Movido';
         }
         $('#fileStatus').text(fileStatus);

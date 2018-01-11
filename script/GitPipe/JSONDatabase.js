@@ -16,6 +16,7 @@ function JSONDatabase (rootPath) {
     this.authors = [];
     this.dirs = [];
     this.files = [];
+    this.submodules = [];
     this.saved = true;
     console.log('creating database directory:', rootPath);
     fs.mkdir(this.rootPath, () => {});
@@ -273,6 +274,28 @@ JSONDatabase.prototype.deleteFile = function (fileId) {
     } else return null;
 };
 
+JSONDatabase.prototype.addSubmodule = function (submoduleRec) {
+    let foundSubmodule = this.findSubmodule(submoduleRec.id);
+    if (foundSubmodule == undefined) {
+        this.submodules.push(submoduleRec);
+        this.saved = false;
+        return true;
+    } else return false;
+};
+
+JSONDatabase.prototype.findSubmodule = function (submoduleId) {
+    return this.submodules.find(sub => sub.id === submoduleId);
+};
+
+JSONDatabase.prototype.deleteSubmodule = function (submoduleId) {
+    let foundSubmodule = this.findSubmodule(submoduleId);
+    if (foundSubmodule != undefined) {
+        this.submodules.splice(this.submodules.indexOf(foundSubmodule), 1);
+        this.saved = false;
+        return foundSubmodule;
+    } else return null;
+};
+
 /**
  * Pesquisa por um diretório ou arquivo na base de dados.
  * @param {String} entryId - Chave de pesquisa.
@@ -281,8 +304,9 @@ JSONDatabase.prototype.deleteFile = function (fileId) {
  */
 JSONDatabase.prototype.findEntry = function (entryId) {
     let result = this.findDirectory(entryId);
-    if (result == undefined) return this.findFile(entryId);
-    else return result;
+    if (result == undefined) result = this.findFile(entryId);
+    if (result == undefined) result = this.findSubmodule(entryId);
+    return result;
 };
 
 /**
@@ -297,7 +321,7 @@ JSONDatabase.prototype.hierarchize = function (rootId) {
         let entriesId = root.entriesId;
         root.entries = [];
         entriesId.forEach(entryId => {
-            console.assert(typeof(entryId) === 'string', '[JSONDatabase#hierarchize] Error: Entry id is not a id.');
+            console.assert(typeof(entryId) === 'string', '[JSONDatabase#hierarchize] Error: Entry id is not a string.');
             let entry = this.hierarchize(entryId);
             root.entries.push(entry);
         });
@@ -315,8 +339,8 @@ JSONDatabase.prototype.mergeDirectories = function (dir1, dir2) {
     if (dir1 == null || dir2 == null) {
         console.error('[JSONDatabase#mergeDirectories] Error: Cannot merge null directories.');
         return null;
-    } else if (dir1.isFile() || dir2.isFile()) {
-        console.error('[JSONDatabase#mergeDirectories] Error: Cannot merge files.');
+    } else if (!dir1.isDirectory() || !dir2.isDirectory()) {
+        console.error('[JSONDatabase#mergeDirectories] Error: Cannot merge non directories.');
         return null;
     } else if (dir1.entries == undefined || dir2.entries == undefined) {
         console.error('[JSONDatabase#mergeDirectories] Error: The directories must be hierarchized.');
@@ -439,10 +463,30 @@ JSONDatabase.Statistic.prototype.greater = function (another) {
  */
 JSONDatabase.EntryRecord = function (type) {
     this.id = null;
-    this.name = null;
-    this.path = null;
+    this.oldId = null;
+    this.oldName = null;
+    this.newName = null;
+    this.oldPath = null;
+    this.newPath = null;
+    this.status = -1;
     this.statistic = null;
     this.type = type;
+};
+
+JSONDatabase.EntryRecord.prototype.getName = function () {
+    if (this.newName != null && this.newName.length > 0) {
+        return this.newName;
+    } else {
+        return this.oldName;
+    }
+};
+
+JSONDatabase.EntryRecord.prototype.getPath = function () {
+    if (this.newPath != null) {
+        return this.newPath;
+    } else {
+        return this.oldPath;
+    }
 };
 
 JSONDatabase.EntryRecord.prototype.isFile = function () {
@@ -451,6 +495,30 @@ JSONDatabase.EntryRecord.prototype.isFile = function () {
 
 JSONDatabase.EntryRecord.prototype.isDirectory = function () {
     return this.type === JSONDatabase.ENTRYTYPE.DIRECTORY;
+};
+
+JSONDatabase.EntryRecord.prototype.isSubmodule = function () {
+    return this.type === JSONDatabase.ENTRYTYPE.SUBMODULE;
+};
+
+JSONDatabase.EntryRecord.prototype.isAdded = function () {
+    return this.status === JSONDatabase.STATUS.ADDED;
+};
+
+JSONDatabase.EntryRecord.prototype.isDeleted = function () {
+    return this.status === JSONDatabase.STATUS.DELETED;
+};
+
+JSONDatabase.EntryRecord.prototype.isModified = function () {
+    return this.status === JSONDatabase.STATUS.MODIFIED;
+};
+
+JSONDatabase.EntryRecord.prototype.isUnmodified = function () {
+    return this.status === JSONDatabase.STATUS.UNMODIFIED;
+};
+
+JSONDatabase.EntryRecord.prototype.isMoved = function () {
+    return this.status === JSONDatabase.STATUS.MOVED;
 };
 
 /**
@@ -470,9 +538,7 @@ JSONDatabase.DirectoryRecord.constructor = JSONDatabase.DirectoryRecord;
  */
 JSONDatabase.FileRecord = function () {
     JSONDatabase.EntryRecord.call(this, JSONDatabase.ENTRYTYPE.FILE);
-    this.oldFileId = null;
     this.isBinary = false;
-    this.status = -1;
     this.blocks = [];
     this.lastBlockIndex = -1;
 };
@@ -481,26 +547,6 @@ JSONDatabase.FileRecord.constructor = JSONDatabase.FileRecord;
 
 JSONDatabase.FileRecord.prototype.isBinary = function () {
     return this.isBinary;
-};
-
-JSONDatabase.FileRecord.prototype.isAdded = function () {
-    return this.status === JSONDatabase.STATUS.ADDED;
-};
-
-JSONDatabase.FileRecord.prototype.isDeleted = function () {
-    return this.status === JSONDatabase.STATUS.DELETED;
-};
-
-JSONDatabase.FileRecord.prototype.isModified = function () {
-    return this.status === JSONDatabase.STATUS.MODIFIED;
-};
-
-JSONDatabase.FileRecord.prototype.isUnmodified = function () {
-    return this.status === JSONDatabase.STATUS.UNMODIFIED;
-};
-
-JSONDatabase.FileRecord.prototype.isMoved = function () {
-    return this.status === JSONDatabase.STATUS.MOVED;
 };
 
 JSONDatabase.FileRecord.prototype.addBlock = function (oldLines, newLines, status) {
@@ -519,6 +565,17 @@ JSONDatabase.FileRecord.prototype.addBlock = function (oldLines, newLines, statu
     }
     this.blocks.push(blockRec);
 };
+
+/**
+ * Registro do submódulo.
+ * @param {NodeGit.Submodule} submodule Submódulo do repositório git.
+ */
+JSONDatabase.SubmoduleRecord = function () {
+    JSONDatabase.EntryRecord.call(this, JSONDatabase.ENTRYTYPE.SUBMODULE);
+    this.url = null;
+};
+JSONDatabase.SubmoduleRecord.prototype = Object.create(JSONDatabase.EntryRecord.prototype);
+JSONDatabase.SubmoduleRecord.constructor = JSONDatabase.SubmoduleRecord;
 
 /**
  * Registro do bloco do arquivo, com as linhas que foram modificadas.
@@ -566,7 +623,8 @@ JSONDatabase.LineRecord = function () {
  */
 JSONDatabase.ENTRYTYPE = {
     FILE: 0,
-    DIRECTORY: 1
+    DIRECTORY: 1,
+    SUBMODULE: 2
 };
 
 JSONDatabase.STATUS = {
