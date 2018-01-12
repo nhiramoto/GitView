@@ -149,14 +149,16 @@ $(document).ready(() => {
 });
 
 var showLoadingScreen = function() {
-    //$('#loadingScreen').removeClass('visible');
-    $('#content').prop('disabled', true);
+    $('#commitBar').removeClass('disabled');
+    $('#commitBar').addClass('disabled');
     $('#loadingScreen').fadeIn();
 };
 
 var hideLoadingScreen = function () {
-    $('#content').prop('disabled', false);
     $('#loadingScreen').fadeOut(1000);
+    setTimeout(() => {
+        $('#commitBar').removeClass('disabled');
+    }, 1000);
 };
 
 var fillFileInfo = function (data) {

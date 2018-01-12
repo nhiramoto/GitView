@@ -208,11 +208,12 @@ body {
     margin: 0;
     padding: 5px;
     background: white;
-    opacity: .8;
+    opacity: .9;
     border: 1px solid $lightBorder;
     width: $commitBarWidth;
     overflow: scroll;
     z-index: 1;
+    -webkit-transition: opacity .5s ease;
     .commitBarTitle {
         font-weight: bold;
         font-size: 18px;
@@ -256,6 +257,14 @@ body {
         box-shadow: 0 0 5px rgba(0, 0, 255, .8);
         border: 1px solid blue;
         -webkit-transition: all .3s ease;
+    }
+}
+
+#commitBar.disabled {
+    opacity: 0.3;
+    -webkit-transition: opacity .3s ease;
+    .commitItem {
+        pointer-events: none;
     }
 }
 

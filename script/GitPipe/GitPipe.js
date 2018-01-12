@@ -691,7 +691,7 @@ GitPipe.prototype.createDirectories = function (oldCommit, recentCommit, dirPath
                 //    //console.log('      -> entryId:', entryId);
                 //    foundEntry = this.db.findEntry(entryId);
                 //    console.assert(foundEntry != null, '[GitPipe#createDirectories] Error: Entry not found, loose id.');
-                //    if (foundEntry.name === child.name) {
+                //    if (foundEntry.newName === child.newName) {
                 //        break;
                 //    } else {
                 //        foundEntry = null;
@@ -708,12 +708,12 @@ GitPipe.prototype.createDirectories = function (oldCommit, recentCommit, dirPath
                             carryStatistic.modified++;
                         }
                     } else if (child.isDirectory()) {
-                        //console.log(foundDirRec.path + ' statistic:', foundDirRec.statistic);
+                        //console.log(foundDirRec.newPath + ' statistic:', foundDirRec.statistic);
                         carryStatistic.added += child.statistic.added;
                         carryStatistic.deleted += child.statistic.deleted;
                         carryStatistic.modified += child.statistic.modified;
                     }
-                    //console.log('      Entry' + child.path + ' doesnt exists yet, adding to found dir ' + dirPath);
+                    //console.log('      Entry' + child.newPath + ' doesnt exists yet, adding to found dir ' + dirPath);
                     foundDirRec.entriesId.push(child.id);
                 }
                 if (foundDirRec.status != child.status) {
