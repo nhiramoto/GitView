@@ -25,6 +25,7 @@
   "devDependencies": {
     "crypto": "^1.0.1",
     "electron": "1.7.9",
+    "electron-packager": "^10.1.1",
     "electron-rebuild": "^1.6.0",
     "font-awesome": "^4.7.0",
     "grunt": "^1.0.1",
