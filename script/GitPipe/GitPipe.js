@@ -619,6 +619,7 @@ GitPipe.prototype.createDirectories = function (oldCommit, recentCommit, dirPath
             } else {
                 getOldTreePromise = new Promise(resolve => {
                     oldTree = null;
+                    resolve();
                 });
             }
             if (recentCommit != null) {
@@ -628,6 +629,7 @@ GitPipe.prototype.createDirectories = function (oldCommit, recentCommit, dirPath
             } else {
                 getNewTreePromise = new Promise(resolve => {
                     newTree = null;
+                    resolve();
                 });
             }
         } else {
@@ -643,6 +645,7 @@ GitPipe.prototype.createDirectories = function (oldCommit, recentCommit, dirPath
             } else {
                 getOldTreePromise = new Promise(resolve => {
                     oldTree = null;
+                    resolve();
                 });
             }
             if (recentCommit != null) {
@@ -657,6 +660,7 @@ GitPipe.prototype.createDirectories = function (oldCommit, recentCommit, dirPath
             } else {
                 getNewTreePromise = new Promise(resolve => {
                     newTree = null;
+                    resolve();
                 });
             }
         }
