@@ -157,11 +157,11 @@ GitPipe.prototype.diffCommitWithParents = function (commitRec) {
     let parentSnapshotId = null;
     let parentIds = commitRec.parents;
     let diffRec = null;
-    if (parentIds.length > 0) {
+    //if (parentIds.length > 0) {
         return this.gitRepo.getTree(commitSnapshotId).then(tree1 => {
             commitTree = tree1;
             let createDiffPromises = [];
-            if (parentIds.length > 0) {
+            if (parentIds != null && parentIds.length > 0) {
                 parentIds.forEach(parentId => {
                     let foundDiff = this.diffs.find(diff =>
                         diff.diffRec.oldCommitId === parentId && diff.diffRec.recentCommitId === commitId);
@@ -189,27 +189,47 @@ GitPipe.prototype.diffCommitWithParents = function (commitRec) {
                         createDiffPromises.push(prom);
                     }
                 });
+            } else { // First commit
+                let foundDiff = this.diffs.find(diff =>
+                    diff.diffRec.oldCommitId == null && diff.diffRec.recentCommitId === commitId);
+                if (foundDiff == undefined) {
+                    foundDiff = this.db.findDiff(null, commitId);
+                }
+                if (foundDiff == undefined) {
+                    diffRec = new JSONDatabase.DiffRecord();
+                    diffRec.oldCommitId = null;
+                    diffRec.recentCommitId = commitId;
+                    let prom = (function(self, diffRec, commitTree) {
+                        return Git.Diff.treeToTree(self.gitRepo, null, commitTree, self.diffOptions).then(gitDiff => {
+                            self.diffs.push({
+                                gitDiff: gitDiff,
+                                diffRec: diffRec
+                            });
+                        });
+                    })(this, diffRec, commitTree);
+                    createDiffPromises.push(prom);
+                }
             }
             return Promise.all(createDiffPromises);
         }).catch(err => {
             console.error(err);
         });
-    } else {
-        return this.gitRepo.getCommit(commitId).then(commit => {
-            return commit.getDiffWithOptions(this.diffOptions)
-        }).then(diffs => {
-            console.assert(diffs.length === 1, '[GitPipe#diffCommitWithParents] Error: Unexpected number of diffs on first commit.');
-            diffRec = new JSONDatabase.DiffRecord();
-            diffRec.oldCommitId = null;
-            diffRec.recentCommitId = commitId;
-            this.diffs.push({
-                gitDiff: diffs[0],
-                diffRec: diffRec
-            });
-        }).catch(err => {
-            console.error(err);
-        });
-    }
+    //} else {
+    //    return this.gitRepo.getCommit(commitId).then(commit => {
+    //        return commit.getDiffWithOptions(this.diffOptions)
+    //    }).then(diffs => {
+    //        console.assert(diffs.length === 1, '[GitPipe#diffCommitWithParents] Error: Unexpected number of diffs on first commit.');
+    //        diffRec = new JSONDatabase.DiffRecord();
+    //        diffRec.oldCommitId = null;
+    //        diffRec.recentCommitId = commitId;
+    //        this.diffs.push({
+    //            gitDiff: diffs[0],
+    //            diffRec: diffRec
+    //        });
+    //    }).catch(err => {
+    //        console.error(err);
+    //    });
+    //}
 };
 
 /**
@@ -264,6 +284,7 @@ GitPipe.prototype.parseDiffs = function () {
  */
 GitPipe.prototype.parseDiff = function (oldCommit, recentCommit, gitDiff) {
     return gitDiff.patches().then(patches => {
+        console.log('patches:', patches);
         return this.parsePatches(oldCommit, recentCommit, patches);
     }).catch(err => {
         console.error(err);
@@ -304,6 +325,7 @@ GitPipe.prototype.parsePatches = function (oldCommit, recentCommit, patches) {
  */
 GitPipe.prototype.parsePatch = function (oldCommit, recentCommit, patch) {
     return this.createFile(oldCommit, recentCommit, patch).then(child => {
+        console.log('file changed:', child.getPath());
         let dirPath = path.dirname(child.getPath());
         return this.createDirectories(oldCommit, recentCommit, dirPath, child, new JSONDatabase.Statistic(0, 0, 0), false);
     }).catch(err => {
@@ -396,7 +418,7 @@ GitPipe.prototype.createFile = function (oldCommit, recentCommit, patch) {
             console.assert(fileRec != null, '[GitPipe#createFile] Error: Failed to create file.');
             return patch.hunks();
         }).then(hunks => {
-            if (isBlob && fileRec.isBinary) {
+            if (isBlob && !fileRec.isBinary) {
                 let hunkPromises = [];
                 hunks.forEach(hunk => {
                     hunkPromises.push(hunk.lines());

@@ -350,6 +350,7 @@ Tree.prototype.build = function (data) {
         .on('tick', () => this.ticked());
     this.update();
     this.simulation.restart();
+    this.simulation.tick();
 };
 
 Tree.prototype.update = function () {
