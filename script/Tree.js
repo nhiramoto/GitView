@@ -177,16 +177,15 @@ Tree.prototype.handleMouseOver = function (d, i) {
         } else if (d.data.isDeleted()) {
             tooltipStatus = 'Deletado';
             tooltipClass = 'deleted';
-        } else if (d.data.isModified()) {
-            tooltipStatus = 'Modificado';
-            tooltipClass = 'modified';
         } else if (d.data.isUnmodified()) {
             tooltipStatus = 'Não modificado';
             tooltipClass = 'unmodified';
-        } else {
-            console.assert(d.data.isMoved(), '[Tree#handleMouseMove] Error: Invalid file status.');
+        } else if (d.data.isMoved()) {
             tooltipStatus = 'Movido';
             tooltipClass = 'moved';
+        } else {
+            tooltipStatus = 'Modificado';
+            tooltipClass = 'modified';
         }
         if (d.data.isFile() && !d.data.isBinary && d.data.statistic != null) {
             addedLabel = 'Linhas adicionadas: ' + d.data.statistic.added;
@@ -205,9 +204,9 @@ Tree.prototype.handleMouseOver = function (d, i) {
     let tooltipHeader = tooltip.select('#tooltipHeader');
     tooltipHeader.classed('added', false);
     tooltipHeader.classed('deleted', false);
-    tooltipHeader.classed('modified', false);
     tooltipHeader.classed('unmodified', false);
     tooltipHeader.classed('moved', false);
+    tooltipHeader.classed('modified', false);
     if (tooltipStatus != null) {
         tooltip.select('#tooltipHeader')
             .classed(tooltipClass, true)
@@ -260,6 +259,7 @@ Tree.prototype.stylize = function (d, i) {
     d3.select(this).classed('node-added', false);
     d3.select(this).classed('node-deleted', false);
     d3.select(this).classed('node-modified', false);
+    d3.select(this).classed('node-moved', false);
     d3.select(this).classed('node-unmodified', false);
     if (d.parent == null) { // Root node
         if (d.children != null) {
@@ -276,13 +276,12 @@ Tree.prototype.stylize = function (d, i) {
             d3.select(this).classed('node-added', true);
         } else if (d.data.isDeleted()) {
             d3.select(this).classed('node-deleted', true);
-        } else if (d.data.isModified()) {
-            d3.select(this).classed('node-modified', true);
+        } else if (d.data.isUnmodified()) {
+            d3.select(this).classed('node-unmodified', true);
         } else if (d.data.isMoved()) {
             d3.select(this).classed('node-moved', true);
         } else {
-            console.assert(d.data.isUnmodified(), '[Tree#stylize] Invalid file status.');
-            d3.select(this).classed('node-unmodified', true);
+            d3.select(this).classed('node-modified', true);
         }
     }
 };
@@ -337,12 +336,13 @@ Tree.prototype.build = function (data) {
         .range([3, 10]);
     this.simulation
         .force('link', d3.forceLink()
-                .distance(d => this.radius(d.source) + this.radius(d.target))
+                //.distance(d => this.radius(d.source) + this.radius(d.target))
                 .strength(0.8).id(d => d.id))
         .force('charge', d3.forceManyBody()
-                .strength(-200)
-                .distanceMax(400)
-                .distanceMin(10))
+                .strength(-100)
+                //.distanceMax(400)
+                //.distanceMin(1)
+        )
         //.force('center', d3.forceCenter(this.width / 2, this.height / 2))
         .force('center', d3.forceCenter(100, 100))
         .force('collide', d3.forceCollide()

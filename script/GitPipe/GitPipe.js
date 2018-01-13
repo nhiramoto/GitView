@@ -23,7 +23,9 @@ function GitPipe(dbPath) {
     this.diffOptions = new Git.DiffOptions();
     this.diffOptions.flags = Git.Diff.OPTION.INCLUDE_UNMODIFIED
         + Git.Diff.OPTION.IGNORE_SUBMODULES
-        + Git.Diff.OPTION.INCLUDE_UNTRACKED;
+        + Git.Diff.OPTION.IGNORE_FILEMODE
+        + Git.Diff.OPTION.INCLUDE_UNTRACKED
+        ;
 }
 
 GitPipe.prototype.setGitRepository = function (gitRepo) {
@@ -337,16 +339,16 @@ GitPipe.prototype.createFile = function (oldCommit, recentCommit, patch) {
         //console.log('  oldPath:', oldPath);
         //console.log('  newPath:', newPath);
         let patchStatus = null;
-        if (oldPath != null && newPath != null && oldPath != newPath) {
+        if (oldPath != null && newPath != null && oldPath != newPath || patch.isRenamed()) {
             patchStatus = JSONDatabase.STATUS.MOVED;
         } else if (patch.isAdded()) {
             patchStatus = JSONDatabase.STATUS.ADDED;
         } else if (patch.isDeleted()) {
             patchStatus = JSONDatabase.STATUS.DELETED;
-        } else if (patch.isModified()) {
-            patchStatus = JSONDatabase.STATUS.MODIFIED;
         } else if (patch.isUnmodified()) {
             patchStatus = JSONDatabase.STATUS.UNMODIFIED;
+        } else {
+            patchStatus = JSONDatabase.STATUS.MODIFIED;
         }
         console.assert(patchStatus != null, '[GitPipe#createFile] Error: patchStatus not defined!');
         //console.log('  patchStatus:', patchStatus);
@@ -394,7 +396,7 @@ GitPipe.prototype.createFile = function (oldCommit, recentCommit, patch) {
             console.assert(fileRec != null, '[GitPipe#createFile] Error: Failed to create file.');
             return patch.hunks();
         }).then(hunks => {
-            if (isBlob) {
+            if (isBlob && fileRec.isBinary) {
                 let hunkPromises = [];
                 hunks.forEach(hunk => {
                     hunkPromises.push(hunk.lines());
@@ -404,9 +406,11 @@ GitPipe.prototype.createFile = function (oldCommit, recentCommit, patch) {
         }).then(listLines => {
             if (isBlob) {
                 //console.log('  parsing lines...');
-                listLines.forEach(lines => {
-                    this.parseLines(fileRec, lines);
-                });
+                if (!fileRec.isBinary && listLines != null) {
+                    listLines.forEach(lines => {
+                        this.parseLines(fileRec, lines);
+                    });
+                }
                 //console.log('  adding file to db.');
                 this.db.addFile(fileRec);
             } else if (isSubmod) {
@@ -484,8 +488,8 @@ GitPipe.prototype.parseLines = function(fileRec, lines) {
                 //console.log(sign, 'modStatus:' + modStatus, 'lastisAdded:' + lastIsAdded, 'lastIsDeleted:' + lastIsDeleted);
             } else if (sign === '-') {
                 if (!lastIsAdded && !lastIsDeleted
-                        && lastLine != null
-                        && oldLineNum === lastLine.oldLineno() + 1) {
+                        && (lastLine == null
+                            || oldLineNum === lastLine.oldLineno() + 1)) {
                     modStatus++;
                     //console.log('  first line after context -> modStatus:' + modStatus);
                 } else if (lastIsDeleted && lastLine != null
@@ -677,7 +681,11 @@ GitPipe.prototype.createDirectories = function (oldCommit, recentCommit, dirPath
                     newDirRec.statistic.modified += child.statistic.modified;
                 }
                 newDirRec.entriesId.push(child.id);
-                newDirRec.status = child.status;
+                if (!child.isMoved()) {
+                    newDirRec.status = child.status;
+                } else {
+                    newDirRec.status = JSONDatabase.STATUS.ADDED;
+                }
                 this.db.addDirectory(newDirRec);
                 child = newDirRec;
             } else { // Diretório já existe, atualiza-o.

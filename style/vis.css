@@ -24,6 +24,7 @@
 
 .node-rootCollapsed circle {
   fill: #222;
+  stroke: #ADADAD;
   stroke-width: 3px !important;
 }
 

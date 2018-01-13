@@ -190,14 +190,13 @@ var fillFileInfo = function (data) {
             fileStatus = 'Adicionado';
         } else if (data.isDeleted()) {
             fileStatus = 'Deletado';
-        } else if (data.isModified()) {
-            fileStatus = 'Modificado';
+        } else if (data.isMoved()) {
+            fileStatus = 'Movido';
         } else if (data.isUnmodified()) {
             fileStatus = 'Não Modificado';
             $('.statisticRow').addClass('disabled');
         } else {
-            console.assert(data.isMoved(), '[dashboard#fileNodeClickHandler] Invalid file status.');
-            fileStatus = 'Movido';
+            fileStatus = 'Modificado';
         }
         $('#fileStatus').text(fileStatus);
         pulseInfoButton();
@@ -457,16 +456,16 @@ var initLegend = function () {
         .attr('dx', '15px')
         .attr('dy', '5px');
     let nodeMoved = lsvg.append('g')
-        .classed('node', true)
-        .classed('node-moved', true)
-        .style('transform', 'translate(30px, 210px)');
-    nodeMoved.append('circle')
-        .attr('r', '8px');
-    nodeMoved.append('text')
-        .classed('legend-node-label', true)
-        .text('Arquivo movido')
-        .attr('dx', '15px')
-        .attr('dy', '5px');
+         .classed('node', true)
+         .classed('node-moved', true)
+         .style('transform', 'translate(30px, 210px)');
+     nodeMoved.append('circle')
+         .attr('r', '8px');
+     nodeMoved.append('text')
+         .classed('legend-node-label', true)
+         .text('Arquivo movido')
+         .attr('dx', '15px')
+         .attr('dy', '5px');
     let nodeModified = lsvg.append('g')
         .classed('node', true)
         .classed('node-modified', true)
