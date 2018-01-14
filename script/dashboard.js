@@ -262,16 +262,12 @@ var initViz = function (repoPath) {
                 return new Promise(resolve => resolve(null));
             }
         }).then(diffDir => {
-            if (diffDir) {
-                console.log('-> last diff tree got!');
-                console.log('-> diffDir:', diffDir);
-                container = d3.select('#view');
-                tree = new Tree(container);
-                tree.fillFileInfoFunction = fillFileInfo;
-                tree.build(diffDir);
-            } else {
-                console.error('diffDir is null.');
-            }
+            console.log('-> last diff tree got!');
+            console.log('-> diffDir:', diffDir);
+            container = d3.select('#view');
+            tree = new Tree(container);
+            tree.fillFileInfoFunction = fillFileInfo;
+            tree.build(diffDir);
         }).then(() => {
             // Limpa lista de commits
             $('#commitBar').children('.commitItem').remove();
@@ -369,9 +365,11 @@ var diffCommit = function (commitId) {
                 return gitPipe.getSelectedCommitDiffTree();
             }
         }).then(diffDir => {
-            console.log('Selected commit diff tree got!');
-            console.log('diffDir:', diffDir);
-            tree.build(diffDir);
+            if (selected) {
+                console.log('Selected commit diff tree got!');
+                console.log('diffDir:', diffDir);
+                tree.build(diffDir);
+            }
         }).then(() => {
             hideLoadingScreen();
         }).catch(err => {

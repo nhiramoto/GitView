@@ -170,7 +170,7 @@ Tree.prototype.handleMouseOver = function (d, i) {
     let addedLabel = 'Adicionado: 0';
     let deletedLabel = 'Deletado: 0';
     let modifiedLabel = 'Modificado: 0';
-    if (d.data != null) {
+    if (d.data && d.data.status != null) {
         if (d.data.isAdded()) {
             tooltipStatus = 'Adicionado';
             tooltipClass = 'added';
@@ -271,7 +271,7 @@ Tree.prototype.stylize = function (d, i) {
         d3.select(this).classed('node-collapsed', true);
     } else if (d.children != null) { // Inner node
         d3.select(this).classed('node-inner', true);
-    } else { // Leaf node
+    } else if (d.data && d.data.status != null) { // Leaf node
         if (d.data.isAdded()) {
             d3.select(this).classed('node-added', true);
         } else if (d.data.isDeleted()) {
@@ -299,7 +299,7 @@ Tree.prototype.radius = function (d) {
 
 Tree.prototype.opacity = function (d) {
     let op = 1;
-    if (d.data != null && d.data.isUnmodified()) {
+    if (d.data != null && d.data.isUnmodified != null && d.data.isUnmodified()) {
         op = 0.3;
     }
     return op;
@@ -350,7 +350,6 @@ Tree.prototype.build = function (data) {
         .on('tick', () => this.ticked());
     this.update();
     this.simulation.restart();
-    this.simulation.tick();
 };
 
 Tree.prototype.update = function () {

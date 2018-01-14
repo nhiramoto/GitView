@@ -312,6 +312,7 @@ JSONDatabase.prototype.findEntry = function (entryId) {
 /**
  * Constrói a hierarquia de diretórios a partir do diretório
  *  com rootId correspondente.
+ * @sync
  * @param {String} rootId - Chave do diretório raiz.
  */
 JSONDatabase.prototype.hierarchize = function (rootId) {
@@ -320,13 +321,18 @@ JSONDatabase.prototype.hierarchize = function (rootId) {
     if (root.isDirectory()) {
         let entriesId = root.entriesId;
         root.entries = [];
+        let hierarchizePromises = [];
         entriesId.forEach(entryId => {
             console.assert(typeof(entryId) === 'string', '[JSONDatabase#hierarchize] Error: Entry id is not a string.');
-            let entry = this.hierarchize(entryId);
-            root.entries.push(entry);
+            let prom = (function(self, entryId) {
+                return self.hierarchize(entryId).then(entry => {
+                    root.entries.push(entry);
+                });
+            })(this, entryId);
+            hierarchizePromises.push(prom);
         });
-    }
-    return root;
+        return Promise.all(hierarchizePromises).then(() => root);
+    } else return new Promise(resolve => resolve(root));
 };
 
 /**
