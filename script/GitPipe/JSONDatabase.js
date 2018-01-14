@@ -2,6 +2,7 @@
 
 const path = require('path');
 const fs = require('fs');
+const async = require('async');
 
 /**
  * Definição da base de dados JSON.
@@ -316,23 +317,29 @@ JSONDatabase.prototype.findEntry = function (entryId) {
  * @param {String} rootId - Chave do diretório raiz.
  */
 JSONDatabase.prototype.hierarchize = function (rootId) {
-    let root = this.findEntry(rootId);
-    console.assert(root != undefined, '[JSONDatabase#hierarchize] Error: Entry not found (loose id).');
-    if (root.isDirectory()) {
-        let entriesId = root.entriesId;
-        root.entries = [];
-        let hierarchizePromises = [];
-        entriesId.forEach(entryId => {
-            console.assert(typeof(entryId) === 'string', '[JSONDatabase#hierarchize] Error: Entry id is not a string.');
-            let prom = (function(self, entryId) {
-                return self.hierarchize(entryId).then(entry => {
-                    root.entries.push(entry);
-                });
-            })(this, entryId);
-            hierarchizePromises.push(prom);
-        });
-        return Promise.all(hierarchizePromises).then(() => root);
-    } else return new Promise(resolve => resolve(root));
+    // resolve...
+    return new Promise((resolve, reject) => {
+        let root = this.findEntry(rootId);
+        if (root == undefined) {
+            reject('Entry not found (loose id).');
+        }
+        if (root.isDirectory()) {
+            let entriesId = root.entriesId;
+            root.entries = [];
+            let hierarchizePromises = [];
+            entriesId.forEach(entryId => {
+                console.assert(typeof(entryId) === 'string', '[JSONDatabase#hierarchize] Error: Entry id is not a string.');
+                let prom = (function(self, entryId) {
+                    return self.hierarchize(entryId).then(entry => {
+                        root.entries.push(entry);
+                    });
+                })(this, entryId);
+                hierarchizePromises.push(prom);
+            });
+            return Promise.all(hierarchizePromises).then(() => root);
+        }
+        return root;
+    });
 };
 
 /**
