@@ -317,29 +317,51 @@ JSONDatabase.prototype.findEntry = function (entryId) {
  * @param {String} rootId - Chave do diretório raiz.
  */
 JSONDatabase.prototype.hierarchize = function (rootId) {
-    // resolve...
-    return new Promise((resolve, reject) => {
+    //return new Promise((resolve, reject) => {
         let root = this.findEntry(rootId);
+        //let hierarchizePromises = [];
         if (root == undefined) {
-            reject('Entry not found (loose id).');
+            //reject('Entry not found (loose id).');
+            console.error('Entry not found (loose id).');
         }
         if (root.isDirectory()) {
             let entriesId = root.entriesId;
             root.entries = [];
-            let hierarchizePromises = [];
             entriesId.forEach(entryId => {
-                console.assert(typeof(entryId) === 'string', '[JSONDatabase#hierarchize] Error: Entry id is not a string.');
-                let prom = (function(self, entryId) {
-                    return self.hierarchize(entryId).then(entry => {
-                        root.entries.push(entry);
-                    });
-                })(this, entryId);
-                hierarchizePromises.push(prom);
+                if (typeof(entryId) !== 'string') {
+                    //reject('Entry ID is not a string.');
+                    console.error('Entry ID is not a string.');
+                }
+                //let prom = (function (self, entryId) {
+                //    return self.hierarchize(entryId).then(entry => {
+                //        root.entries.push(entry);
+                //    });
+                //}(this, entryId));
+                //hierarchizePromises.push(prom);
+                //setTimeout(() => {
+                    let entry = this.hierarchize(entryId);
+                    root.entries.push(entry);
+                //}, 1);
             });
-            return Promise.all(hierarchizePromises).then(() => root);
+            //async.eachSeries(entriesId, (entryId, next) => {
+            //    if (typeof(entryId) !== 'string') {
+            //        reject('Entry ID is not a string.');
+            //    }
+            //    this.hierarchize(entryId).then(entry => {
+            //        root.entries.push(entry);
+            //        setTimeout(() => {
+            //            next();
+            //        }, 1);
+            //    });
+            //}, err => {
+            //    if (err) console.error(err);
+            //});
         }
+        //Promise.all(hierarchizePromises).then(() => {
+        //    resolve(root);
+        //});
         return root;
-    });
+    //});
 };
 
 /**

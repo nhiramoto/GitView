@@ -825,7 +825,7 @@ GitPipe.prototype.getHeadDiffTree = function () {
     let rootDirId = null;
     let rootDir = null;
     let count = 0;
-    let mergePromise = new Promise(resolve => resolve(null));
+    //let mergePromise = new Promise(resolve => resolve(null));
     parentIds.forEach(parentId => {
         //console.log('    -> parentId:', parentId);
         diff = this.db.findDiff(parentId, headId);
@@ -836,22 +836,31 @@ GitPipe.prototype.getHeadDiffTree = function () {
             let ids = rootDirId.split(':');
             if (ids[0] !== ids[1]) {
                 count++;
-                mergePromise = mergePromise.then(() => {
-                    return this.db.hierarchize(rootDirId);
-                }).then(hdir => {
-                    console.assert(hdir != null, '[GitPipe#getHeadDiffTree] Error: Hierarchized directory result null.');
-                    if (diffDir != null) {
-                        diffDir = this.db.mergeDirectories(diffDir, hdir);
-                    } else {
-                        diffDir = hdir;
-                    }
+                //mergePromise = mergePromise.then(() => {
+                //    return this.db.hierarchize(rootDirId);
+                //}).then(hdir => {
+                //    console.assert(hdir != null, '[GitPipe#getHeadDiffTree] Error: Hierarchized directory result null.');
+                //    if (diffDir != null) {
+                //        diffDir = this.db.mergeDirectories(diffDir, hdir);
+                //    } else {
+                //        diffDir = hdir;
+                //    }
+                //    console.assert(diffDir != null, '[GitPipe#getHeadDiffTree] Error: diffDir is null.');
+                //});
+                if (diffDir == null) {
+                    diffDir = this.db.hierarchize(rootDirId);
+                    console.assert(diffDir != null, '[GitPipe#getHeadDiffTree] Error: Hierarchized directory result null.');
+                } else {
+                    rootDir = this.db.hierarchize(rootDirId);
+                    console.assert(rootDir != null, '[GitPipe#getHeadDiffTree] Error: Hierarchized directory result null.');
+                    diffDir = this.db.mergeDirectories(diffDir, rootDir);
                     console.assert(diffDir != null, '[GitPipe#getHeadDiffTree] Error: diffDir is null.');
-                });
+                }
             }
         }
     });
     //console.log('-> Merged ' + count + ' directories!');
-    return mergePromise.then(() => {
+    //return mergePromise.then(() => {
         if (diffDir == null) {
             if (parentIds == null || parentIds.length === 0) {
                 //console.log('First commit.');
@@ -870,7 +879,7 @@ GitPipe.prototype.getHeadDiffTree = function () {
             }
         }
         return diffDir;
-    });
+    //});
 };
 
 /**
@@ -937,7 +946,7 @@ GitPipe.prototype.getSelectedCommitDiffTree = function () {
     let rootDirId = null;
     let rootDir = null;
     let count = 0;
-    let mergePromise = new Promise(resolve => resolve(null));
+    //let mergePromise = new Promise(resolve => resolve(null));
     parentIds.forEach(parentId => {
         diff = this.db.findDiff(parentId, selectedCommitId);
         if (diff != undefined) {
@@ -945,22 +954,31 @@ GitPipe.prototype.getSelectedCommitDiffTree = function () {
             let ids = rootDirId.split(':');
             if (ids[0] !== ids[1]) {
                 count++;
-                mergePromise = mergePromise.then(() => {
-                    return this.db.hierarchize(rootDirId);
-                }).then(hdir => {
-                    console.assert(hdir != null, '[GitPipe#getSelectedCommitDiffTree] Error: Hierarchized directory result null.');
-                    if (diffDir != null) {
-                        diffDir = this.db.mergeDirectories(diffDir, hdir);
-                    } else {
-                        diffDir = hdir;
-                    }
+                //mergePromise = mergePromise.then(() => {
+                //    return this.db.hierarchize(rootDirId);
+                //}).then(hdir => {
+                //    console.assert(hdir != null, '[GitPipe#getSelectedCommitDiffTree] Error: Hierarchized directory result null.');
+                //    if (diffDir != null) {
+                //        diffDir = this.db.mergeDirectories(diffDir, hdir);
+                //    } else {
+                //        diffDir = hdir;
+                //    }
+                //    console.assert(diffDir != null, '[GitPipe#getSelectedCommitDiffTree] Error: diffDir is null.');
+                //});
+                if (diffDir == null) {
+                    diffDir = this.db.hierarchize(rootDirId);
+                    console.assert(diffDir != null, '[GitPipe#getSelectedCommitDiffTree] Error: Hierarchized directory result null.');
+                } else {
+                    rootDir = this.db.hierarchize(rootDirId);
+                    console.assert(rootDir != null, '[GitPipe#getSelectedCommitDiffTree] Error: Hierarchized directory result null.');
+                    diffDir = this.db.mergeDirectories(diffDir, rootDir);
                     console.assert(diffDir != null, '[GitPipe#getSelectedCommitDiffTree] Error: diffDir is null.');
-                });
+                }
             }
         }
     });
     //console.log('-> Merged changes from ' + count + ' diffs.');
-    return mergePromise.then(() => {
+    //return mergePromise.then(() => {
         if (diffDir == null) {
             if (parentIds == null || parentIds.length === 0) {
                 //console.log('First commit.');
@@ -979,7 +997,7 @@ GitPipe.prototype.getSelectedCommitDiffTree = function () {
             }
         }
         return diffDir;
-    });
+    //});
 };
 
 module.exports = GitPipe;
