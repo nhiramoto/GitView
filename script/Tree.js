@@ -426,7 +426,7 @@ Tree.prototype.update = function () {
         .attr('class', 'node-label')
         .text(d => {
             if (d.parent != null) {
-                return d.data.getName();
+                return d.data.name;
             } else {
                 return '<root>';
             }

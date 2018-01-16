@@ -324,7 +324,7 @@ JSONDatabase.prototype.hierarchize = function (rootId) {
             reject('Entry not found (loose id).');
             //console.error('Entry not found (loose id).');
         }
-        console.log('hierarchizing:', root.path);
+        console.log('found entry:', root.newPath);
         if (root.isDirectory()) {
             let entriesId = root.entriesId;
             root.entries = [];
@@ -352,7 +352,7 @@ JSONDatabase.prototype.hierarchize = function (rootId) {
                     root.entries.push(entry);
                     setTimeout(() => {
                         next();
-                    });
+                    }, 0);
                 });
             }, err => {
                 if (err) reject(err);
@@ -524,30 +524,11 @@ JSONDatabase.Statistic.prototype.greater = function (another) {
  */
 JSONDatabase.EntryRecord = function (type) {
     this.id = null;
-    this.oldId = null;
-    this.oldName = null;
-    this.newName = null;
-    this.oldPath = null;
-    this.newPath = null;
+    this.name = null;
+    this.path = null;
     this.status = -1;
     this.statistic = null;
     this.type = type;
-};
-
-JSONDatabase.EntryRecord.prototype.getName = function () {
-    if (this.newName != null && this.newName.length > 0) {
-        return this.newName;
-    } else {
-        return this.oldName;
-    }
-};
-
-JSONDatabase.EntryRecord.prototype.getPath = function () {
-    if (this.newPath != null) {
-        return this.newPath;
-    } else {
-        return this.oldPath;
-    }
 };
 
 JSONDatabase.EntryRecord.prototype.isFile = function () {
@@ -600,6 +581,9 @@ JSONDatabase.DirectoryRecord.constructor = JSONDatabase.DirectoryRecord;
 JSONDatabase.FileRecord = function () {
     JSONDatabase.EntryRecord.call(this, JSONDatabase.ENTRYTYPE.FILE);
     this.isBinary = false;
+    this.oldId = null;
+    this.oldName = null;
+    this.oldPath = null;
     this.blocks = [];
     this.lastBlockIndex = -1;
 };
@@ -634,6 +618,9 @@ JSONDatabase.FileRecord.prototype.addBlock = function (oldLines, newLines, statu
 JSONDatabase.SubmoduleRecord = function () {
     JSONDatabase.EntryRecord.call(this, JSONDatabase.ENTRYTYPE.SUBMODULE);
     this.url = null;
+    this.oldId = null;
+    this.oldName = null;
+    this.oldPath = null;
 };
 JSONDatabase.SubmoduleRecord.prototype = Object.create(JSONDatabase.EntryRecord.prototype);
 JSONDatabase.SubmoduleRecord.constructor = JSONDatabase.SubmoduleRecord;

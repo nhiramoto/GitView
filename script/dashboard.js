@@ -181,8 +181,8 @@ var fillFileInfo = function (data) {
             $('.statisticRow').css('display', 'none');
         }
         $('#fileId').text(data.id);
-        $('#fileName').text(data.getName());
-        $('#filePath').text(data.getPath());
+        $('#fileName').text(data.name);
+        $('#filePath').text(data.path);
         $('#oldFileId').text(data.oldId);
         let fileStatus = null;
         $('.statisticRow').removeClass('disabled');
