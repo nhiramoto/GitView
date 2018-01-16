@@ -317,14 +317,14 @@ JSONDatabase.prototype.findEntry = function (entryId) {
  * @param {String} rootId - Chave do diretório raiz.
  */
 JSONDatabase.prototype.hierarchize = function (rootId) {
-    //return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         let root = this.findEntry(rootId);
         //let hierarchizePromises = [];
         if (root == undefined) {
             reject('Entry not found (loose id).');
             //console.error('Entry not found (loose id).');
         }
-        console.log('hierarchizing:', root);
+        console.log('hierarchizing:', root.path);
         if (root.isDirectory()) {
             let entriesId = root.entriesId;
             root.entries = [];
@@ -344,39 +344,39 @@ JSONDatabase.prototype.hierarchize = function (rootId) {
             //        root.entries.push(entry);
             //    //}, 1);
             //});
-            //async.eachSeries(entriesId, (entryId, next) => {
-            //    if (typeof(entryId) !== 'string') {
-            //        reject('Entry ID is not a string.');
-            //    }
-            //    this.hierarchize(entryId).then(entry => {
-            //        root.entries.push(entry);
-            //        setTimeout(() => {
-            //            next();
-            //        });
-            //    });
-            //}, err => {
-            //    if (err) reject(err);
-            //    else resolve(root);
-            //});
-            return Promise.all(entriesId.map(entryId => {
-                return new Promise((resolve, reject) => {
-                    if (typeof(entryId) !== 'string') {
-                        reject('Entry ID is not a string.');
-                    }
-                    this.hierarchize(entryId).then(entry => {
-                        root.entries.push(entry);
-                        resolve();
+            async.eachSeries(entriesId, (entryId, next) => {
+                if (typeof(entryId) !== 'string') {
+                    reject('Entry ID is not a string.');
+                }
+                this.hierarchize(entryId).then(entry => {
+                    root.entries.push(entry);
+                    setTimeout(() => {
+                        next();
                     });
                 });
-            })).then(() => {
-                return root;
+            }, err => {
+                if (err) reject(err);
+                else resolve(root);
             });
-        } else return new Promise(resolve => resolve(root));
+            //return Promise.all(entriesId.map(entryId => {
+            //    return new Promise((resolve, reject) => {
+            //        if (typeof(entryId) !== 'string') {
+            //            reject('Entry ID is not a string.');
+            //        }
+            //        this.hierarchize(entryId).then(entry => {
+            //            root.entries.push(entry);
+            //            resolve();
+            //        });
+            //    });
+            //})).then(() => {
+            //    return root;
+            //});
+        } else resolve(root);
         //Promise.all(hierarchizePromises).then(() => {
-            //resolve(root);
+        //    resolve(root);
         //});
         //return root;
-    //});
+    });
 };
 
 /**
