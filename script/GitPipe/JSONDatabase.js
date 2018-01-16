@@ -313,7 +313,7 @@ JSONDatabase.prototype.findEntry = function (entryId) {
 /**
  * Constrói a hierarquia de diretórios a partir do diretório
  *  com rootId correspondente.
- * @sync
+ * @async
  * @param {String} rootId - Chave do diretório raiz.
  */
 JSONDatabase.prototype.hierarchize = function (rootId) {
@@ -321,28 +321,29 @@ JSONDatabase.prototype.hierarchize = function (rootId) {
         let root = this.findEntry(rootId);
         //let hierarchizePromises = [];
         if (root == undefined) {
-            //reject('Entry not found (loose id).');
-            console.error('Entry not found (loose id).');
+            reject('Entry not found (loose id).');
+            //console.error('Entry not found (loose id).');
         }
+        console.log('hierarchizing:', root);
         if (root.isDirectory()) {
             let entriesId = root.entriesId;
             root.entries = [];
-            entriesId.forEach(entryId => {
-                if (typeof(entryId) !== 'string') {
-                    //reject('Entry ID is not a string.');
-                    console.error('Entry ID is not a string.');
-                }
-                //let prom = (function (self, entryId) {
-                //    return self.hierarchize(entryId).then(entry => {
-                //        root.entries.push(entry);
-                //    });
-                //}(this, entryId));
-                //hierarchizePromises.push(prom);
-                //setTimeout(() => {
-                    let entry = this.hierarchize(entryId);
-                    root.entries.push(entry);
-                //}, 1);
-            });
+            //entriesId.forEach(entryId => {
+            //    if (typeof(entryId) !== 'string') {
+            //        //reject('Entry ID is not a string.');
+            //        console.error('Entry ID is not a string.');
+            //    }
+            //    //let prom = (function (self, entryId) {
+            //    //    return self.hierarchize(entryId).then(entry => {
+            //    //        root.entries.push(entry);
+            //    //    });
+            //    //}(this, entryId));
+            //    //hierarchizePromises.push(prom);
+            //    //setTimeout(() => {
+            //        let entry = this.hierarchize(entryId);
+            //        root.entries.push(entry);
+            //    //}, 1);
+            //});
             //async.eachSeries(entriesId, (entryId, next) => {
             //    if (typeof(entryId) !== 'string') {
             //        reject('Entry ID is not a string.');
@@ -351,16 +352,30 @@ JSONDatabase.prototype.hierarchize = function (rootId) {
             //        root.entries.push(entry);
             //        setTimeout(() => {
             //            next();
-            //        }, 1);
+            //        });
             //    });
             //}, err => {
-            //    if (err) console.error(err);
+            //    if (err) reject(err);
+            //    else resolve(root);
             //});
-        }
+            return Promise.all(entriesId.map(entryId => {
+                return new Promise((resolve, reject) => {
+                    if (typeof(entryId) !== 'string') {
+                        reject('Entry ID is not a string.');
+                    }
+                    this.hierarchize(entryId).then(entry => {
+                        root.entries.push(entry);
+                        resolve();
+                    });
+                });
+            })).then(() => {
+                return root;
+            });
+        } else return new Promise(resolve => resolve(root));
         //Promise.all(hierarchizePromises).then(() => {
-        //    resolve(root);
+            //resolve(root);
         //});
-        return root;
+        //return root;
     //});
 };
 
