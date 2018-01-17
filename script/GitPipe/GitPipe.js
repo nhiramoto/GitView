@@ -326,8 +326,7 @@ GitPipe.prototype.parsePatches = function (oldCommit, recentCommit, patches) {
 GitPipe.prototype.parsePatch = function (oldCommit, recentCommit, patch) {
     return this.createFile(oldCommit, recentCommit, patch).then(child => {
         console.log('file changed:', child.path);
-        let dirPath = path.dirname(child.path);
-        return this.createDirectories(recentCommit, dirPath, child, new JSONDatabase.Statistic(0, 0, 0), false);
+        return this.createDirectories(oldCommit, recentCommit, child, new JSONDatabase.Statistic(0, 0, 0), false);
     }).catch(err => {
         console.error(err);
     });
@@ -594,14 +593,15 @@ GitPipe.prototype.parseLines = function(fileRec, lines) {
 /**
  * Cria registro dos diretórios recursivamente (dos filhos à raiz).
  * @async
- * @param {Git.Commit} commit Utilizado para recuperar o objeto tree correspondente.
- * @param {String} dirPath Caminho do diretório a ser criado/atualizado.
+ * @param {Git.Commit} oldCommit Utilizado para recuperar o objeto tree mais antigo.
+ * @param {Git.Commit} recentCommit Utilizado para recuperar o objeto tree mais recente.
  * @param {JSONDatabase.EntryRecord} child Filho do diretório a ser criado.
  * @param {JSONDatabase.Statistic} carryStatistic Utilizado para atualizar estatísticas dos diretórios já existentes.
  * @param {Boolean} carryStatus Utilizado para atualizar o status dos diretórios já existentes.
  * @return {JSONDatabase.DirectoryRecord} O último diretório criado (diretório raíz).
  */
-GitPipe.prototype.createDirectories = function (commit, dirPath, child, carryStatistic, carryStatus) {
+GitPipe.prototype.createDirectories = function (oldCommit, recentCommit, child, carryStatistic, carryStatus) {
+    let dirPath = path.dirname(child.path);
     if (dirPath.length <= 0) {
         //console.log('[GitPipe#createDirectories] Invalid dirPath, ignoring directory: "' + dirPath + '"');
         return new Promise(resolve => resolve(null));
@@ -612,8 +612,8 @@ GitPipe.prototype.createDirectories = function (commit, dirPath, child, carrySta
         let getTreePromise = null;
         let tree = null;
         if (isRoot) {
-            if (commit != null) {
-                getTreePromise = commit.getTree().then(rct => {
+            if (recentCommit != null) {
+                getTreePromise = recentCommit.getTree().then(rct => {
                     tree = rct;
                 });
             } else {
@@ -623,14 +623,22 @@ GitPipe.prototype.createDirectories = function (commit, dirPath, child, carrySta
                 });
             }
         } else {
-            if (commit != null) {
-                getTreePromise = commit.getEntry(dirPath).then(e2 => {
+            if (recentCommit != null) {
+                getTreePromise = recentCommit.getEntry(dirPath).then(e2 => {
                     console.assert(e2.isTree(), '[GitPipe#createDirectories] Error: Entry is not a tree.');
                     return e2.getTree();
                 }).then(e2t => {
                     tree = e2t;
                 }).catch(err => {
-                    tree = null;
+                    if (!child.isDirectory()) {
+                        dirPath = path.dirname(child.oldPath);
+                        return oldCommit.getEntry(dirPath).then(oe2 => {
+                            console.assert(oe2.isTree(), '[GitPipe#createDirectories] Error: Entry is not a tree.');
+                            return oe2.getTree();
+                        }).then(oe2t => {
+                            tree = oe2t;
+                        });
+                    }
                 });
             } else {
                 getTreePromise = new Promise(resolve => {
@@ -726,11 +734,10 @@ GitPipe.prototype.createDirectories = function (commit, dirPath, child, carrySta
                 foundDirRec.statistic.modified += carryStatistic.modified;
                 child = foundDirRec;
             }
-            dirPath = path.dirname(dirPath);
             if (isRoot) {
                 return child;
             } else {
-                return this.createDirectories(commit, dirPath, child, carryStatistic);
+                return this.createDirectories(oldCommit, recentCommit, child, carryStatistic);
             }
         }).catch(err => {
             console.error(err);
