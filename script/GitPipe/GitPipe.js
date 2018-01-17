@@ -609,41 +609,43 @@ GitPipe.prototype.createDirectories = function (oldCommit, recentCommit, child, 
         //console.log('> createDirectories(path = ' + dirPath + ')');
         //console.log('  child:', child);
         let isRoot = dirPath === '.';
-        let getTreePromise = null;
+        let getTreePromise = new Promise(resolve => resolve(null));
         let tree = null;
         if (isRoot) {
             if (recentCommit != null) {
-                getTreePromise = recentCommit.getTree().then(rct => {
-                    tree = rct;
+                getTreePromise = getTreePromise.then(() => {
+                    return recentCommit.getTree().then(rct => {
+                        tree = rct;
+                    });
                 });
             } else {
-                getTreePromise = new Promise(resolve => {
+                getTreePromise = getTreePromise.then(() => {
                     tree = null;
-                    resolve();
                 });
             }
         } else {
             if (recentCommit != null) {
-                getTreePromise = recentCommit.getEntry(dirPath).then(e2 => {
-                    console.assert(e2.isTree(), '[GitPipe#createDirectories] Error: Entry is not a tree.');
-                    return e2.getTree();
-                }).then(e2t => {
-                    tree = e2t;
-                }).catch(err => {
-                    if (!child.isDirectory()) {
-                        dirPath = path.dirname(child.oldPath);
+                getTreePromise = getTreePromise.then(() => {
+                    return recentCommit.getEntry(dirPath).then(e2 => {
+                        console.assert(e2.isTree(), '[GitPipe#createDirectories] Error: Entry is not a tree.');
+                        return e2.getTree();
+                    }).then(e2t => {
+                        tree = e2t;
+                    }).catch(err => {
+                        if (!child.isDirectory()) {
+                            dirPath = path.dirname(child.oldPath);
+                        }
                         return oldCommit.getEntry(dirPath).then(oe2 => {
                             console.assert(oe2.isTree(), '[GitPipe#createDirectories] Error: Entry is not a tree.');
                             return oe2.getTree();
                         }).then(oe2t => {
                             tree = oe2t;
                         });
-                    }
+                    });
                 });
             } else {
-                getTreePromise = new Promise(resolve => {
+                getTreePromise = getTreePromise.then(() => {
                     tree = null;
-                    resolve();
                 });
             }
         }
