@@ -626,6 +626,7 @@ GitPipe.prototype.createDirectories = function (oldCommit, recentCommit, child, 
         let isRoot = dirPath === '.';
         let getTreePromise = new Promise(resolve => resolve(null));
         let tree = null;
+        let isRecentTree = true;
         if (isRoot) {
             if (recentCommit != null) {
                 getTreePromise = getTreePromise.then(() => {
@@ -655,6 +656,7 @@ GitPipe.prototype.createDirectories = function (oldCommit, recentCommit, child, 
                             return oe2.getTree();
                         }).then(oe2t => {
                             tree = oe2t;
+                            isRecentTree = false;
                         });
                     });
                 });
@@ -668,8 +670,14 @@ GitPipe.prototype.createDirectories = function (oldCommit, recentCommit, child, 
             //console.log('  oldTree:', oldTree);
             //console.log('  tree:', tree);
             let treeId = null;
-            if (tree != null) {
-                treeId = tree.id().toString();
+            let ownerCommit = null;
+            if (isRecentTree) {
+                ownerCommit = recentCommit;
+            } else {
+                ownerCommit = oldCommit;
+            }
+            if (ownerCommit != null && tree != null) {
+                treeId = ownerCommit.id().toString() + ':' + tree.id().toString();
             }
             if (treeId == null) {
                 console.error('[GitPipe#createDirectories] Error: Null tree ID. Path:', dirPath);
