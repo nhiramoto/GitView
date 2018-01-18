@@ -328,7 +328,6 @@ GitPipe.prototype.parsePatches = function (oldCommit, recentCommit, patches) {
 GitPipe.prototype.parsePatch = function (oldCommit, recentCommit, patch) {
     return this.createFile(oldCommit, recentCommit, patch).then(child => {
         if (child) {
-            console.log('file changed:', child.path);
             return this.createDirectories(oldCommit, recentCommit, child, new JSONDatabase.Statistic(0, 0, 0), false);
         } else return null;
     }).catch(err => {
