@@ -284,7 +284,7 @@ GitPipe.prototype.parseDiffs = function () {
  */
 GitPipe.prototype.parseDiff = function (oldCommit, recentCommit, gitDiff) {
     return gitDiff.patches().then(patches => {
-        console.log('patches:', patches);
+        //console.log('patches:', patches);
         return this.parsePatches(oldCommit, recentCommit, patches);
     }).catch(err => {
         console.error(err);
@@ -302,7 +302,9 @@ GitPipe.prototype.parseDiff = function (oldCommit, recentCommit, gitDiff) {
  */
 GitPipe.prototype.parsePatches = function (oldCommit, recentCommit, patches) {
     let patch = patches.shift();
-    return this.parsePatch(oldCommit, recentCommit, patch).then(dirRec => {
+    let dirRec = null;
+    return this.parsePatch(oldCommit, recentCommit, patch).then(d => {
+        if (d != null) dirRec = d;
         if (patches.length <= 0) {
             return dirRec;
         } else {
@@ -325,8 +327,10 @@ GitPipe.prototype.parsePatches = function (oldCommit, recentCommit, patches) {
  */
 GitPipe.prototype.parsePatch = function (oldCommit, recentCommit, patch) {
     return this.createFile(oldCommit, recentCommit, patch).then(child => {
-        console.log('file changed:', child.path);
-        return this.createDirectories(oldCommit, recentCommit, child, new JSONDatabase.Statistic(0, 0, 0), false);
+        if (child) {
+            console.log('file changed:', child.path);
+            return this.createDirectories(oldCommit, recentCommit, child, new JSONDatabase.Statistic(0, 0, 0), false);
+        } else return null;
     }).catch(err => {
         console.error(err);
     });
@@ -379,48 +383,57 @@ GitPipe.prototype.createFile = function (oldCommit, recentCommit, patch) {
         let statistic = new JSONDatabase.Statistic(0, 0, 0);
         getEntryPromise = recentCommit.getEntry(newPath).catch(err => {
             return oldCommit.getEntry(oldPath);
+        }).catch(err => {
+            return null;
         });
         let isBlob = false;
         let isSubmod = false;
+        let fileExists = true;
         return getEntryPromise.then(entry => {
-            if (entry.isBlob()) {
-                isBlob = true;
-                //console.log('  Blob...');
-                return entry.getBlob();
-            } else if (entry.isSubmodule()) {
-                isSubmod = true;
-                //console.log('  Submodule...');
-                //return Git.Submodule.lookup(this.gitRepo, entry.name());
-                return null;
+            if (entry != null) {
+                if (entry.isBlob()) {
+                    isBlob = true;
+                    //console.log('  Blob...');
+                    return entry.getBlob();
+                } else if (entry.isSubmodule()) {
+                    isSubmod = true;
+                    //console.log('  Submodule...');
+                    //return Git.Submodule.lookup(this.gitRepo, entry.name());
+                    return null;
+                }
+            } else {
+                fileExists = false;
             }
         }).then(entryObject => {
-            if (isBlob) {
-                fileRec = new JSONDatabase.FileRecord();
-                fileRec.id = diffFileId;
-                fileRec.oldId = oldId;
-                fileRec.oldName = oldPath != null ? path.basename(oldPath) : null;
-                fileRec.name = newPath != null ? path.basename(newPath) : null;
-                fileRec.oldPath = oldPath;
-                fileRec.path = newPath;
-                fileRec.isBinary = entryObject.isBinary();
-                fileRec.status = patchStatus;
-                fileRec.statistic = statistic;
-            } else if (isSubmod) {
-                fileRec = new JSONDatabase.SubmoduleRecord();
-                fileRec.id = diffFileId;
-                fileRec.oldId = oldId;
-                fileRec.oldName = oldPath != null ? path.basename(oldPath) : null;
-                fileRec.name = newPath != null ? path.basename(newPath) : null;
-                fileRec.oldPath = oldPath;
-                fileRec.path = newPath;
-                //fileRec.url = entryObject.url();
-                fileRec.status = patchStatus;
-                //console.log('  submodule url:', fileRec.url);
+            if (fileExists) {
+                if (isBlob) {
+                    fileRec = new JSONDatabase.FileRecord();
+                    fileRec.id = diffFileId;
+                    fileRec.oldId = oldId;
+                    fileRec.oldName = oldPath != null ? path.basename(oldPath) : null;
+                    fileRec.name = newPath != null ? path.basename(newPath) : null;
+                    fileRec.oldPath = oldPath;
+                    fileRec.path = newPath;
+                    fileRec.isBinary = entryObject.isBinary();
+                    fileRec.status = patchStatus;
+                    fileRec.statistic = statistic;
+                } else if (isSubmod) {
+                    fileRec = new JSONDatabase.SubmoduleRecord();
+                    fileRec.id = diffFileId;
+                    fileRec.oldId = oldId;
+                    fileRec.oldName = oldPath != null ? path.basename(oldPath) : null;
+                    fileRec.name = newPath != null ? path.basename(newPath) : null;
+                    fileRec.oldPath = oldPath;
+                    fileRec.path = newPath;
+                    //fileRec.url = entryObject.url();
+                    fileRec.status = patchStatus;
+                    //console.log('  submodule url:', fileRec.url);
+                }
+                console.assert(fileRec != null, '[GitPipe#createFile] Error: Failed to create file.');
+                return patch.hunks();
             }
-            console.assert(fileRec != null, '[GitPipe#createFile] Error: Failed to create file.');
-            return patch.hunks();
         }).then(hunks => {
-            if (isBlob && !fileRec.isBinary) {
+            if (fileExists && isBlob && !fileRec.isBinary) {
                 let hunkPromises = [];
                 hunks.forEach(hunk => {
                     hunkPromises.push(hunk.lines());
@@ -428,20 +441,22 @@ GitPipe.prototype.createFile = function (oldCommit, recentCommit, patch) {
                 return Promise.all(hunkPromises);
             }
         }).then(listLines => {
-            if (isBlob) {
-                //console.log('  parsing lines...');
-                if (!fileRec.isBinary && listLines != null) {
-                    listLines.forEach(lines => {
-                        this.parseLines(fileRec, lines);
-                    });
+            if (fileExists) {
+                if (isBlob) {
+                    //console.log('  parsing lines...');
+                    if (!fileRec.isBinary && listLines != null) {
+                        listLines.forEach(lines => {
+                            this.parseLines(fileRec, lines);
+                        });
+                    }
+                    //console.log('  adding file to db.');
+                    this.db.addFile(fileRec);
+                } else if (isSubmod) {
+                    //console.log('  adding submodule to db.');
+                    this.db.addSubmodule(fileRec);
                 }
-                //console.log('  adding file to db.');
-                this.db.addFile(fileRec);
-            } else if (isSubmod) {
-                //console.log('  adding submodule to db.');
-                this.db.addSubmodule(fileRec);
-            }
-            return fileRec;
+                return fileRec;
+            } else return null;
         }).catch(err => {
             console.error(err);
         });;
@@ -611,6 +626,7 @@ GitPipe.prototype.createDirectories = function (oldCommit, recentCommit, child, 
         let isRoot = dirPath === '.';
         let getTreePromise = new Promise(resolve => resolve(null));
         let tree = null;
+        let isRecentTree = true;
         if (isRoot) {
             if (recentCommit != null) {
                 getTreePromise = getTreePromise.then(() => {
@@ -640,6 +656,7 @@ GitPipe.prototype.createDirectories = function (oldCommit, recentCommit, child, 
                             return oe2.getTree();
                         }).then(oe2t => {
                             tree = oe2t;
+                            isRecentTree = false;
                         });
                     });
                 });
@@ -653,8 +670,14 @@ GitPipe.prototype.createDirectories = function (oldCommit, recentCommit, child, 
             //console.log('  oldTree:', oldTree);
             //console.log('  tree:', tree);
             let treeId = null;
-            if (tree != null) {
-                treeId = tree.id().toString();
+            let ownerCommit = null;
+            if (isRecentTree) {
+                ownerCommit = recentCommit;
+            } else {
+                ownerCommit = oldCommit;
+            }
+            if (ownerCommit != null && tree != null) {
+                treeId = ownerCommit.id().toString() + ':' + tree.id().toString();
             }
             if (treeId == null) {
                 console.error('[GitPipe#createDirectories] Error: Null tree ID. Path:', dirPath);

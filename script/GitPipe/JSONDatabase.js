@@ -324,7 +324,6 @@ JSONDatabase.prototype.hierarchize = function (rootId) {
             reject('Entry not found (loose id).');
             //console.error('Entry not found (loose id).');
         }
-        console.log('found entry:', root.newPath);
         if (root.isDirectory()) {
             let entriesId = root.entriesId;
             root.entries = [];
@@ -598,15 +597,28 @@ JSONDatabase.FileRecord.prototype.addBlock = function (oldLines, newLines, statu
     let blockRec = new JSONDatabase.BlockRecord();
     blockRec.index = ++this.lastBlockIndex;
     blockRec.status = status;
-    blockRec.newLines = newLines;
-    blockRec.oldLines = oldLines;
     if (status === JSONDatabase.STATUS.ADDED) {
+        blockRec.newLines = newLines;
         this.statistic.added += newLines.length;
     } else if (status === JSONDatabase.STATUS.DELETED) {
+        blockRec.oldLines = oldLines;
         this.statistic.deleted += oldLines.length;
     } else {
         console.assert(status === JSONDatabase.STATUS.MODIFIED, '[JSONDatabase.FileRecord#addBlock] Error: Unknown status passed.');
         this.statistic.modified += oldLines.length;
+        blockRec.oldLines = oldLines;
+        if (newLines.length > oldLines.length) {
+            blockRec.newLines = newLines.slice(0, oldLines.length);
+            newLines = newLines.slice(oldLines.length);
+            let addedBlock = new JSONDatabase.BlockRecord();
+            addedBlock.index = ++this.lastBlockIndex;
+            addedBlock.status = JSONDatabase.STATUS.ADDED;
+            addedBlock.newLines = newLines;
+            this.statistic.added += newLines.length;
+            this.blocks.push(addedBlock);
+        } else {
+            blockRec.newLines = newLines;
+        }
     }
     this.blocks.push(blockRec);
 };
