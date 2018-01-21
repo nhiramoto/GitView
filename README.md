@@ -4,4 +4,4 @@ Representa graficamente dados (e metadados) obtidos de repositórios com o siste
 
 Utiliza uma técnica de visualização de informação baseada em grafo para representar a estrutura do projeto e as alterações realizadas neste.
 
-![preview]()
+![preview](https://github.com/nhtoshiaki/GitView/blob/master/preview.png)
