@@ -1,25 +1,25 @@
 {
-  "name": "gitvision",
-  "productName": "GitVision",
+  "name": "gitview",
+  "productName": "GitView",
   "version": "1.0.0",
   "description": "A visualization tool for Git repositories.",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "package-linux": "electron-packager . GitVision --overwrite --platform=linux --arch=x64 --prune=true --out=release-builds",
-    "package-win": "electron-packager . GitVision --overwrite --platform=win32 --arch=x64 --prune=true --out=release-builds --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName='GitVision'"
+    "package-linux": "electron-packager . GitView --overwrite --platform=linux --arch=x64 --prune=true --out=release-builds",
+    "package-win": "electron-packager . GitView --overwrite --platform=win32 --arch=x64 --prune=true --out=release-builds --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName='GitView'"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nhtoshiaki/GitVision.git"
+    "url": "git+https://github.com/nhtoshiaki/GitView.git"
   },
   "author": "nhtoshiaki <nh_toshi.94@hotmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/nhtoshiaki/GitVision/issues"
+    "url": "https://github.com/nhtoshiaki/GitView/issues"
   },
-  "homepage": "https://github.com/nhtoshiaki/GitVision/Source#readme",
+  "homepage": "https://github.com/nhtoshiaki/GitView/Source#readme",
   "dependencies": {
     "async": "^2.6.0",
     "d3": "^4.12.2",
