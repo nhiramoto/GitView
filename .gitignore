@@ -1,0 +1,39 @@
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Sass
+.sass-cache/
+**/*.map
+
+# electron-packager output folders
+out/
+release-builds/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+*.backup
+
+# Test data files
+data/**/*.json
+!data/test/**/*.json
+
+# auto folder when using emacs and auctex
+/auto/*
+
+## Editors:
+# WinEdt
+*.bak
+*.sav
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
