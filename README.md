@@ -17,7 +17,7 @@ git clone https://github.com/nhtoshiaki/GitView.git
 # Go into the repository folder
 cd GitView.git
 
-# Installs the necessary dependencies
+# Installs the dependencies
 npm install
 
 # Run the tool
