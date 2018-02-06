@@ -315,7 +315,7 @@ Tree.prototype.load = function (dataPath) {
     console.log('loading data from file:', dataPath);
     //d3.json(dataPath, (err, data) => {
     fs.readFile(dataPath, (err, contentBuffer) => {
-        if (err) console.error('Error:', err);
+        if (err) console.error(err);
         let data = JSON.parse(contentBuffer.toString());
         this.build(data);
     });
