@@ -397,6 +397,16 @@ $infoBarWidth: 400px;
         //    width: 100%;
         //}
     }
+    .actionBtn {
+        position: absolute;
+        bottom: 10%;
+        left: -30px;
+        width: 20px;
+        height: 20px;
+        background: green;
+        border-radius: 50%;
+        border: 1px solid black;
+    }
 }
 
 #infoBar.visible {
