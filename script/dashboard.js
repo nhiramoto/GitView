@@ -5,12 +5,13 @@ const main = remote.require('./main');
 const globals = require('./globals');
 const GitPipe = require('./GitPipe/GitPipe');
 const Tree = require('./Tree');
+const Treemap = require('./Treemap');
 const dateFormat = require('dateformat');
 
 var repoPath = null;
 var svgWidth = 800, svgHeight = 600;
 var container = null;
-var tree = null;
+var treemap = null;
 var gitPipe = null;
 var dbPath = null;
 var repoRec = null;
@@ -265,9 +266,9 @@ var initViz = function (repoPath) {
             console.log('-> last diff tree got!');
             console.log('-> diffDir:', diffDir);
             container = d3.select('#view');
-            tree = new Tree(container);
-            tree.fillFileInfoFunction = fillFileInfo;
-            tree.build(diffDir);
+            treemap = new Treemap(container, 500, 500);
+            treemap.fillFileInfoFunction = fillFileInfo;
+            treemap.build(diffDir);
         }).then(() => {
             // Limpa lista de commits
             $('#commitBar').children('.commitItem').remove();
@@ -368,7 +369,7 @@ var diffCommit = function (commitId) {
             if (selected) {
                 console.log('Selected commit diff tree got!');
                 console.log('diffDir:', diffDir);
-                tree.build(diffDir);
+                treemap.build(diffDir);
             }
         }).then(() => {
             hideLoadingScreen();
