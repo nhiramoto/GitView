@@ -47,11 +47,11 @@ $(document).ready(() => {
         console.log('repoPath:', repoPath);
         if (repoPath != null && repoPath.length == 0) {
             console.error('Empty path!!!');
-            globals.showError('Erro', 'Especifique o local do repositório.');
+            globals.showError('Error', 'Please, specify the repository path.');
         } else if (!regex.test(repoPath)) {
             $('#repoPath').addClass('invalidInput');
             console.log('Invalid path!!!')
-            globals.showError('Erro', 'O caminho especificado não é um caminho válido.');
+            globals.showError('Error', 'Invalid path.');
         } else {
             let gitpath = repoPath + '/.git';
             console.log('gitpath:', gitpath);
@@ -59,10 +59,10 @@ $(document).ready(() => {
                 if (err || !stats.isDirectory()) {
                     console.log('stat:', stats)
                     console.error('Folder is not a git repository.');
-                    globals.showError('Erro', 'O diretório especificado não é um repositório git.')
+                    globals.showError('Error', 'The specified path is not a git repository.')
                 } else {
                     console.log('Opening repository...');
-                    globals.showMessage('Abrir Repositório', 'Abrindo repositório: ' + repoPath);
+                    globals.showMessage('Open repository', 'Opening repository: ' + repoPath);
                     ipcRenderer.send('setRepoPath', repoPath);
                     $('.background').fadeOut('slow', () => {
                         main.loadDashboard();

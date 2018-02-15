@@ -12,24 +12,24 @@
     </script>
 </head>
 <body>
-    <div id="loadingScreen">Carregando<div id="loading-content"></div></div>
+    <div id="loadingScreen">Loading</div>
     <div id="message">
-        <span id="msgtitle">Título</span><br>
-        <span id="msgbody">Corpo da mensagem.</span><br>
+        <span id="msgtitle">Title</span><br>
+        <span id="msgbody">Message body.</span><br>
         <div class="buttonPane">
-            <input class="dialogGreen" id="okButton" type="button" value="Sim">
-            <input class="dialogRed" id="cancelButton" type="button" value="Cancelar">
+            <input class="dialogGreen" id="okButton" type="button" value="Yes">
+            <input class="dialogRed" id="cancelButton" type="button" value="No">
         </div>
     </div>
     <div id="legend">
         <span id="legendCloseBtn"><i class="fa fa-close" aria-hidden="true"></i></span>
-        <span id="legendTitle">Legenda</span>
+        <span id="legendTitle">Legend</span>
         <div id="legendBody">
         </div>
     </div>
     <div class="background">
         <div id="mainHeader">
-            <span class="title">Repositório: <span id="repoName">Nome do repositório</span></span> <span id="legendButton"><i class="fa fa-question" aria-hidden="true"></i></span> <span id="infoButton"><i class="fa fa-plus-square-o" aria-hidden="true"></i></span>
+            <span class="title">Repository: <span id="repoName">Name of repository</span></span> <span id="legendButton"><i class="fa fa-question" aria-hidden="true"></i></span> <span id="infoButton"><i class="fa fa-plus-square-o" aria-hidden="true"></i></span>
         </div>
         <div id="options">
             <div id="optionButton">
@@ -38,18 +38,18 @@
                 <span></span>
             </div>
             <div class="optionHeader">
-                <span class="optionTitle">Opções</span>
+                <span class="optionTitle">Options</span>
             </div>
             <ul class="optionList">
-                <li id="openRepo">Abrir Repositório</li>
+                <li id="openRepo">Open another repository</li>
             </ul>
         </div>
         <div id="content">
             <div id="commitBar">
                 <div class="commitBarTitle"><i>Commits</i></div>
                 <div class="commitItem">
-                    <span class="title">Título do <i>commit</i></span>
-                    <span class="content">Conteúdo</span>
+                    <span class="title">Title of the <i>commit</i></span>
+                    <span class="content">Content</span>
                 </div>
             </div>
             <div id="view" class="svg-container">
@@ -57,30 +57,30 @@
             <div id="infoBar">
                 <div id="repositoryInfo" class="infoCard">
                     <div class="infoHeader" id="repoInfoTitle">
-                        <span class="infoTitle">Repositório</span><span id="repoInfoArrow" class="infoArrow"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
+                        <span class="infoTitle">Repository</span><span id="repoInfoArrow" class="infoArrow"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
                     </div>
                     <div class="infoBody visible" id="repoInfoBody">
                         <table>
                             <tr>
-                                <td>Nome:</td>
+                                <td>Name:</td>
                                 <td>
                                     <span id="repoInfoName"></span>
                                 </td>
                             </tr>
                             <tr>
-                                <td>Local (Não remoto):</td>
+                                <td>Path:</td>
                                 <td>
                                     <span id="repoPath"></span>
                                 </td>
                             </tr>
                             <tr>
-                                <td>Último <i>commit</i>:</td>
+                                <td>Last <i>commit</i>:</td>
                                 <td>
                                     <span id="lastCommit"></span>
                                 </td>
                             </tr>
                             <tr>
-                                <td>Quantidade de <i>commits</i></td>
+                                <td>Amount of <i>commits</i></td>
                                 <td>
                                     <span id="commitCount"></span>
                                 </td>
@@ -102,19 +102,19 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td>Mensagem:</td>
+                                <td>Message:</td>
                                 <td>
                                     <span id="commitMessage"></span>
                                 </td>
                             </tr>
                             <tr>
-                                <td>Autor:</td>
+                                <td>Author:</td>
                                 <td>
                                     <span id="commitAuthor"></span>
                                 </td>
                             </tr>
                             <tr>
-                                <td>Data:</td>
+                                <td>Date:</td>
                                 <td>
                                     <span id="commitDate"></span>
                                 </td>
@@ -126,7 +126,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td>Parentes:</td>
+                                <td>Parents:</td>
                                 <td>
                                     <span id="commitParents"></span>
                                 </td>
@@ -137,7 +137,7 @@
                 <hr>
                 <div id="fileInfo" class="infoCard">
                     <div class="infoHeader" id="fileInfoTitle">
-                        <span class="infoTitle">Arquivo</span><span id="fileInfoArrow" class="infoArrow"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
+                        <span class="infoTitle">File</span><span id="fileInfoArrow" class="infoArrow"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
                     </div>
                     <div class="infoBody visible" id="fileInfoBody">
                         <table>
@@ -148,25 +148,25 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td>Nome:</td>
+                                <td>Name:</td>
                                 <td colspan="2">
                                     <span id="fileName"></span>
                                 </td>
                             </tr>
                             <tr>
-                                <td>Caminho:</td>
+                                <td>Path:</td>
                                 <td colspan="2">
                                     <span id="filePath"></span>
                                 </td>
                             </tr>
                             <tr>
-                                <td>ID da versão anterior:</td>
+                                <td>Old file ID:</td>
                                 <td colspan="2">
                                     <span id="oldFileId"></span>
                                 </td>
                             </tr>
                             <tr>
-                                <td>É Arquivo Binário?</td>
+                                <td>Is a binary file?</td>
                                 <td colspan="2">
                                     <span id="fileIsBinary"></span>
                                 </td>
@@ -178,16 +178,16 @@
                                 </td>
                             </tr>
                             <tr class="statisticRow">
-                                <td rowspan="3">Estatística:</td>
-                                <td align="right">Linhas adicionadas:</td>
+                                <td rowspan="3">Statistic:</td>
+                                <td align="right">Added lines:</td>
                                 <td><span id="fileStAdded"></span></td>
                             </tr>
                             <tr class="statisticRow">
-                                <td align="right">Linhas deletadas:</td>
+                                <td align="right">Deleted lines:</td>
                                 <td><span id="fileStDeleted"></span></td>
                             </tr>
                             <tr class="statisticRow">
-                                <td align="right">Linhas modificadas:</td>
+                                <td align="right">Modified lines:</td>
                                 <td><span id="fileStModified"></span></td>
                             </tr>
                         </table>

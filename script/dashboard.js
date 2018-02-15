@@ -43,7 +43,7 @@ $(document).ready(() => {
     });
 
     $('#openRepo').click(event => {
-        globals.input('Abrir Repositório', 'Tem certeza que quer fechar o repositório atual para abrir um novo repositório?')
+        globals.input('Open another repository', 'Are you sure you want to close this repository?')
             .then(res => {
                 if (res)
                     $('.background').fadeOut('slow', () => {
@@ -164,9 +164,9 @@ var hideLoadingScreen = function () {
 var fillFileInfo = function (data) {
     if (data != null) {
         if (data.isFile()) {
-            $('#fileInfoTitle .infoTitle').text('Arquivo');
+            $('#fileInfoTitle .infoTitle').text('File');
             $('#fileIsBinary').closest('tr').css('display', '');
-            $('#fileIsBinary').text(data.isBinary ? 'Sim': 'Não');
+            $('#fileIsBinary').text(data.isBinary ? 'Yes': 'No');
             if (data.statistic != null) {
                 $('.statisticRow').css('display', '');
                 $('#fileStAdded').text(data.statistic.added);
@@ -176,7 +176,7 @@ var fillFileInfo = function (data) {
                 $('.statisticRow').css('display', 'none');
             }
         } else if (data.isSubmodule()) {
-            $('#fileInfoTitle .infoTitle').text('Submódulo');
+            $('#fileInfoTitle .infoTitle').text('Submodule');
             $('#fileIsBinary').closest('tr').css('display', 'none');
             $('.statisticRow').css('display', 'none');
         }
@@ -187,16 +187,16 @@ var fillFileInfo = function (data) {
         let fileStatus = null;
         $('.statisticRow').removeClass('disabled');
         if (data.isAdded()) {
-            fileStatus = 'Adicionado';
+            fileStatus = 'Added';
         } else if (data.isDeleted()) {
-            fileStatus = 'Deletado';
+            fileStatus = 'Deleted';
         } else if (data.isMoved()) {
-            fileStatus = 'Movido';
+            fileStatus = 'Moved';
         } else if (data.isUnmodified()) {
-            fileStatus = 'Não Modificado';
+            fileStatus = 'Unmodified';
             $('.statisticRow').addClass('disabled');
         } else {
-            fileStatus = 'Modificado';
+            fileStatus = 'Modified';
         }
         $('#fileStatus').text(fileStatus);
         pulseInfoButton();
@@ -230,7 +230,7 @@ var initViz = function (repoPath) {
                 let headCommitId = repoRec.head;
                 headCommit = gitPipe.db.findCommit(headCommitId);
                 let headCommitDate = headCommit.date;
-                let formattedDate = dateFormat(headCommitDate, 'dd/mm/yyyy hh:MM TT');
+                let formattedDate = dateFormat(headCommitDate, 'mm-dd-yyyy hh:MM TT');
                 $('#repoInfoName').text(repoName);
                 $('#repoPath').text(repoPath);
                 $('#lastCommit').text(formattedDate);
@@ -240,7 +240,7 @@ var initViz = function (repoPath) {
                 let commitMsg = headCommit.message;
                 let author = gitPipe.findAuthor(headCommit.authorEmail);
                 let commitAuthor = author.name + ' <' + author.email + '>';
-                let commitDate = dateFormat(headCommit.date, 'dd/mm/yyyy hh:MM TT');
+                let commitDate = dateFormat(headCommit.date, 'mm-dd-yyyy hh:MM TT');
                 let commitSnapshotId = headCommit.snapshotId;
                 let commitParents = '';
                 headCommit.parents.forEach(parentId => {
@@ -395,7 +395,7 @@ var initLegend = function () {
         .attr('r', '8px');
     nodeRoot.append('text')
         .classed('legend-node-label', true)
-        .text('Raíz do projeto')
+        .text('Project root')
         .attr('dx', '15px')
         .attr('dy', '5px');
     let nodeRootCollapsed = lsvg.append('g')
@@ -406,7 +406,7 @@ var initLegend = function () {
         .attr('r', '8px');
     nodeRootCollapsed.append('text')
         .classed('legend-node-label', true)
-        .text('Raíz do projeto recolhido')
+        .text('Collapsed project root')
         .attr('dx', '15px')
         .attr('dy', '5px');
     let nodeInner= lsvg.append('g')
@@ -417,7 +417,7 @@ var initLegend = function () {
         .attr('r', '8px');
     nodeInner.append('text')
         .classed('legend-node-label', true)
-        .text('Diretório')
+        .text('Directory')
         .attr('dx', '15px')
         .attr('dy', '5px');
     let nodeCollapsed = lsvg.append('g')
@@ -428,7 +428,7 @@ var initLegend = function () {
         .attr('r', '8px');
     nodeCollapsed.append('text')
         .classed('legend-node-label', true)
-        .text('Diretório recolhido')
+        .text('Collapsed directory')
         .attr('dx', '15px')
         .attr('dy', '5px');
     let nodeAdded = lsvg.append('g')
@@ -439,7 +439,7 @@ var initLegend = function () {
         .attr('r', '8px');
     nodeAdded.append('text')
         .classed('legend-node-label', true)
-        .text('Arquivo adicionado')
+        .text('Added file')
         .attr('dx', '15px')
         .attr('dy', '5px');
     let nodeDeleted = lsvg.append('g')
@@ -450,7 +450,7 @@ var initLegend = function () {
         .attr('r', '8px');
     nodeDeleted.append('text')
         .classed('legend-node-label', true)
-        .text('Arquivo deletado')
+        .text('Deleted file')
         .attr('dx', '15px')
         .attr('dy', '5px');
     let nodeMoved = lsvg.append('g')
@@ -461,7 +461,7 @@ var initLegend = function () {
          .attr('r', '8px');
      nodeMoved.append('text')
          .classed('legend-node-label', true)
-         .text('Arquivo movido')
+         .text('Moved file')
          .attr('dx', '15px')
          .attr('dy', '5px');
     let nodeModified = lsvg.append('g')
@@ -472,7 +472,7 @@ var initLegend = function () {
         .attr('r', '8px');
     nodeModified.append('text')
         .classed('legend-node-label', true)
-        .text('Arquivo modificado')
+        .text('Modified file')
         .attr('dx', '15px')
         .attr('dy', '5px');
     let nodeUnmodified = lsvg.append('g')
@@ -484,7 +484,7 @@ var initLegend = function () {
         .attr('r', '8px');
     nodeUnmodified.append('text')
         .classed('legend-node-label', true)
-        .text('Arquivo não modificado')
+        .text('Unmodified file')
         .attr('dx', '15px')
         .attr('dy', '5px');
 };

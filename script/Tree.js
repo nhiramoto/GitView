@@ -167,34 +167,34 @@ Tree.prototype.handleMouseOver = function (d, i) {
     let tooltip = d3.select('#nodeTooltip');
     let tooltipStatus = null;
     let tooltipClass = null;
-    let addedLabel = 'Adicionado: 0';
-    let deletedLabel = 'Deletado: 0';
-    let modifiedLabel = 'Modificado: 0';
+    let addedLabel = 'Added: 0';
+    let deletedLabel = 'Deleted: 0';
+    let modifiedLabel = 'Modified: 0';
     if (d.data && d.data.status != null) {
         if (d.data.isAdded()) {
-            tooltipStatus = 'Adicionado';
+            tooltipStatus = 'Added';
             tooltipClass = 'added';
         } else if (d.data.isDeleted()) {
-            tooltipStatus = 'Deletado';
+            tooltipStatus = 'Deleted';
             tooltipClass = 'deleted';
         } else if (d.data.isUnmodified()) {
-            tooltipStatus = 'Não modificado';
+            tooltipStatus = 'Unmodified';
             tooltipClass = 'unmodified';
         } else if (d.data.isMoved()) {
-            tooltipStatus = 'Movido';
+            tooltipStatus = 'Moved';
             tooltipClass = 'moved';
         } else {
-            tooltipStatus = 'Modificado';
+            tooltipStatus = 'Modified';
             tooltipClass = 'modified';
         }
         if (d.data.isFile() && !d.data.isBinary && d.data.statistic != null) {
-            addedLabel = 'Linhas adicionadas: ' + d.data.statistic.added;
-            deletedLabel = 'Linhas deletadas: ' + d.data.statistic.deleted;
-            modifiedLabel = 'Linhas modificadas: ' + d.data.statistic.modified;
+            addedLabel = 'Added lines: ' + d.data.statistic.added;
+            deletedLabel = 'Deleted lines: ' + d.data.statistic.deleted;
+            modifiedLabel = 'Modified lines: ' + d.data.statistic.modified;
         } else if (d.data.isDirectory() && d.data.statistic != null) {
-            addedLabel = 'Arquivos adicionados: ' + d.data.statistic.added;
-            deletedLabel = 'Arquivos deletados: ' + d.data.statistic.deleted;
-            modifiedLabel = 'Arquivos modificados: ' + d.data.statistic.modified;
+            addedLabel = 'Added lines: ' + d.data.statistic.added;
+            deletedLabel = 'Deleted lines: ' + d.data.statistic.deleted;
+            modifiedLabel = 'Modified lines: ' + d.data.statistic.modified;
         } else {
             addedLabel = null;
             deletedLabel = null;
@@ -263,9 +263,9 @@ Tree.prototype.stylize = function (d, i) {
     d3.select(this).classed('node-unmodified', false);
     if (d.parent == null) { // Root node
         if (d.children != null) {
-            d3.select(this).classed('node-root', true).style('fill', '#555');
+            d3.select(this).classed('node-root', true);
         } else if (d._children) {
-            d3.select(this).classed('node-rootCollapsed', true).style('fill', 'red');
+            d3.select(this).classed('node-rootCollapsed', true);
         }
     } else if (d._children != null) { // Collapsed node
         d3.select(this).classed('node-collapsed', true);
