@@ -60,7 +60,7 @@ Treemap.prototype.update = function () {
     //        .style('border', '1px solid gray')
     //        .text(d => d.data.name);
     this.node = this.view.datum(root).selectAll('.node')
-        .data(tree.leaves())
+        .data(this.tree.leaves())
       .enter().append('div')
         .classed('node', true)
         .style('left', d => d.x0 + 'px')
