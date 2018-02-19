@@ -263,26 +263,6 @@ body {
   left: 250px;
 }
 
-.svg-container {
-  position: relative;
-  display: inline-block;
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  width: 100%;
-  vertical-align: top;
-  overflow: hidden;
-  background: white;
-  z-index: 0;
-}
-.svg-container .svg-content {
-  position: absolute;
-  display: inline-block;
-  box-shadow: inset 0 0 3px rgba(10, 10, 10, 0.6);
-  border-radius: 3px;
-  margin: 0;
-}
-
 #infoBar {
   position: fixed;
   top: 60px;
@@ -379,6 +359,16 @@ body {
 #infoBar .infoBody table tr td:first-child {
   width: 30%;
   text-align: right;
+}
+#infoBar .actionBtn {
+  position: absolute;
+  bottom: 10%;
+  left: -30px;
+  width: 20px;
+  height: 20px;
+  background: green;
+  border-radius: 50%;
+  border: 1px solid black;
 }
 
 #infoBar.visible {
