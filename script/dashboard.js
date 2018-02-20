@@ -267,9 +267,9 @@ var initViz = function (repoPath) {
             console.log('-> diffDir:', diffDir);
             container = d3.select('#view');
             container
-                .style('margin-left', '10px')
-                .style('margin-top', '10px');
-            treemap = new Treemap(container, 600, 600);
+                .style('margin-left', '20px')
+                .style('margin-top', '20px');
+            treemap = new Treemap(container, 600, 500);
             treemap.fillFileInfoFunction = fillFileInfo;
             treemap.build(diffDir);
         }).then(() => {

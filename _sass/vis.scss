@@ -41,19 +41,35 @@
     }
 }
 
+.treemap-legend {
+    border: 1px solid white;
+    font: 14px sans-serif;
+    background-color: paleturquoise;
+    line-height: 30px;
+    text-indent: 5px;
+    position: absolute;
+    user-select: none;
+    cursor: pointer;
+    -webkit-transition: filter .5s ease;
+    &:hover {
+        filter: brightness(120%);
+        -webkit-transition: filter .3s ease;
+    }
+}
+
 .treemap-node {
     border: 2px solid white;
-    font: 10px sans-serif;
+    font: 11px sans-serif;
     line-height: 12px;
     overflow: hidden;
     position: absolute;
-    text-indent: 2px;
+    text-indent: 3px;
     user-select: none;
     cursor: pointer;
-    -webkit-transition: border-color .5s ease;
+    -webkit-transition: filter .5s ease;
     &:hover {
-        border-color: steelblue;
-        -webkit-transition: border-color .3s ease;
+        filter: brightness(120%);
+        -webkit-transition: filter .3s ease;
     }
 }
 
