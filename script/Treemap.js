@@ -8,21 +8,14 @@ function Treemap(container, width, height) {
     this.treemapLegendHeight = 30;
     this.width = width - this.margin.left - this.margin.right;
     this.height = height - this.margin.top - this.margin.bottom;
-    this.treemapLegend = this.container.append('div')
-        .style('position', 'relative')
-        .style('width', width + 'px')
-        .style('height', this.treemapLegendHeight + 'px')
-        .style('margin-left', '5px')
-        .style('margin-top', '5px')
-        .text('Treemap Legend')
-        .classed('treemap-legend', true);
-    this.view = this.container.append('div')
-        .style('position', 'relative')
-        .style('width', width + 'px')
-        .style('height', height + 'px')
-        .style('margin-left', '5px')
-        .style('margin-top', '5px')
-        .classed('svg-content', true);
+    this.view = this.container.append('svg')
+        .attr('viewBox', '0 0 ' + this.width + ' ' + this.height)
+        .attr('preserveAspectRatio', 'xMidYMid meet')
+        .style('width', '100%')
+        .style('height', '100%')
+        .classed('treemap-view', true)
+      .append('g')
+        .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')');
     this.treemap = d3.treemap().size([this.width, this.height]);
     this.root = null;
     this.tree = null;
@@ -59,42 +52,28 @@ Treemap.prototype.build = function (data) {
             //    return 0;
             //}
         });
+    this.node = this.root;
     this.tree = this.treemap(this.root);
     this.update();
 };
 
 Treemap.prototype.update = function () {
-    //this.view.selectAll('.treemap-node').data(this.root).enter()
-    //    .append('div')
-    //        .style('position', 'absolute')
-    //        .style('left', d => d.x + this.margin * d.depth)
-    //        .style('top', d => d.y + this.margin * d.depth)
-    //        .style('width', d => d.dx - 2 * this.margin * d.depth)
-    //        .style('height', d => d.dy - 2 * this.margin * d.depth)
-    //        .style('background', d => this.color(d.depth))
-    //        .style('border', '1px solid gray')
-    //        .text(d => d.data.name);
-    this.node = this.view.datum(this.root).selectAll('.treemap-node')
+    this.cell = this.view.selectAll('.cell')
         .data(this.tree.leaves())
-      .enter().append('div')
-        .classed('treemap-node', true)
-        .style('left', d => this.margin.left + d.x0 + 'px')
-        .style('top', d => this.margin.top + d.y0 + 'px')
-        .style('width', d => Math.max(0, d.x1 - d.x0 - 1) + 'px')
-        .style('height', d => Math.max(0, d.y1 - d.y0 - 1) + 'px')
-        .style('background', d => this.color(d.parent.data.name))
-        .style('border-color', d => {
-            if (d.depth === 1) {
-                return 'blue';
-            } else if (d.depth === 2) {
-                return 'red';
-            } else if (d.depth === 3) {
-                return 'magenta';
-            } else {
-                return 'white';
-            }
-        })
-        .on('click', d => console.log('clicked:', d))
+      .enter().append('g')
+        .classed('cell', true)
+        .attr('transform', d => 'translate(' + d.x0 + ',' + d.y0 + ')');
+
+    this.cell.append('rect')
+        .attr('id', d => d.data.id)
+        .attr('width', d => Math.max(0, d.x1 - d.x0 - 1) + 'px')
+        .attr('height', d => Math.max(0, d.y1 - d.y0 - 1) + 'px')
+        .attr('fill', d => this.color(d.parent.data.id));
+
+    this.cell.append('svg:text')
+        .attr('x', d => (d.x1 - d.x0) / 2)
+        .attr('y', d => (d.y1 - d.y0) / 2)
+        .attr('text-anchor', 'middle')
         .text(d => d.data.name);
 };
 
