@@ -9,7 +9,7 @@ const Treemap = require('./Treemap');
 const dateFormat = require('dateformat');
 
 var repoPath = null;
-var svgWidth = 800, svgHeight = 600;
+var width = 500, height = 400;
 var container = null;
 var treemap = null;
 var gitPipe = null;
@@ -121,6 +121,15 @@ $(document).ready(() => {
                 .addClass('fa-chevron-up');
         }
         isFileInfoHide = !isFileInfoHide;
+    });
+
+    $('#changeVisBtn').mouseover(e => {
+        $('#changeVisTooltip').removeClass('visible');
+        $('#changeVisTooltip').addClass('visible');
+    });
+
+    $('#changeVisBtn').mouseout(e => {
+        $('#changeVisTooltip').removeClass('visible');
     });
 
     initLegend();
@@ -266,7 +275,7 @@ var initViz = function (repoPath) {
             console.log('-> last diff tree got!');
             console.log('-> diffDir:', diffDir);
             container = d3.select('#view');
-            treemap = new Treemap(container, 500, 400);
+            treemap = new Treemap(container, width, height);
             treemap.fillFileInfoFunction = fillFileInfo;
             treemap.build(diffDir);
         }).then(() => {

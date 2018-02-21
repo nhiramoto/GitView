@@ -277,7 +277,6 @@ body {
   background: white;
   opacity: 0.9;
   z-index: 10;
-  overflow: scroll;
   -webkit-transition: right .5s ease;
 }
 #infoBar .infoCard {
@@ -364,12 +363,48 @@ body {
 #infoBar .actionBtn {
   position: absolute;
   bottom: 10%;
-  left: -30px;
-  width: 20px;
-  height: 20px;
-  background: green;
+  left: -130px;
+  width: 60px;
+  height: 60px;
+  line-height: 60px;
+  color: white;
+  font-size: 22px;
+  text-align: center;
+  background: #206454;
   border-radius: 50%;
-  border: 1px solid black;
+  border: 1px solid white;
+  z-index: 30;
+  overflow: hidden;
+  box-shadow: 0 2px 3px gray;
+  cursor: pointer;
+  -webkit-transition: filter .5s ease, border .5s ease;
+}
+#infoBar .actionBtn:hover {
+  filter: brightness(90%);
+  border: 2px solid darkgray;
+  -webkit-transition: filter .3s ease, border .3s ease;
+}
+#infoBar #changeVisTooltip {
+  position: absolute;
+  width: 300px;
+  height: 30px;
+  bottom: 12%;
+  left: -450px;
+  background: #FFF3AA;
+  color: black;
+  border-radius: 3px;
+  border: 1px solid white;
+  opacity: 0;
+  font-size: 18px;
+  line-height: 30px;
+  text-indent: 3px;
+  z-index: 31;
+  box-shadow: 0 2px 5px gray;
+  -webkit-transition: opacity .5s ease;
+}
+#infoBar #changeVisTooltip.visible {
+  opacity: 1;
+  -webkit-transition: opacity .3s ease;
 }
 
 #infoBar.visible {
