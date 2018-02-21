@@ -266,7 +266,7 @@ var initViz = function (repoPath) {
             console.log('-> last diff tree got!');
             console.log('-> diffDir:', diffDir);
             container = d3.select('#view');
-            treemap = new Treemap(container, 600, 400);
+            treemap = new Treemap(container, 500, 400);
             treemap.fillFileInfoFunction = fillFileInfo;
             treemap.build(diffDir);
         }).then(() => {

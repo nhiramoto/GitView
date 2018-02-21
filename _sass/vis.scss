@@ -12,8 +12,9 @@
     z-index: 0;
 }
 
-.treemap-view {
-    background-color: #EFEFEF;
+.treemap-legend text {
+    font-family: sans-serif;
+    font-size: 11px;
 }
 
 .cell rect {
@@ -22,7 +23,8 @@
     overflow: hidden;
     user-select: none;
     cursor: pointer;
-    -webkit-transition: stroke .5s ease;
+    z-index: 10;
+    -webkit-transition: stroke .5s ease, opacity .5s ease;
     &:hover {
         stroke: steelblue;
         -webkit-transition: stroke .3s ease;
@@ -34,6 +36,14 @@
     font-size: 11px;
     line-height: 12px;
     pointer-events: none;
+    opacity: 0;
+    z-index: 30;
+    -webkit-transition: opacity .5s ease;
+}
+
+.cell:hover text {
+    opacity: 1 !important;
+    -webkit-transition: opacity .3s ease;
 }
 
 .svg-g {
