@@ -1,6 +1,6 @@
 const d3 = require('d3');
 const fs = require('fs');
-const JSONDatabase = require('./GitPipe/JSONDatabase');
+//const JSONDatabase = require('./GitPipe/JSONDatabase');
 
 function Treemap(container, width, height) {
     this.container = container;
@@ -36,7 +36,6 @@ function Treemap(container, width, height) {
     this.treemap = d3.treemap().size([this.width, this.height]);
     this.root = null;
     this.tree = null;
-    this.node = null;
     this.color = d3.scaleOrdinal().range(d3.schemeCategory20c);
     this.fillFileInfoFunction = null;
     this.foldLevel = 2;
@@ -55,33 +54,82 @@ Treemap.prototype.build = function (data) {
     console.log('building data treemap...');
     data = data || [];
     this.root = d3.hierarchy(data, d => d.entries)
-        .sum(d => {
-            if (d.isDirectory()) {
-                return 0;
-            } else {
-                if (d.statistic == null) {
-                    return 5;
-                } else {
-                    return 5 + d.statistic.added + d.statistic.deleted + d.statistic.modified;
-                }
+        .eachBefore(d => {
+            if (d.depth === this.foldLevel && d.children) {
+                d._children = d.children;
+                d.children = null;
             }
-            //if (d.depth === 3) {
-            //    return 5 + d.statistic.added + d.statistic.deleted + d.statistic.modified;
-            //} else {
-            //    return 0;
-            //}
+        })
+        .sum(d => {
+            if (d.statistic) {
+                return 5 + d.statistic.added + d.statistic.deleted + d.statistic.modified;
+            } else {
+                return 5;
+            }
         });
-    this.root.each(d => {
-        if (d.depth === this.foldLevel && d.children) {
-            d._children = d.children;
-        }
-    });
-    this.node = this.root;
-    this.update();
+    this.update(this.root);
 };
 
-Treemap.prototype.update = function () {
-    this.tree = this.treemap(this.node);
+Treemap.prototype.zoom = function (node) {
+    let newFoldLevel = node.depth + this.foldLevel;
+    function foldNodes(root, level) {
+        if (root.children) {
+            if (root.depth === level - 1) {
+                root._children = root.children;
+                root.children = null;
+            } else {
+                root.children.forEach(c => {
+                    foldNodes(c, level);
+                });
+            }
+        }
+    }
+
+    if (node.children == null && node._children) {
+        node.children = node._children;
+        node._children = null;
+
+        foldNodes(node, newFoldLevel);
+
+        this.update(node);
+    }
+};
+
+Treemap.prototype.update = function (node) {
+    /**
+     * Return de all internal or leaf nodes with maxlevel from the tree.
+     */
+    function levelNodes (treeRoot, level) {
+        if (treeRoot.depth <= level) {
+            if (treeRoot.depth == level) {
+                return [treeRoot];
+            } else if (treeRoot.depth === level - 1) {
+                if (treeRoot.children) {
+                    return treeRoot.children;
+                } else {
+                    return [treeRoot];
+                }
+            } else {
+                if (treeRoot.children) {
+                    let nodes = [];
+                    treeRoot.children.forEach(c => {
+                        let res = levelNodes(c, level);
+                        if (res.length > 0) {
+                            nodes.concat(res);
+                        }
+                    });
+                    return nodes;
+                } else {
+                    return [treeRoot];
+                }
+            }
+        } else {
+            return [];
+        }
+    }
+
+    this.tree = this.treemap(node);
+    console.log('this.tree:', this.tree);
 
     this.cell = this.treemapContent.selectAll('.cell')
         .data(this.tree.leaves(), d => d.data.id)
@@ -92,7 +140,17 @@ Treemap.prototype.update = function () {
     this.cell.append('rect')
         .attr('width', d => Math.max(0, d.x1 - d.x0 - 1) + 'px')
         .attr('height', d => Math.max(0, d.y1 - d.y0 - 1) + 'px')
-        .attr('fill', d => this.color(d.parent.data.id));
+        .attr('fill', d => this.color(d.parent.data.id))
+        .attr('stroke', d => {
+            if (d._children) {
+                return 'magenta';
+            } else {
+                return 'white';
+            }
+        })
+        .on('click', d => {
+            console.log('d:', d);
+        });
 
     this.cell.append('svg:text')
         .attr('x', d => (d.x1 - d.x0) / 2)
@@ -101,9 +159,9 @@ Treemap.prototype.update = function () {
         .text(d => d.data.name);
 
     this.treemapLegend.select('rect')
-        .text(this.node.data.path);
+        .text(node.data.path);
         //.style('fill', this.color(0));
-    console.log('path:', this.root.path(this.node));
+    console.log('path:', this.root.path(node));
 };
 
 module.exports = Treemap;
