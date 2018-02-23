@@ -202,16 +202,17 @@ body {
 }
 
 #commitBar {
-    position: fixed;
-    left: 0;
-    top: $headerHeight;
-    bottom: 0;
+    //position: fixed;
+    //left: 0;
+    //top: $headerHeight;
+    //bottom: 0;
     margin: 0;
     padding: 5px;
     background: white;
     opacity: .9;
     border: 1px solid $lightBorder;
     width: $commitBarWidth;
+    height: 100%;
     overflow: scroll;
     z-index: 1;
     -webkit-transition: opacity .5s ease;
@@ -270,25 +271,34 @@ body {
 }
 
 #view {
+    position: absolute;
+    box-sizing: border-box;
     left: $commitBarWidth;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: 0;
+    padding: 0;
+    z-index: 0;
+    overflow: hidden;
 }
 
 $infoBarWidth: 400px;
 
 #infoBar {
-    position: fixed;
-    top: $headerHeight;
-    bottom: 0;
+    position: absolute;
     right: -$infoBarWidth - 5px;
     width: $infoBarWidth;
     min-width: 0;
+    top: 0;
+    bottom: 0;
     padding: 10px;
     border-radius: 3px;
     box-shadow: -1px 0 8px rgba(10, 10, 10, 0.5); 
     background: white;
-    opacity: 0.9;
+    opacity: 0.95;
     z-index: 10;
-    //overflow: scroll;
+    overflow: scroll;
     -webkit-transition: right .5s ease;
     .infoCard {
         margin-bottom: 20px;
