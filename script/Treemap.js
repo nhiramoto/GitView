@@ -38,6 +38,9 @@ function Treemap(container, width, height) {
         //.tile(d3.treemapResquarify)
         .round(true);
     this.root = null;
+    this.node = null;
+    this.lastNode = null;
+    this.lastNode = null;
     this.color = d3.scaleOrdinal().range(d3.schemeCategory20c);
     this.fillFileInfoFunction = null;
     this.foldLevel = 2;
@@ -75,12 +78,15 @@ Treemap.prototype.build = function (data) {
                 return 5;
             }
         });
-    this.update(this.root);
+    this.node = this.root;
+    this.update();
 };
 
-Treemap.prototype.zoom = function (node) {
-    console.log('zooming...:', node);
-    let newFoldLevel = node.depth + this.foldLevel;
+Treemap.prototype.zoom = function () {
+    console.log('zooming...:', this.node);
+    let newFoldLevel = this.node.depth + this.foldLevel;
+    console.log('level:', this.node.depth);
+    console.log('new fold level:', newFoldLevel);
     function foldNodes(root, level) {
         if (root.children) {
             if (root.depth === level - 1) {
@@ -98,21 +104,29 @@ Treemap.prototype.zoom = function (node) {
         }
     }
 
-    if (node.children == null && node._children) {
-        node.children = node._children;
-        node._children = null;
-        if (node.value == null && node._value) {
-            node.value = node._value;
-            node._value = null;
+    if (this.node.children == null && this.node._children) {
+        this.node.children = this.node._children;
+        this.node._children = null;
+        if (this.node.value == null && this.node._value) {
+            this.node.value = this.node._value;
+            this.node._value = null;
+        }
+        if (this.node.parent) {
+            this.node._parent = this.node.parent;
+            this.node.parent = null;
+        }
+        if (this.lastNode.parent == null && this.lastNode._parent) {
+            this.lastNode.parent = this.lastNode._parent;
+            this.lastNode._parent = null;
         }
 
-        foldNodes(node, newFoldLevel);
+        foldNodes(this.node, newFoldLevel);
 
-        this.update(node);
+        this.update();
     }
 };
 
-Treemap.prototype.update = function (node) {
+Treemap.prototype.update = function () {
     /**
      * Return de all internal or leaf nodes with maxlevel from the tree.
      */
@@ -145,7 +159,7 @@ Treemap.prototype.update = function (node) {
     //    }
     //}
 
-    let tree = this.treemap(node);
+    let tree = this.treemap(this.node);
     console.log('tree:', tree);
 
     this.cell = this.treemapContent.selectAll('.cell')
@@ -166,14 +180,31 @@ Treemap.prototype.update = function (node) {
                 return 'white';
             }
         })
-        .on('click', e => {
-            let id = e.data.id.replace(':', '\\:');
-            let selectedCell = d3.select('#' + id).transition(2000)
-                .attr('transform', 'translate(0, 0)');
-            selectedCell.select('rect').transition(2000)
+        .on('click', d => {
+            if (d._children) {
+                let id = d.data.id.replace(':', '\\:');
+                d3.selectAll('.cell')
+                    .filter(d => d.data.id !== d.data.id)
+                    .remove();
+                let selectedCell = d3.select('#' + id);
+                selectedCell.transition()
+                    .duration(500)
+                    .attr('transform', 'translate(0, 0)')
+                  .select('rect').transition()
+                    .duration(500)
                     .attr('width', this.width + 'px')
                     .attr('height', this.height + 'px');
-            //this.zoom(d);
+                selectedCell.transition()
+                    .duration(300)
+                    .delay(1000)
+                    .style('opacity', 0)
+                    .remove();
+                this.lastNode = this.node;
+                this.node = d;
+                this.zoom();
+            } else {
+                console.log('clicked:', d);
+            }
         });
 
     this.cell.append('svg:text')
@@ -183,9 +214,9 @@ Treemap.prototype.update = function (node) {
         .text(d => d.data.name);
 
     this.treemapLegend.select('rect')
-        .text(node.data.path);
+        .text(this.node.data.path);
         //.style('fill', this.color(0));
-    console.log('path:', this.root.path(node));
+    console.log('path:', this.root.path(this.node));
 };
 
 module.exports = Treemap;

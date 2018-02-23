@@ -2,9 +2,24 @@
   background: white;
 }
 
+.treemap-legend rect {
+  user-select: none;
+  cursor: pointer;
+  stroke: white;
+  -webkit-transition: stroke .5s ease, filter .5s ease;
+}
+.treemap-legend rect:hover {
+  stroke: steelblue;
+  -webkit-transition: stroke .3s ease;
+}
+.treemap-legend rect:active {
+  filter: brightness(80%);
+  -webkit-transition: filter .3s ease;
+}
 .treemap-legend text {
   font-family: sans-serif;
   font-size: 11px;
+  pointer-events: none;
 }
 
 .cell rect {
@@ -20,7 +35,6 @@
   stroke: steelblue;
   -webkit-transition: stroke .3s ease;
 }
-
 .cell text {
   font-family: sans-serif;
   font-size: 11px;
@@ -30,7 +44,6 @@
   z-index: 30;
   -webkit-transition: opacity .5s ease;
 }
-
 .cell:hover text {
   opacity: 1 !important;
   -webkit-transition: opacity .3s ease;

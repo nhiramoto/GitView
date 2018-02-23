@@ -4,39 +4,59 @@
     background: white;
 }
 
-.treemap-legend text {
-    font-family: sans-serif;
-    font-size: 11px;
-}
-
-.cell rect {
-    stroke: white;
-    stroke-width: 1.5;
-    overflow: hidden;
-    user-select: none;
-    cursor: pointer;
-    z-index: 10;
-    -webkit-transition: stroke .5s ease, opacity .5s ease;
-    &:hover {
-        stroke: steelblue;
-        -webkit-transition: stroke .3s ease;
+.treemap-legend {
+    rect {
+        user-select: none;
+        cursor: pointer;
+        stroke: white;
+        -webkit-transition: stroke .5s ease, filter .5s ease;
+        &:hover {
+            stroke: steelblue;
+            -webkit-transition: stroke .3s ease;
+        }
+        &:active {
+            filter: brightness(80%);
+            -webkit-transition: filter .3s ease;
+        }
+    }
+    text {
+        font-family: sans-serif;
+        font-size: 11px;
+        pointer-events: none;
     }
 }
 
-.cell text {
-    font-family: sans-serif;
-    font-size: 11px;
-    line-height: 12px;
-    pointer-events: none;
-    opacity: 0;
-    z-index: 30;
-    -webkit-transition: opacity .5s ease;
+
+.cell {
+    rect {
+        stroke: white;
+        stroke-width: 1.5;
+        overflow: hidden;
+        user-select: none;
+        cursor: pointer;
+        z-index: 10;
+        -webkit-transition: stroke .5s ease, opacity .5s ease;
+        &:hover {
+            stroke: steelblue;
+            -webkit-transition: stroke .3s ease;
+        }
+    }
+    text {
+        font-family: sans-serif;
+        font-size: 11px;
+        line-height: 12px;
+        pointer-events: none;
+        opacity: 0;
+        z-index: 30;
+        -webkit-transition: opacity .5s ease;
+    }
+    &:hover text {
+        opacity: 1 !important;
+        -webkit-transition: opacity .3s ease;
+    }
 }
 
-.cell:hover text {
-    opacity: 1 !important;
-    -webkit-transition: opacity .3s ease;
-}
+
 
 .svg-g {
     background: -webkit-radial-gradient(white, lightgray);
