@@ -34,9 +34,9 @@ function Treemap(container, width, height) {
         .attr('height', this.height + 'px')
         .attr('transform', 'translate(' + this.margin.left + ',' + (2 * this.margin.top + this.treemapLegendHeight + ')'));
     this.treemap = d3.treemap()
-        .size([this.width, this.height])
+        .size([this.width, this.height]);
         //.tile(d3.treemapResquarify)
-        .round(true);
+        //.round(true)
     this.root = null;
     this.node = null;
     this.lastNode = null;
@@ -55,6 +55,19 @@ Treemap.prototype.load = function (dataPath) {
     });
 };
 
+function fold(root, level) {
+    if (root.depth <= level && root.children) {
+        if (root.depth === level) {
+            root._children = root.children;
+            root.children = null;
+        } else {
+            root.children.forEach(c => {
+                fold(c, level);
+            });
+        }
+    }
+}
+
 Treemap.prototype.build = function (data) {
     console.log('building data treemap...');
     data = data || [];
@@ -65,19 +78,27 @@ Treemap.prototype.build = function (data) {
                 d.children = null;
             }
         })
-        .eachAfter(d => {
-            if (d.children == null && d._children) {
-                d._value = d.value;
-                d.value = null;
-            }
-        })
         .sum(d => {
-            if (d.statistic) {
-                return 5 + d.statistic.added + d.statistic.deleted + d.statistic.modified;
+            if (d.isFile()) {
+                if (d.statistic) {
+                    return 5 + d.statistic.added + d.statistic.deleted + d.statistic.modified;
+                } else {
+                    return 5;
+                }
             } else {
-                return 5;
+                return 1;
             }
+            //if (d.depth === this.foldLevel) {
+            //    if (d.statistic) {
+            //        return 5 + d.statistic.added + d.statistic.deleted + d.statistic.modified;
+            //    } else {
+            //        return 5;
+            //    }
+            //} else {
+            //    return 0;
+            //}
         });
+    fold(this.root, this.foldLevel);
     this.node = this.root;
     this.update();
 };
@@ -87,30 +108,10 @@ Treemap.prototype.zoom = function () {
     let newFoldLevel = this.node.depth + this.foldLevel;
     console.log('level:', this.node.depth);
     console.log('new fold level:', newFoldLevel);
-    function foldNodes(root, level) {
-        if (root.children) {
-            if (root.depth === level - 1) {
-                root._children = root.children;
-                root.children = null;
-                if (root.value) {
-                    root._value = root.value;
-                    root.value = null;
-                }
-            } else {
-                root.children.forEach(c => {
-                    foldNodes(c, level);
-                });
-            }
-        }
-    }
 
     if (this.node.children == null && this.node._children) {
         this.node.children = this.node._children;
         this.node._children = null;
-        if (this.node.value == null && this.node._value) {
-            this.node.value = this.node._value;
-            this.node._value = null;
-        }
         if (this.node.parent) {
             this.node._parent = this.node.parent;
             this.node.parent = null;
@@ -120,44 +121,13 @@ Treemap.prototype.zoom = function () {
             this.lastNode._parent = null;
         }
 
-        foldNodes(this.node, newFoldLevel);
+        fold(this.node, newFoldLevel);
 
         this.update();
     }
 };
 
 Treemap.prototype.update = function () {
-    /**
-     * Return de all internal or leaf nodes with maxlevel from the tree.
-     */
-    //function levelNodes (treeRoot, level) {
-    //    if (treeRoot.depth <= level) {
-    //        if (treeRoot.depth == level) {
-    //            return [treeRoot];
-    //        } else if (treeRoot.depth === level - 1) {
-    //            if (treeRoot.children) {
-    //                return treeRoot.children;
-    //            } else {
-    //                return [treeRoot];
-    //            }
-    //        } else {
-    //            if (treeRoot.children) {
-    //                let nodes = [];
-    //                treeRoot.children.forEach(c => {
-    //                    let res = levelNodes(c, level);
-    //                    if (res.length > 0) {
-    //                        nodes.concat(res);
-    //                    }
-    //                });
-    //                return nodes;
-    //            } else {
-    //                return [treeRoot];
-    //            }
-    //        }
-    //    } else {
-    //        return [];
-    //    }
-    //}
 
     let tree = this.treemap(this.node);
     console.log('tree:', tree);
@@ -213,8 +183,8 @@ Treemap.prototype.update = function () {
         .attr('text-anchor', 'middle')
         .text(d => d.data.name);
 
-    this.treemapLegend.select('rect')
-        .text(this.node.data.path);
+    this.treemapLegend.select('text')
+        .text(this.node.data.path === '.' ? '<Root>' : this.node.data.path);
         //.style('fill', this.color(0));
     console.log('path:', this.root.path(this.node));
 };
