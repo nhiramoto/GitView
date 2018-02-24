@@ -40,7 +40,6 @@ function Treemap(container, width, height) {
     this.root = null;
     this.node = null;
     this.lastNode = null;
-    this.lastNode = null;
     this.color = d3.scaleOrdinal().range(d3.schemeCategory20c);
     this.fillFileInfoFunction = null;
     this.foldLevel = 2;
@@ -79,12 +78,8 @@ Treemap.prototype.build = function (data) {
             }
         })
         .sum(d => {
-            if (d.isFile()) {
-                if (d.statistic) {
-                    return 5 + d.statistic.added + d.statistic.deleted + d.statistic.modified;
-                } else {
-                    return 5;
-                }
+            if (d.statistic) {
+                return 5 + d.statistic.added + d.statistic.deleted + d.statistic.modified;
             } else {
                 return 1;
             }
@@ -132,14 +127,15 @@ Treemap.prototype.update = function () {
     let tree = this.treemap(this.node);
     console.log('tree:', tree);
 
-    this.cell = this.treemapContent.selectAll('.cell')
-        .data(tree.leaves(), d => d.data.id)
-      .enter().append('g')
+    let cellData = this.treemapContent.selectAll('.cell')
+        .data(tree.leaves(), d => d.data.id);
+
+    let cell = cellData.enter().append('g')
         .classed('cell', true)
         .attr('id', d => d.data.id)
         .attr('transform', d => 'translate(' + d.x0 + ',' + d.y0 + ')');
 
-    this.cell.append('rect')
+    cell.append('rect')
         .attr('width', d => Math.max(0, d.x1 - d.x0 - 1) + 'px')
         .attr('height', d => Math.max(0, d.y1 - d.y0 - 1) + 'px')
         .attr('fill', d => this.color(d.parent.data.id))
@@ -148,6 +144,13 @@ Treemap.prototype.update = function () {
                 return 'magenta';
             } else {
                 return 'white';
+            }
+        })
+        .style('opacity', d => {
+            if (d.data != null && d.data.isUnmodified()) {
+                return '0.3';
+            } else {
+                return '1';
             }
         })
         .on('click', d => {
@@ -177,11 +180,16 @@ Treemap.prototype.update = function () {
             }
         });
 
-    this.cell.append('svg:text')
+    cell.append('svg:text')
         .attr('x', d => (d.x1 - d.x0) / 2)
         .attr('y', d => (d.y1 - d.y0) / 2)
         .attr('text-anchor', 'middle')
         .text(d => d.data.name);
+
+    cellData.exit().transition()
+        .duration(500)
+        .style('opacity', 0)
+        .remove();
 
     this.treemapLegend.select('text')
         .text(this.node.data.path === '.' ? '<Root>' : this.node.data.path);
