@@ -7,15 +7,15 @@ const crypto = require('crypto');
 const JSONDatabase = require('./JSONDatabase');
 
 /**
- * Módulo para obtenção dos dados do repositório.
+ * A module to get the repository (meta)data.
  * @constructor
- * @param {String} dbPath - Caminho do diretório da base de dados.
+ * @param {String} dbPath Path to repository database.
  */
 function GitPipe(dbPath) {
     this.gitRepo = null;
     this.selectedCommit = null;
     this.diffs = [];
-    if (dbPath == undefined) {
+    if (dbPath == null) {
         this.db = null;
     } else {
         this.db = new JSONDatabase(dbPath);
@@ -57,10 +57,10 @@ GitPipe.prototype.findAuthor = function (authorEmail) {
 };
 
 /**
- * Abre o repositório e salva na base de dados.
+ * Open the repository and save on database.
  * @async
- * @param {String} repoPath Caminho do repositório.
- * @return {Promise<String>} Caminho da base de dados.
+ * @param {String} repoPath Path to repository.
+ * @return {String} Path to database.
  */
 GitPipe.prototype.openRepository = function (repoPath) {
     let pathToRepo = path.resolve(repoPath);
@@ -68,7 +68,7 @@ GitPipe.prototype.openRepository = function (repoPath) {
     let dbPath = null;
     return Git.Repository.open(pathToRepo).then(repo => {
         this.gitRepo = repo;
-        // Subdiretório onde todas as bases de dados são salvas (uma para cada repositório)
+        // Subdirectory where all database (for each repository) are saved.
         fs.mkdir('./data', () => {});
         return this.gitRepo.head();
     }).then(head => {
@@ -88,8 +88,7 @@ GitPipe.prototype.openRepository = function (repoPath) {
 };
 
 /**
- * Utiliza o event emitter history para caminhar no histórico de commits.
- * A partir da branch master.
+ * Walk through commits history from master commit with event emitter.
  * @async
  */
 GitPipe.prototype.parseCommitsHistory = function () {
@@ -116,9 +115,9 @@ GitPipe.prototype.parseCommitsHistory = function () {
 };
 
 /**
- * Cria registro do commit.
+ * Parse the given commit.
  * @sync
- * @param {Git.Commit} commit Commit a ser analisado.
+ * @param {Git.Commit} commit
  */
 GitPipe.prototype.parseCommit = function (commit) {
     let commitRec = new JSONDatabase.CommitRecord(commit);
@@ -131,7 +130,7 @@ GitPipe.prototype.parseCommit = function (commit) {
 };
 
 /**
- * Registra o diff do commit head com seu antecessor.
+ * Records the diff between head commit and its parent.
  * @async
  */
 GitPipe.prototype.registerHeadCommitDiff = function () {
@@ -143,16 +142,14 @@ GitPipe.prototype.registerHeadCommitDiff = function () {
 };
 
 /**
- * Cria registro do diff com commits pai.
+ * Records the diff between the given commit and its parent.
  * @async
- * @param {JSONDatabase.CommitRecord} commitRec Commit a partir
- *   do qual será criado o diff.
+ * @param {JSONDatabase.CommitRecord} commitRec The given commit.
  */
 GitPipe.prototype.diffCommitWithParents = function (commitRec) {
     let commitId = commitRec.id;
     let commitSnapshotId = commitRec.snapshotId;
     let commitTree = null;
-    let commit = null;
     let parentRec = null;
     let parentSnapshotId = null;
     let parentIds = commitRec.parents;
@@ -165,10 +162,10 @@ GitPipe.prototype.diffCommitWithParents = function (commitRec) {
                 parentIds.forEach(parentId => {
                     let foundDiff = this.diffs.find(diff =>
                         diff.diffRec.oldCommitId === parentId && diff.diffRec.recentCommitId === commitId);
-                    if (foundDiff == undefined) {
+                    if (foundDiff == null) {
                         foundDiff = this.db.findDiff(parentId, commitId);
                     }
-                    if (foundDiff == undefined) {
+                    if (foundDiff == null) {
                         parentRec = this.db.findCommit(parentId);
                         parentSnapshotId = parentRec.snapshotId;
                         diffRec = new JSONDatabase.DiffRecord();
@@ -192,10 +189,10 @@ GitPipe.prototype.diffCommitWithParents = function (commitRec) {
             } else { // First commit
                 let foundDiff = this.diffs.find(diff =>
                     diff.diffRec.oldCommitId == null && diff.diffRec.recentCommitId === commitId);
-                if (foundDiff == undefined) {
+                if (foundDiff == null) {
                     foundDiff = this.db.findDiff(null, commitId);
                 }
-                if (foundDiff == undefined) {
+                if (foundDiff == null) {
                     diffRec = new JSONDatabase.DiffRecord();
                     diffRec.oldCommitId = null;
                     diffRec.recentCommitId = commitId;
@@ -214,26 +211,10 @@ GitPipe.prototype.diffCommitWithParents = function (commitRec) {
         }).catch(err => {
             console.error(err);
         });
-    //} else {
-    //    return this.gitRepo.getCommit(commitId).then(commit => {
-    //        return commit.getDiffWithOptions(this.diffOptions)
-    //    }).then(diffs => {
-    //        console.assert(diffs.length === 1, '[GitPipe#diffCommitWithParents] Error: Unexpected number of diffs on first commit.');
-    //        diffRec = new JSONDatabase.DiffRecord();
-    //        diffRec.oldCommitId = null;
-    //        diffRec.recentCommitId = commitId;
-    //        this.diffs.push({
-    //            gitDiff: diffs[0],
-    //            diffRec: diffRec
-    //        });
-    //    }).catch(err => {
-    //        console.error(err);
-    //    });
-    //}
 };
 
 /**
- * Analisa os diffs salvos temporariamente e insere na base de dados.
+ * Parse the temporarily saved diffs and insert into database.
  * @async
  */
 GitPipe.prototype.parseDiffs = function () {
@@ -276,11 +257,11 @@ GitPipe.prototype.parseDiffs = function () {
 };
 
 /**
- * Analisa cada objeto diff.
+ * Parse the given diff.
  * @async
- * @param {Git.Commit} oldCommit - Objeto commit mais antigo do diff.
- * @param {Git.Commit} recentCommit - Objeto commit mais recente do diff.
- * @param {Git.Diff} gitDiff - Objeto com os dados do diff.
+ * @param {Git.Commit} oldCommit The oldest commit.
+ * @param {Git.Commit} recentCommit The newest commit.
+ * @param {Git.Diff} gitDiff The given diff.
  */
 GitPipe.prototype.parseDiff = function (oldCommit, recentCommit, gitDiff) {
     return gitDiff.patches().then(patches => {
@@ -292,13 +273,12 @@ GitPipe.prototype.parseDiff = function (oldCommit, recentCommit, gitDiff) {
 };
 
 /**
- * Chama parsePatch syncronamente entre os elementos de patch.
+ * Call synchronously each patch.
  * @async
- * @param {Git.Commit} oldCommit Commit mais antigo do diff.
- * @param {Git.Commit} recentCommit Commit mais recent do diff.
- * @param {Array<Git.Patch>} patches Lista de patches a serem analisados.
- * @return {Promise<JSONDatabase.DirectoryRecord} Retorna o registro do
- *   diretório raíz.
+ * @param {Git.Commit} oldCommit The oldest commit.
+ * @param {Git.Commit} recentCommit The newest commit.
+ * @param {Array<Git.Patch>} patches A array of patch.
+ * @return {JSONDatabase.DirectoryRecord} Returns a new directory record.
  */
 GitPipe.prototype.parsePatches = function (oldCommit, recentCommit, patches) {
     let patch = patches.shift();
@@ -316,14 +296,12 @@ GitPipe.prototype.parsePatches = function (oldCommit, recentCommit, patches) {
 };
 
 /**
- * Analisa o objeto patch e registra os diretórios e arquivos
- * com o estado da modificação.
+ * Parse the given patch and register the modified directories and files records.
  * @async
- * @param {Git.Commit} oldCommit Commit mais antigo do diff.
- * @param {Git.Commit} recentCommit Commit mais recent do diff.
- * @param {Git.ConvenientPatch} patch Patch a ser analisado.
- * @return {Array<JSONDatabase.DirectoryRecord>} Retorna o registro do
- *   diretório raíz criado.
+ * @param {Git.Commit} oldCommit The oldest commit.
+ * @param {Git.Commit} recentCommit The newest commit.
+ * @param {Git.ConvenientPatch} patch The given patch.
+ * @return {Array<JSONDatabase.DirectoryRecord>} Returns the root directory record.
  */
 GitPipe.prototype.parsePatch = function (oldCommit, recentCommit, patch) {
     return this.createFile(oldCommit, recentCommit, patch).then(child => {
@@ -336,7 +314,7 @@ GitPipe.prototype.parsePatch = function (oldCommit, recentCommit, patch) {
 };
 
 /**
- * Cria registro do arquivo relacionado ao patch e adiciona à base de dados.
+ * Records a new file to database.
  * @async
  * @param {Git.Commit} oldCommit Commit mais antigo do diff.
  * @param {Git.Commit} recentCommit Commit mais recente do diff.
@@ -463,10 +441,10 @@ GitPipe.prototype.createFile = function (oldCommit, recentCommit, patch) {
 };
 
 /**
- * Analisa e cria o registro das linhas do patch relacionado.
+ * Parse the file modified lines.
  * @sync
- * @param {JSONDatabase.FileRecord} fileRec Arquivo com o qual as linhas criadas serão associadas.
- * @param {Array<Git.DiffLine>} lines Conjunto das linhas.
+ * @param {JSONDatabase.FileRecord} fileRec The modified lines owner.
+ * @param {Array<Git.DiffLine>} lines The modified lines.
  */
 GitPipe.prototype.parseLines = function(fileRec, lines) {
     //console.log('> parseLines');
@@ -605,14 +583,14 @@ GitPipe.prototype.parseLines = function(fileRec, lines) {
 };
 
 /**
- * Cria registro dos diretórios recursivamente (dos filhos à raiz).
+ * Records the directories from leaf to root node.
  * @async
- * @param {Git.Commit} oldCommit Utilizado para recuperar o objeto tree mais antigo.
- * @param {Git.Commit} recentCommit Utilizado para recuperar o objeto tree mais recente.
- * @param {JSONDatabase.EntryRecord} child Filho do diretório a ser criado.
- * @param {JSONDatabase.Statistic} carryStatistic Utilizado para atualizar estatísticas dos diretórios já existentes.
- * @param {Boolean} carryStatus Utilizado para atualizar o status dos diretórios já existentes.
- * @return {JSONDatabase.DirectoryRecord} O último diretório criado (diretório raíz).
+ * @param {Git.Commit} oldCommit The oldest commit.
+ * @param {Git.Commit} recentCommit The newest commit.
+ * @param {JSONDatabase.EntryRecord} child The directory child.
+ * @param {JSONDatabase.Statistic} carryStatistic To propagate the statistics.
+ * @param {Boolean} carryStatus To propagate the children status to parent directories.
+ * @return {JSONDatabase.DirectoryRecord} The root directory record.
  */
 GitPipe.prototype.createDirectories = function (oldCommit, recentCommit, child, carryStatistic, carryStatus) {
     let dirPath = path.dirname(child.path);
@@ -711,7 +689,7 @@ GitPipe.prototype.createDirectories = function (oldCommit, recentCommit, child, 
                 }
                 this.db.addDirectory(newDirRec);
                 child = newDirRec;
-            } else { // Diretório já existe, atualiza-o.
+            } else { // The directory already exists.
                 //console.log('    Directory found ' + dirPath + ' entriesId: ' + foundDirRec.entriesId);
                 // --- By id ---
                 let foundEntryId = foundDirRec.entriesId.find(eid => (eid === child.id));
@@ -729,7 +707,7 @@ GitPipe.prototype.createDirectories = function (oldCommit, recentCommit, child, 
                 //    }
                 //}
                 //console.log('      -> foundEntry:', foundEntry);
-                if (foundEntryId == undefined) { // Ainda não existe entry
+                if (foundEntryId == undefined) { // Entry not founded
                     if (child.isFile() || child.isSubmodule()) {
                         if (child.isAdded()) {
                             carryStatistic.added++;
@@ -770,10 +748,8 @@ GitPipe.prototype.createDirectories = function (oldCommit, recentCommit, child, 
 };
 
 /**
- * Salva a base de dados em arquivo.
+ * Save database to disk.
  * @sync
- * @return Sucesso na escrita no arquivo.
- *  ou false caso contrário.
  */
 GitPipe.prototype.save = function () {
     if (this.db != null) {
@@ -785,9 +761,8 @@ GitPipe.prototype.save = function () {
 };
 
 /**
- * Carrega a base de dados do arquivo.
+ * Load database from disk.
  * @sync
- * @return Sucesso na leitura do arquivo.
  */
 GitPipe.prototype.load = function () {
     if (this.db != null) {
@@ -799,9 +774,9 @@ GitPipe.prototype.load = function () {
 };
 
 /**
- * Recupera as diferenças do último commit do repositório.
+ * Get the head commit delta.
  * @async
- * @return {DirectoryRecord} Hierarquia de diretório contendo os arquivos modificados.
+ * @return {DirectoryRecord} The hierarchized root directory record.
  */
 GitPipe.prototype.getHeadDiffTree = function () {
     if (this.db == null) {
@@ -819,14 +794,13 @@ GitPipe.prototype.getHeadDiffTree = function () {
     let diff = null;
     let diffDir = null;
     let rootDirId = null;
-    let rootDir = null;
     let count = 0;
     let mergePromise = new Promise(resolve => resolve(null));
     parentIds.forEach(parentId => {
         //console.log('    -> parentId:', parentId);
         diff = this.db.findDiff(parentId, headId);
         //console.log('    -> diff:', diff);
-        if (diff != undefined) {
+        if (diff != null) {
             rootDirId = diff.rootDirId;
             //console.log('    -> rootDirId:', rootDirId);
             let ids = rootDirId.split(':');
@@ -861,14 +835,14 @@ GitPipe.prototype.getHeadDiffTree = function () {
             if (parentIds == null || parentIds.length === 0) {
                 //console.log('First commit.');
                 diff = this.db.findDiff(null, headId);
-                if (diff != undefined) {
+                if (diff != null) {
                     rootDirId = diff.rootDirId;
                     diffDir = this.db.hierarchize(rootDirId);
                 }
             } else {
                 //console.log('There is no changes.');
                 diff = this.db.findDiff(parentIds[0], headId);
-                if (diff != undefined) {
+                if (diff != null) {
                     rootDirId = diff.rootDirId;
                     diffDir = this.db.hierarchize(rootDirId);
                 }
@@ -879,7 +853,7 @@ GitPipe.prototype.getHeadDiffTree = function () {
 };
 
 /**
- * Recupera todos commits da base de dados.
+ * Get the registered commits.
  * @sync
  */
 GitPipe.prototype.getCommits = function () {
@@ -887,7 +861,7 @@ GitPipe.prototype.getCommits = function () {
 };
 
 /**
- * Salva temporariamente um commit para ser usado posteriormente.
+ * Select the commit by ID.
  * @async
  */
 GitPipe.prototype.selectCommit = function (commitId) {
@@ -899,7 +873,7 @@ GitPipe.prototype.selectCommit = function (commitId) {
             }
         }
         this.selectedCommit = this.db.findCommit(commitId);
-        if (this.selectedCommit != undefined) {
+        if (this.selectedCommit != null) {
             resolve(true);
         } else {
             reject('Selected commit not found.');
@@ -910,7 +884,7 @@ GitPipe.prototype.selectCommit = function (commitId) {
 };
 
 /**
- * Cria o diff do commit atualmente selecionado, se houver.
+ * Records the selected commit diff with its parent.
  * @async
  */
 GitPipe.prototype.registerSelectedCommitDiff = function () {
@@ -918,8 +892,9 @@ GitPipe.prototype.registerSelectedCommitDiff = function () {
 };
 
 /**
- * Recupera as diferenças do commit selecionado (com seus commits antecessores).
+ * Get the selected commit delta.
  * @async
+ * @return {DirectoryRecord} The hierarchized root directory record.
  */
 GitPipe.prototype.getSelectedCommitDiffTree = function () {
     if (this.db == null) {
@@ -940,12 +915,11 @@ GitPipe.prototype.getSelectedCommitDiffTree = function () {
     let diff = null;
     let diffDir = null;
     let rootDirId = null;
-    let rootDir = null;
     let count = 0;
     let mergePromise = new Promise(resolve => resolve(null));
     parentIds.forEach(parentId => {
         diff = this.db.findDiff(parentId, selectedCommitId);
-        if (diff != undefined) {
+        if (diff != null) {
             rootDirId = diff.rootDirId;
             let ids = rootDirId.split(':');
             if (ids[0] !== ids[1]) {
@@ -979,14 +953,14 @@ GitPipe.prototype.getSelectedCommitDiffTree = function () {
             if (parentIds == null || parentIds.length === 0) {
                 //console.log('First commit.');
                 diff = this.db.findDiff(null, selectedCommitId);
-                if (diff != undefined) {
+                if (diff != null) {
                     rootDirId = diff.rootDirId;
                     diffDir = this.db.hierarchize(rootDirId);
                 }
             } else {
                 //console.log('There is no changes.');
                 diff = this.db.findDiff(parentIds[0], selectedCommitId);
-                if (diff != undefined) {
+                if (diff != null) {
                     rootDirId = diff.rootDirId;
                     diffDir = this.db.hierarchize(rootDirId);
                 }
