@@ -14,19 +14,18 @@ function Treemap(container, width, height) {
         .attr('preserveAspectRatio', 'xMidYMid meet')
         .style('width', '100%')
         .style('height', '100%');
-    this.treemapLegend = this.svg.append('g')
-        .classed('treemap-legend', true)
-        .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')');
-    this.treemapLegend
+    this.grandparent = this.svg.append('g')
+        .classed('grandparent', true);
+    this.grandparent
       .append('rect')
-        .attr('width', this.width + 'px')
-        .attr('height', this.treemapLegendHeight + 'px')
+        .attr('y', -this.margin.top)
+        .attr('width', this.width)
+        .attr('height', this.margin.top)
         .attr('fill', '#9ECAFF');
-    this.treemapLegend
+    this.grandparent
       .append('svg:text')
         .attr('x', '10px')
-        .attr('y', (this.treemapLegendHeight - 5) + 'px')
-        .attr('text-anchor', 'left-top')
+        .attr('y', (this.treemapLegendHeight - 5 - this.margin.top) + 'px')
         .text('Treemap Legend');
     this.treemapContent = this.svg.append('g')
         .classed('treemap-content', true)
@@ -45,14 +44,9 @@ function Treemap(container, width, height) {
     this.foldLevel = 2;
 }
 
-Treemap.prototype.load = function (dataPath) {
-    console.log('loading data from file:', dataPath);
-    fs.readFile(dataPath, (err, contentBuffer) => {
-        if (err) console.error(err);
-        let data = JSON.parse(contentBuffer.toString());
-        this.build(data);
-    });
-};
+function name(d) {
+    return d.parent ? name(d.parent) + ' / ' + d.name : '.';
+}
 
 function fold(root, level) {
     if (root.depth <= level && root.children) {
@@ -67,18 +61,35 @@ function fold(root, level) {
     }
 }
 
+Treemap.prototype.layout = function (d) {
+    if (d.children) {
+        this.treemap.nodes({children: d.children});
+        d.children.forEach(c => {
+            c.x = d.x + c.x * d.dx;
+            c.y = d.y + c.y * d.dy;
+            c.dx *= d.dx;
+            c.dy *= d.dy;
+            c.parent = d;
+            this.layout(c);
+        });
+    }
+};
+
+Treemap.prototype.load = function (dataPath) {
+    console.log('loading data from file:', dataPath);
+    fs.readFile(dataPath, (err, contentBuffer) => {
+        if (err) console.error(err);
+        let data = JSON.parse(contentBuffer.toString());
+        this.build(data);
+    });
+};
+
 Treemap.prototype.build = function (data) {
     console.log('building data treemap...');
     data = data || [];
     this.root = d3.hierarchy(data, d => d.entries)
-        .eachBefore(d => {
-            if (d.depth === this.foldLevel && d.children) {
-                d._children = d.children;
-                d.children = null;
-            }
-        })
         .sum(d => {
-            if (d.statistic) {
+            if (d.statistic && !d.isUnmodified()) {
                 return 5 + d.statistic.added + d.statistic.deleted + d.statistic.modified;
             } else {
                 return 1;
@@ -93,7 +104,8 @@ Treemap.prototype.build = function (data) {
             //    return 0;
             //}
         });
-    fold(this.root, this.foldLevel);
+    //fold(this.root, this.foldLevel);
+    this.treemap(this.root);
     this.node = this.root;
     this.update();
 };
@@ -124,11 +136,17 @@ Treemap.prototype.zoom = function () {
 
 Treemap.prototype.update = function () {
 
-    let tree = this.treemap(this.node);
-    console.log('tree:', tree);
+    if (this.node.parent) {
+        this.grandparent
+            .datum(this.node.parent);
+            //.on('click', d => this.unzoom(d));
+    }
+    this.grandparent
+      .select('text')
+        .text(name(this.node));
 
     let cellData = this.treemapContent.selectAll('.cell')
-        .data(tree.leaves(), d => d.data.id);
+        .data(this.node.children, d => d.data.id);
 
     let cell = cellData.enter().append('g')
         .classed('cell', true)
@@ -191,7 +209,7 @@ Treemap.prototype.update = function () {
         .style('opacity', 0)
         .remove();
 
-    this.treemapLegend.select('text')
+    this.grandparent.select('text')
         .text(this.node.data.path === '.' ? '<Root>' : this.node.data.path);
         //.style('fill', this.color(0));
     console.log('path:', this.root.path(this.node));
