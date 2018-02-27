@@ -12,6 +12,9 @@ var repoPath = null;
 var width = 500, height = 400;
 var container = null;
 var treemap = null;
+var tree = null;
+var isTreemapVis = true;
+var data = null;
 var gitPipe = null;
 var dbPath = null;
 var repoRec = null;
@@ -132,6 +135,31 @@ $(document).ready(() => {
         $('#changeVisTooltip').removeClass('visible');
     });
 
+    $('#changeVisBtn').click(e => {
+        if (container == null) {
+            container = d3.select('#view');
+        }
+        container.select('svg').remove();
+        if (isTreemapVis) {
+            if (tree == null) {
+                tree = new Tree(container, width, height);
+                tree.fillFileInfoFunction = fillFileInfo;
+            } else {
+                container.insert(tree.getSvg());
+            }
+            tree.build(data);
+        } else {
+            if (treemap == null) {
+                treemap = new Treemap(container, width, height);
+                treemap.fillFileInfoFunction = fillFileInfo;
+            } else {
+                container.insert(treemap.getSvg());
+            }
+            treemap.build(data);
+        }
+        isTreemapVis = !isTreemapVis;
+    });
+
     initLegend();
 
     let isLegendHide = $('#legend').hasClass('visible');
@@ -161,6 +189,8 @@ $(document).ready(() => {
 var showLoadingScreen = function() {
     $('#commitBar').removeClass('disabled');
     $('#commitBar').addClass('disabled');
+    $('#changeVisBtn').removeClass('disabled');
+    $('#changeVisBtn').addClass('disabled');
     $('#loadingScreen').fadeIn();
 };
 
@@ -168,6 +198,7 @@ var hideLoadingScreen = function () {
     $('#loadingScreen').fadeOut(1000);
     setTimeout(() => {
         $('#commitBar').removeClass('disabled');
+        $('#changeVisBtn').removeClass('disabled');
     }, 1000);
 };
 
@@ -274,10 +305,11 @@ var initViz = function (repoPath) {
         }).then(diffDir => {
             console.log('-> last diff tree got!');
             console.log('-> diffDir:', diffDir);
+            data = diffDir;
             container = d3.select('#view');
             treemap = new Treemap(container, width, height);
             treemap.fillFileInfoFunction = fillFileInfo;
-            treemap.build(diffDir);
+            treemap.build(data);
         }).then(() => {
             // Limpa lista de commits
             $('#commitBar').children('.commitItem').remove();

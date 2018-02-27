@@ -3,21 +3,23 @@ const fs = require('fs');
 const JSONDatabase = require('./GitPipe/JSONDatabase');
 
 function Tree(container, width, height) {
+    this.container = container;
     this.width = width;
     this.height = height;
     this.nodeRadius = 8;
-    this.svg = container.append('svg')
+    this.svg = this.container.append('svg')
         //.attr('width', this.width)
         //.attr('height', this.height)
         .attr('preserveAspectRatio', 'xMinYMin meet')
-        .attr('viewBox', '0 0 300 300')
+        .attr('viewBox', '0 0 ' + this.width + ' ' + this.height)
         .classed('svg-content', true)
         .call(d3.zoom().scaleExtent([0.2, 40]).on("zoom", () => this.zoomed()))
+    this.g = this.svg
       .append('g')
         .attr('class', 'svg-g');
         //.attr('transform', 'translate(' + this.width / 2 + ',' + this.height / 2 + ')');
-    this.linkLayer = this.svg.append('g');
-    this.nodeLayer = this.svg.append('g');
+    this.linkLayer = this.g.append('g');
+    this.nodeLayer = this.g.append('g');
     this.simulation = d3.forceSimulation();
     this.links = null;
     this.linkSvg = null;
@@ -59,8 +61,12 @@ function Tree(container, width, height) {
     this.fillFileInfoFunction = null;
 }
 
+Tree.prototype.getSvg = function () {
+    return this.svg;
+};
+
 Tree.prototype.zoomed = function () {
-    this.svg.attr('transform', d3.event.transform);
+    this.g.attr('transform', d3.event.transform);
 };
 
 Tree.prototype.ticked = function () {

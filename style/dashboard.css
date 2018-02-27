@@ -236,19 +236,21 @@ body {
 }
 #commitBar .commitItem:hover {
   background: #EFEFEF;
+  transition: all .3s ease;
   -webkit-transition: all .3s ease;
 }
 #commitBar .commitItem:active {
   background: #DFDFDF;
   box-shadow: inset 0 2px 3px rgba(10, 10, 10, 0.6);
+  transition: all .3s ease;
   -webkit-transition: all .3s ease;
 }
 #commitBar .commitItem.selected {
   box-shadow: 0 0 5px rgba(0, 0, 255, 0.8);
   border: 1px solid blue;
+  transition: all .3s ease;
   -webkit-transition: all .3s ease;
 }
-
 #commitBar.disabled {
   opacity: 0.3;
   -webkit-transition: opacity .3s ease;
@@ -283,8 +285,14 @@ body {
   background: white;
   opacity: 0.95;
   z-index: 10;
-  overflow: scroll;
+  overflow: visible;
   -webkit-transition: right .5s ease;
+}
+#infoBar .cards {
+  width: 100%;
+  height: 100%;
+  border: 1px solid magenta;
+  overflow-y: scroll;
 }
 #infoBar .infoCard {
   margin-bottom: 20px;
@@ -304,10 +312,12 @@ body {
 }
 #infoBar .infoHeader:hover {
   background: #DFDFDF;
+  transition: background .3s ease;
   -webkit-transition: background .3s ease;
 }
 #infoBar .infoHeader:active {
   background: #ADADAD;
+  transition: background .3s ease;
   -webkit-transition: background .3s ease;
 }
 #infoBar .infoHeader .infoTitle {
@@ -384,12 +394,20 @@ body {
   overflow: hidden;
   box-shadow: 0 2px 3px gray;
   cursor: pointer;
-  -webkit-transition: filter .5s ease, border .5s ease;
+  transition: filter .5s ease, border .5s ease, opacity .5s ease;
+  -webkit-transition: filter .5s ease, border .5s ease, opacity .5s ease;
 }
 #infoBar .actionBtn:hover {
   filter: brightness(90%);
   border: 2px solid darkgray;
+  transition: filter .3s ease, border .3s ease;
   -webkit-transition: filter .3s ease, border .3s ease;
+}
+#infoBar .actionBtn.disabled {
+  opacity: .3;
+  pointer-events: none;
+  transition: opacity .3s ease;
+  -webkit-transition: opacity .3s ease;
 }
 #infoBar #changeVisTooltip {
   position: absolute;
@@ -407,15 +425,18 @@ body {
   text-indent: 3px;
   z-index: 31;
   box-shadow: 0 2px 5px gray;
+  transition: opacity .5s ease;
   -webkit-transition: opacity .5s ease;
 }
 #infoBar #changeVisTooltip.visible {
   opacity: 1;
+  transition: opacity .3s ease;
   -webkit-transition: opacity .3s ease;
 }
 
 #infoBar.visible {
   right: 0;
+  transition: right .3s ease;
   -webkit-transition: right .3s ease;
 }
 
@@ -452,6 +473,7 @@ body {
 }
 #legend #legendCloseBtn:hover {
   transform: rotate(360deg);
+  transition: transform .5s ease;
   -webkit-transition: transform .5s ease;
 }
 #legend #legendTitle {
@@ -473,9 +495,18 @@ body {
 
 #legend.visible {
   top: 50%;
+  transition: top .3s ease;
   -webkit-transition: top .3s ease;
 }
 
+@keyframes loader {
+  from {
+    -webkit-transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(360deg);
+  }
+}
 @-webkit-keyframes loader {
   from {
     -webkit-transform: rotate(0deg);
@@ -500,6 +531,7 @@ body {
   line-height: 150px;
   text-align: center;
   text-shadow: 1px 0 2px white, -1px 0 2px white, 0 1px 2px white, 0 -1px 2px white;
+  transition: visibility 3s ease;
   -webkit-transition: visibility 3s ease;
 }
 
@@ -513,6 +545,7 @@ body {
   border-radius: 50%;
   border-top-color: goldenrod;
   border-bottom-color: goldenrod;
+  animation: loader 2s linear infinite;
   -webkit-animation: loader 2s linear infinite;
 }
 
@@ -527,6 +560,7 @@ body {
   border-radius: 50%;
   border-top-color: darkred;
   border-bottom-color: darkred;
+  animation: loader 1s linear infinite;
   -webkit-animation: loader 1s linear infinite;
 }
 
@@ -541,6 +575,7 @@ body {
   border-radius: 50%;
   border-left-color: #4D658D;
   border-right-color: #4D658D;
+  animation: loader 1.5s linear infinite;
   -webkit-animation: loader 1.5s linear infinite;
 }
 
