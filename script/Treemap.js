@@ -8,7 +8,7 @@ function Treemap(container, width, height) {
     this.treemapLegendHeight = 20;
     this.width = width - this.margin.left - this.margin.right;
     this.height = height - 2 * this.margin.top - this.margin.bottom - this.treemapLegendHeight;
-    this.svg = this.container.append('svg')
+    this.svg = d3.select(this.container).append('svg')
         .classed('treemap-svg', true)
         .attr('viewBox', '0 0 ' + width + ' ' + height)
         .attr('preserveAspectRatio', 'xMidYMid meet')
@@ -45,7 +45,7 @@ function Treemap(container, width, height) {
 }
 
 Treemap.prototype.getSvg = function () {
-    return this.svg;
+    return document.getElementById('view').childNodes[0];
 };
 
 function name(d) {

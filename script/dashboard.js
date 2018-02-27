@@ -12,7 +12,9 @@ var repoPath = null;
 var width = 500, height = 400;
 var container = null;
 var treemap = null;
+var treemapSvg = null;
 var tree = null;
+var treeSvg = null;
 var isTreemapVis = true;
 var data = null;
 var gitPipe = null;
@@ -137,23 +139,27 @@ $(document).ready(() => {
 
     $('#changeVisBtn').click(e => {
         if (container == null) {
-            container = d3.select('#view');
+            container = document.getElementById('view');
         }
-        container.select('svg').remove();
+        container.removeChild(container.childNodes[0]);
         if (isTreemapVis) {
+            // container.removeChild(treemapSvg);
             if (tree == null) {
                 tree = new Tree(container, width, height);
                 tree.fillFileInfoFunction = fillFileInfo;
+                treeSvg = tree.getSvg();
             } else {
-                container.insert(tree.getSvg());
+                container.appendChild(treeSvg);
             }
             tree.build(data);
         } else {
+            // container.removeChild(treeSvg);
             if (treemap == null) {
                 treemap = new Treemap(container, width, height);
                 treemap.fillFileInfoFunction = fillFileInfo;
+                treemapSvg = treemap.getSvg();
             } else {
-                container.insert(treemap.getSvg());
+                container.appendChild(treemapSvg);
             }
             treemap.build(data);
         }
@@ -303,13 +309,14 @@ var initViz = function (repoPath) {
                 return new Promise(resolve => resolve(null));
             }
         }).then(diffDir => {
-            console.log('-> last diff tree got!');
-            console.log('-> diffDir:', diffDir);
             data = diffDir;
-            container = d3.select('#view');
+            console.log('-> last diff tree got!');
+            console.log('-> data:', data);
+            container = document.getElementById('view');
             treemap = new Treemap(container, width, height);
             treemap.fillFileInfoFunction = fillFileInfo;
             treemap.build(data);
+            treemapSvg = treemap.getSvg();
         }).then(() => {
             // Limpa lista de commits
             $('#commitBar').children('.commitItem').remove();

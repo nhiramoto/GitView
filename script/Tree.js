@@ -7,15 +7,14 @@ function Tree(container, width, height) {
     this.width = width;
     this.height = height;
     this.nodeRadius = 8;
-    this.svg = this.container.append('svg')
+    this.svg = d3.select(this.container).append('svg')
         //.attr('width', this.width)
         //.attr('height', this.height)
         .attr('preserveAspectRatio', 'xMinYMin meet')
         .attr('viewBox', '0 0 ' + this.width + ' ' + this.height)
         .classed('svg-content', true)
         .call(d3.zoom().scaleExtent([0.2, 40]).on("zoom", () => this.zoomed()))
-    this.g = this.svg
-      .append('g')
+    this.g = this.svg.append('g')
         .attr('class', 'svg-g');
         //.attr('transform', 'translate(' + this.width / 2 + ',' + this.height / 2 + ')');
     this.linkLayer = this.g.append('g');
@@ -62,7 +61,7 @@ function Tree(container, width, height) {
 }
 
 Tree.prototype.getSvg = function () {
-    return this.svg;
+    return document.getElementById('view').childNodes[0];
 };
 
 Tree.prototype.zoomed = function () {
