@@ -11,10 +11,8 @@ const dateFormat = require('dateformat');
 var repoPath = null;
 var width = 500, height = 400;
 var container = null;
-var treemap = null;
-var treemapSvg = null;
 var tree = null;
-var treeSvg = null;
+var treemap = null;
 var isTreemapVis = true;
 var data = null;
 var gitPipe = null;
@@ -138,30 +136,30 @@ $(document).ready(() => {
     });
 
     $('#changeVisBtn').click(e => {
-        if (container == null) {
-            container = document.getElementById('view');
-        }
-        container.removeChild(container.childNodes[0]);
         if (isTreemapVis) {
-            // container.removeChild(treemapSvg);
             if (tree == null) {
                 tree = new Tree(container, width, height);
                 tree.fillFileInfoFunction = fillFileInfo;
-                treeSvg = tree.getSvg();
             } else {
-                container.appendChild(treeSvg);
+                $('#view svg').fadeOut('fast', () => {
+                    $('#view #treeSvg').fadeIn('slow');
+                });
             }
-            tree.build(data);
+            if (tree.data !== data) {
+                tree.build(data);
+            }
         } else {
-            // container.removeChild(treeSvg);
             if (treemap == null) {
                 treemap = new Treemap(container, width, height);
                 treemap.fillFileInfoFunction = fillFileInfo;
-                treemapSvg = treemap.getSvg();
             } else {
-                container.appendChild(treemapSvg);
+                $('#view svg').fadeOut('fast', () => {
+                    $('#view #treemapSvg').fadeIn('slow');
+                });
             }
-            treemap.build(data);
+            if (treemap.data !== data) {
+                treemap.build(data);
+            }
         }
         isTreemapVis = !isTreemapVis;
     });
@@ -312,11 +310,10 @@ var initViz = function (repoPath) {
             data = diffDir;
             console.log('-> last diff tree got!');
             console.log('-> data:', data);
-            container = document.getElementById('view');
+            container = d3.select('#view');
             treemap = new Treemap(container, width, height);
             treemap.fillFileInfoFunction = fillFileInfo;
             treemap.build(data);
-            treemapSvg = treemap.getSvg();
         }).then(() => {
             // Limpa lista de commits
             $('#commitBar').children('.commitItem').remove();

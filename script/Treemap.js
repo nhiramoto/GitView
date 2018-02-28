@@ -8,7 +8,8 @@ function Treemap(container, width, height) {
     this.treemapLegendHeight = 20;
     this.width = width - this.margin.left - this.margin.right;
     this.height = height - 2 * this.margin.top - this.margin.bottom - this.treemapLegendHeight;
-    this.svg = d3.select(this.container).append('svg')
+    this.svg = this.container.append('svg')
+        .attr('id', 'treemapSvg')
         .classed('treemap-svg', true)
         .attr('viewBox', '0 0 ' + width + ' ' + height)
         .attr('preserveAspectRatio', 'xMidYMid meet')
@@ -42,11 +43,8 @@ function Treemap(container, width, height) {
     this.color = d3.scaleOrdinal().range(d3.schemeCategory20c);
     this.fillFileInfoFunction = null;
     this.foldLevel = 2;
+    this.data = null;
 }
-
-Treemap.prototype.getSvg = function () {
-    return document.getElementById('view').childNodes[0];
-};
 
 function name(d) {
     return d.parent ? name(d.parent) + ' / ' + d.name : '.';
@@ -90,8 +88,8 @@ Treemap.prototype.load = function (dataPath) {
 
 Treemap.prototype.build = function (data) {
     console.log('building data treemap...');
-    data = data || [];
-    this.root = d3.hierarchy(data, d => d.entries)
+    this.data = data || [];
+    this.root = d3.hierarchy(this.data, d => d.entries)
         .sum(d => {
             if (d.statistic && !d.isUnmodified()) {
                 return 5 + d.statistic.added + d.statistic.deleted + d.statistic.modified;
@@ -117,8 +115,6 @@ Treemap.prototype.build = function (data) {
 Treemap.prototype.zoom = function () {
     console.log('zooming...:', this.node);
     let newFoldLevel = this.node.depth + this.foldLevel;
-    console.log('level:', this.node.depth);
-    console.log('new fold level:', newFoldLevel);
 
     if (this.node.children == null && this.node._children) {
         this.node.children = this.node._children;
@@ -145,9 +141,6 @@ Treemap.prototype.update = function () {
             .datum(this.node.parent);
             //.on('click', d => this.unzoom(d));
     }
-    this.grandparent
-      .select('text')
-        .text(name(this.node));
 
     let cellData = this.treemapContent.selectAll('.cell')
         .data(this.node.children, d => d.data.id);
@@ -214,9 +207,8 @@ Treemap.prototype.update = function () {
         .remove();
 
     this.grandparent.select('text')
-        .text(this.node.data.path === '.' ? '<Root>' : this.node.data.path);
+        .text(name(this.node));
         //.style('fill', this.color(0));
-    console.log('path:', this.root.path(this.node));
 };
 
 module.exports = Treemap;

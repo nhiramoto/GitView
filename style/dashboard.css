@@ -291,7 +291,6 @@ body {
 #infoBar .cards {
   width: 100%;
   height: 100%;
-  border: 1px solid magenta;
   overflow-y: scroll;
 }
 #infoBar .infoCard {

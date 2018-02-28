@@ -7,9 +7,8 @@ function Tree(container, width, height) {
     this.width = width;
     this.height = height;
     this.nodeRadius = 8;
-    this.svg = d3.select(this.container).append('svg')
-        //.attr('width', this.width)
-        //.attr('height', this.height)
+    this.svg = this.container.append('svg')
+        .attr('id', 'treeSvg')
         .attr('preserveAspectRatio', 'xMinYMin meet')
         .attr('viewBox', '0 0 ' + this.width + ' ' + this.height)
         .classed('svg-content', true)
@@ -50,19 +49,13 @@ function Tree(container, width, height) {
 
     // Text showing on node label
     this.labelAttribute = 'name';
-
     // Label show only on hover
     this.nodeHoverLabel = true;
-
     // Default depth to collapse nodes
     this.defaultDepth = 3;
-
     this.fillFileInfoFunction = null;
+    this.data = null;
 }
-
-Tree.prototype.getSvg = function () {
-    return document.getElementById('view').childNodes[0];
-};
 
 Tree.prototype.zoomed = function () {
     this.g.attr('transform', d3.event.transform);
@@ -332,9 +325,9 @@ Tree.prototype.load = function (dataPath) {
  */
 Tree.prototype.build = function (data) {
     console.log('building data tree..');
-    data = data || [];
-    console.log('  -> data:', data);
-    this.root = d3.hierarchy(data, d => d.entries);
+    this.data = data || [];
+    console.log('  -> data:', this.data);
+    this.root = d3.hierarchy(this.data, d => d.entries);
     this.moveChildren(this.root);
     this.radiusScale = d3.scalePow().exponent(0.5)
         .domain([0, 30])
