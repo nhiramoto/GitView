@@ -19,14 +19,16 @@ function Treemap(container, width, height) {
         .classed('grandparent', true);
     this.grandparent
       .append('rect')
-        .attr('y', -this.margin.top)
+        .attr('x', this.margin.left)
+        .attr('y', this.margin.top)
         .attr('width', this.width)
-        .attr('height', this.margin.top)
+        .attr('height', this.treemapLegendHeight)
         .attr('fill', '#9ECAFF');
     this.grandparent
       .append('svg:text')
-        .attr('x', '10px')
-        .attr('y', (this.treemapLegendHeight - 5 - this.margin.top) + 'px')
+        .attr('x', (this.margin.left + 10) + 'px')
+        .attr('y', (this.margin.top + this.treemapLegendHeight - 2) + 'px')
+        .attr('font-size', '11px')
         .text('Treemap Legend');
     this.treemapContent = this.svg.append('g')
         .classed('treemap-content', true)
@@ -206,8 +208,8 @@ Treemap.prototype.update = function () {
         .style('opacity', 0)
         .remove();
 
-    this.grandparent.select('text')
-        .text(name(this.node));
+    // this.grandparent.select('text')
+    //     .text(name(this.node));
         //.style('fill', this.color(0));
 };
 

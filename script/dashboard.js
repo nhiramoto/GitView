@@ -137,29 +137,29 @@ $(document).ready(() => {
 
     $('#changeVisBtn').click(e => {
         if (isTreemapVis) {
-            if (tree == null) {
-                tree = new Tree(container, width, height);
-                tree.fillFileInfoFunction = fillFileInfo;
-            } else {
-                $('#view svg').fadeOut('fast', () => {
+            $('#view #treemapSvg').fadeOut('fast', () => {
+                if (tree == null) {
+                    tree = new Tree(container, width, height);
+                    tree.fillFileInfoFunction = fillFileInfo;
+                } else {
                     $('#view #treeSvg').fadeIn('slow');
-                });
-            }
-            if (tree.data !== data) {
-                tree.build(data);
-            }
+                }
+                if (tree.data !== data) {
+                    tree.build(data);
+                }
+            });
         } else {
-            if (treemap == null) {
-                treemap = new Treemap(container, width, height);
-                treemap.fillFileInfoFunction = fillFileInfo;
-            } else {
-                $('#view svg').fadeOut('fast', () => {
+            $('#view #treeSvg').fadeOut('fast', () => {
+                if (treemap == null) {
+                    treemap = new Treemap(container, width, height);
+                    treemap.fillFileInfoFunction = fillFileInfo;
+                } else {
                     $('#view #treemapSvg').fadeIn('slow');
-                });
-            }
-            if (treemap.data !== data) {
-                treemap.build(data);
-            }
+                }
+                if (treemap.data !== data) {
+                    treemap.build(data);
+                }
+            });
         }
         isTreemapVis = !isTreemapVis;
     });
@@ -314,6 +314,7 @@ var initViz = function (repoPath) {
             treemap = new Treemap(container, width, height);
             treemap.fillFileInfoFunction = fillFileInfo;
             treemap.build(data);
+            // d3.select('#changeVisTooltip').text('Graph');
         }).then(() => {
             // Limpa lista de commits
             $('#commitBar').children('.commitItem').remove();
