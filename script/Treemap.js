@@ -27,7 +27,7 @@ function Treemap(container, width, height) {
     this.grandparent
       .append('svg:text')
         .attr('x', (this.margin.left + 10) + 'px')
-        .attr('y', (this.margin.top + this.treemapLegendHeight - 2) + 'px')
+        .attr('y', (this.margin.top + this.treemapLegendHeight - 5) + 'px')
         .attr('font-size', '11px')
         .text('Treemap Legend');
     this.treemapContent = this.svg.append('g')
@@ -49,7 +49,7 @@ function Treemap(container, width, height) {
 }
 
 function name(d) {
-    return d.parent ? name(d.parent) + ' / ' + d.name : '.';
+    return d.parent ? name(d.parent) + ' / ' + d.name : '<Root>';
 }
 
 function fold(root, level) {
@@ -92,6 +92,12 @@ Treemap.prototype.build = function (data) {
     console.log('building data treemap...');
     this.data = data || [];
     this.root = d3.hierarchy(this.data, d => d.entries)
+        .eachBefore(d => {
+            if (d.depth === 1 && d.children) {
+                d._children = d.children;
+                d.children = null;
+            }
+        })
         .sum(d => {
             if (d.statistic && !d.isUnmodified()) {
                 return 5 + d.statistic.added + d.statistic.deleted + d.statistic.modified;
@@ -109,8 +115,8 @@ Treemap.prototype.build = function (data) {
             //}
         });
     //fold(this.root, this.foldLevel);
-    this.treemap(this.root);
     this.node = this.root;
+    this.treemap(this.node);
     this.update();
 };
 
@@ -208,8 +214,8 @@ Treemap.prototype.update = function () {
         .style('opacity', 0)
         .remove();
 
-    // this.grandparent.select('text')
-    //     .text(name(this.node));
+    this.grandparent.select('text')
+        .text(name(this.node));
         //.style('fill', this.color(0));
 };
 

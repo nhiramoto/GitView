@@ -12,10 +12,12 @@
         -webkit-transition: stroke .5s ease, filter .5s ease;
         &:hover {
             stroke: steelblue;
+            transition: stroke .3s ease;
             -webkit-transition: stroke .3s ease;
         }
         &:active {
             filter: brightness(80%);
+            transition: filter .3s ease;
             -webkit-transition: filter .3s ease;
         }
     }
@@ -38,6 +40,7 @@
         -webkit-transition: stroke .5s ease, opacity .5s ease;
         &:hover {
             stroke: steelblue;
+            transition: stroke .3s ease;
             -webkit-transition: stroke .3s ease;
         }
     }
@@ -46,12 +49,14 @@
         font-size: 11px;
         line-height: 12px;
         pointer-events: none;
-        opacity: 0;
+        opacity: 0.1;
         z-index: 30;
+        transition: opacity .5s ease;
         -webkit-transition: opacity .5s ease;
     }
     &:hover text {
         opacity: 1 !important;
+        transition: opacity .3s ease;
         -webkit-transition: opacity .3s ease;
     }
 }
@@ -65,6 +70,7 @@
 .node {
     -webkit-transition: opacity .5s ease;
     text {
+        transition: font-size .5s ease;
         -webkit-transition: font-size .5s ease;
     }
     &.focused {
@@ -72,6 +78,7 @@
         -webkit-transition: opacity .3s ease;
         text {
             font-size: 20px;
+            transition: font-size .3s ease;
             -webkit-transition: font-size .3s ease;
         }
     }
