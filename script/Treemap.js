@@ -91,14 +91,15 @@ Treemap.prototype.load = function (dataPath) {
 Treemap.prototype.build = function (data) {
     console.log('building data treemap...');
     this.data = data || [];
-    this.root = d3.hierarchy(this.data, d => d.entries)
+    this.root = d3.hierarchy(this.data, d => d.entries);
         // .eachBefore(d => {
         //     if (d.depth === 1 && d.children) {
         //         d._children = d.children;
         //         d.children = null;
         //     }
         // })
-        .sum(d => {
+    fold(this.root, 1);
+    this.root.sum(d => {
             if (d.statistic && !d.isUnmodified()) {
                 return 5 + d.statistic.added + d.statistic.deleted + d.statistic.modified;
             } else {
@@ -114,7 +115,6 @@ Treemap.prototype.build = function (data) {
             //    return 0;
             //}
         });
-    // fold(this.root, this.foldLevel);
     this.node = this.root;
     this.treemap(this.node);
     this.update();
@@ -129,13 +129,8 @@ Treemap.prototype.zoom = function () {
         this.node._children = null;
     }
 
-    this.node
-        .eachBefore(d => {
-            if (d.depth === newFoldLevel && d.children) {
-                d._children = d.children;
-                d.children = null;
-            }
-        })
+    fold(this.node, newFoldLevel);
+    this.node = d3.hirarchy(this.node)
         .sum(d => {
             if (d.statistic && !d.isUnmodified()) {
                 return 5 + d.statistic.added + d.statistic.deleted + d.statistic.modified;
@@ -156,7 +151,8 @@ Treemap.prototype.update = function () {
     }
 
     let cellData = this.treemapContent.selectAll('.cell')
-        .data(this.node.children, d => d.data.id)
+        .data(this.node.children, d => d.data.id);
+    cellData
         .transition()
             .duration(300)
             .attr('transform', d => 'translate(' + d.x0 + ',' + d.y0 + ')');
