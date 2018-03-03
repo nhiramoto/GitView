@@ -8,6 +8,8 @@ function Treemap(container, width, height) {
     this.treemapLegendHeight = 20;
     this.width = width - this.margin.left - this.margin.right;
     this.height = height - 2 * this.margin.top - this.margin.bottom - this.treemapLegendHeight;
+    this.x = d3.scaleLinear().domain([0, this.width]).range([0, 100]);
+    this.y = d3.scaleLinear().domain([0, this.height]).range([0, 100]);
     this.svg = this.container.append('svg')
         .attr('id', 'treemapSvg')
         .classed('treemap-svg', true)
@@ -92,15 +94,8 @@ Treemap.prototype.build = function (data) {
     console.log('building data treemap...');
     this.data = data || [];
 
-    this.root = d3.hierarchy(this.data, d => d.entries);
-        // .eachBefore(d => {
-        //     if (d.depth === 1 && d.children) {
-        //         d._children = d.children;
-        //         d.children = null;
-        //     }
-        // })
-    fold(this.root, 1);
-    this.root.sum(d => {
+    this.root = d3.hierarchy(this.data, d => d.entries)
+        .sum(d => {
             if (d.statistic && !d.isUnmodified()) {
                 return 5 + d.statistic.added + d.statistic.deleted + d.statistic.modified;
             } else {
@@ -122,25 +117,40 @@ Treemap.prototype.build = function (data) {
 };
 
 Treemap.prototype.zoom = function () {
-    console.log('zooming...:', this.node);
-    let newFoldLevel = this.node.depth + this.foldLevel;
+    console.log('clicked: ' + this.node.data.name + ', depth:' + this.node.depth);
 
-    if (this.node.children == null && this.node._children) {
-        this.node.children = this.node._children;
-        this.node._children = null;
-    }
+    let id = this.node.data.id.replace(/\:/g, '\\:');
+    d3.selectAll('.cell')
+        .filter(d => d.data.id !== id)
+        .remove();
+    let selectedCell = d3.select('#' + id);
+    selectedCell.transition()
+        .duration(500)
+        .attr('transform', 'translate(0, 0)')
+      .select('rect').transition()
+        .duration(500)
+        .attr('width', '100%')
+        .attr('height', '100%');
+    selectedCell.transition()
+        .duration(300)
+        .delay(1000)
+        .style('opacity', 0)
+        .remove();
 
-    fold(this.node, newFoldLevel);
-    this.node
-        .sum(d => {
-            if (d.statistic && !d.isUnmodified()) {
-                return 5 + d.statistic.added + d.statistic.deleted + d.statistic.modified;
-            } else {
-                return 1;
-            }
-        });
-    this.treemap(this.node);
-    this.update();
+    this.x.domain([d.x0, d.x1]);
+    this.y.domain([d.y0, d.y1]);
+
+	console.log("new x: "+ this.x(d.x0) + "-" + this.x(d.x1) );
+	console.log("new y: "+ this.y(d.y0) + "-" + this.y(d.y1) );
+
+    this.cellEnter.transition()
+        .duration(800)
+        .style('transform', 'translate(' + this.x(d.x0) + '%,' + this.y(d.y0) + '%)')
+        .select('rect')
+            .transition()
+            .duration(800)
+                .attr('width', d => this.x(Math.max(0, d.x1 - d.x0 - 1)) + '%')
+                .attr('height', d => this.y(Math.max(0, d.y1 - d.y0 - 1)) + '%');
 };
 
 Treemap.prototype.update = function () {
@@ -152,20 +162,20 @@ Treemap.prototype.update = function () {
     }
 
     let cellData = this.treemapContent.selectAll('.cell')
-        .data(this.node.children, d => d.data.id);
+        .data(this.node.descendants(), d => d.data.id);
     cellData
         .transition()
             .duration(300)
-            .attr('transform', d => 'translate(' + d.x0 + ',' + d.y0 + ')');
+            .attr('transform', d => 'translate(' + this.x(d.x0) + 'vw,' + this.y(d.y0) + 'vh)');
 
-    let cell = cellData.enter().append('g')
+    this.cellEnter = cellData.enter().append('g')
         .classed('cell', true)
         .attr('id', d => d.data.id)
-        .attr('transform', d => 'translate(' + d.x0 + ',' + d.y0 + ')');
+        .attr('transform', d => 'translate(' + this.x(d.x0) + 'vw,' + this.y(d.y0) + 'vh)');
 
-    cell.append('rect')
-        .attr('width', d => Math.max(0, d.x1 - d.x0 - 1) + 'px')
-        .attr('height', d => Math.max(0, d.y1 - d.y0 - 1) + 'px')
+    this.cellEnter.append('rect')
+        .attr('width', d => this.x(Math.max(0, d.x1 - d.x0 - 1)) + 'vw')
+        .attr('height', d => this.y(Math.max(0, d.y1 - d.y0 - 1)) + 'vh')
         .attr('fill', d => this.color(d.parent.data.id))
         .attr('stroke', d => {
             if (d._children) {
@@ -183,24 +193,6 @@ Treemap.prototype.update = function () {
         })
         .on('click', d => {
             if (d._children) {
-                console.log('id:', d.data.id);
-                let id = d.data.id.replace(/\:/g, '\\:');
-                d3.selectAll('.cell')
-                    .filter(d => d.data.id !== id)
-                    .remove();
-                let selectedCell = d3.select('#' + id);
-                selectedCell.transition()
-                    .duration(500)
-                    .attr('transform', 'translate(0, 0)')
-                  .select('rect').transition()
-                    .duration(500)
-                    .attr('width', this.width + 'px')
-                    .attr('height', this.height + 'px');
-                selectedCell.transition()
-                    .duration(300)
-                    .delay(1000)
-                    .style('opacity', 0)
-                    .remove();
                 this.lastNode = this.node;
                 this.node = d;
                 this.zoom();
@@ -209,7 +201,7 @@ Treemap.prototype.update = function () {
             }
         });
 
-    cell.append('svg:text')
+    this.cellEnter.append('svg:text')
         .attr('x', d => (d.x1 - d.x0) / 2)
         .attr('y', d => (d.y1 - d.y0) / 2)
         .attr('text-anchor', 'middle')
