@@ -53,7 +53,7 @@ function name(d) {
 }
 
 function fold(root, level) {
-    if (root.depth <= level && root.children) {
+    if (root.children && root.depth <= level) {
         if (root.depth === level) {
             root._children = root.children;
             root.children = null;
@@ -91,6 +91,7 @@ Treemap.prototype.load = function (dataPath) {
 Treemap.prototype.build = function (data) {
     console.log('building data treemap...');
     this.data = data || [];
+
     this.root = d3.hierarchy(this.data, d => d.entries);
         // .eachBefore(d => {
         //     if (d.depth === 1 && d.children) {
@@ -130,7 +131,7 @@ Treemap.prototype.zoom = function () {
     }
 
     fold(this.node, newFoldLevel);
-    this.node = d3.hirarchy(this.node)
+    this.node
         .sum(d => {
             if (d.statistic && !d.isUnmodified()) {
                 return 5 + d.statistic.added + d.statistic.deleted + d.statistic.modified;
@@ -182,9 +183,10 @@ Treemap.prototype.update = function () {
         })
         .on('click', d => {
             if (d._children) {
-                let id = d.data.id.replace(':', '\\:');
+                console.log('id:', d.data.id);
+                let id = d.data.id.replace(/\:/g, '\\:');
                 d3.selectAll('.cell')
-                    .filter(d => d.data.id !== d.data.id)
+                    .filter(d => d.data.id !== id)
                     .remove();
                 let selectedCell = d3.select('#' + id);
                 selectedCell.transition()
