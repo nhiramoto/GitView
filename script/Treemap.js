@@ -8,8 +8,8 @@ function Treemap(container, width, height) {
     this.treemapLegendHeight = 20;
     this.width = width - this.margin.left - this.margin.right;
     this.height = height - 2 * this.margin.top - this.margin.bottom - this.treemapLegendHeight;
-    this.x = d3.scaleLinear().domain([0, this.width]).range([0, 100]);
-    this.y = d3.scaleLinear().domain([0, this.height]).range([0, 100]);
+    this.x = d3.scaleLinear().domain([0, this.width]).range([0, this.width]);
+    this.y = d3.scaleLinear().domain([0, this.height]).range([0, this.height]);
     this.svg = this.container.append('svg')
         .attr('id', 'treemapSvg')
         .classed('treemap-svg', true)
@@ -67,6 +67,17 @@ function fold(root, level) {
     }
 }
 
+function descendantsNoRoot(node) {
+    let id = node.data.id;
+    let ind = null;
+    let d = node.descendants().slice(0);
+    for (ind = 0; ind < d.length; ind++) {
+        if (d[ind].data.id === id) break;
+    }
+    if (ind < d.length) d.splice(ind, 1);
+    return d;
+}
+
 Treemap.prototype.layout = function (d) {
     if (d.children) {
         this.treemap.nodes({children: d.children});
@@ -101,15 +112,6 @@ Treemap.prototype.build = function (data) {
             } else {
                 return 1;
             }
-            //if (d.depth === this.foldLevel) {
-            //    if (d.statistic) {
-            //        return 5 + d.statistic.added + d.statistic.deleted + d.statistic.modified;
-            //    } else {
-            //        return 5;
-            //    }
-            //} else {
-            //    return 0;
-            //}
         });
     this.node = this.root;
     this.treemap(this.node);
@@ -119,38 +121,34 @@ Treemap.prototype.build = function (data) {
 Treemap.prototype.zoom = function () {
     console.log('clicked: ' + this.node.data.name + ', depth:' + this.node.depth);
 
-    let id = this.node.data.id.replace(/\:/g, '\\:');
+    this.x.domain([this.node.x0, this.node.x1]);
+    this.y.domain([this.node.y0, this.node.y1]);
+
+	console.log("new x: "+ this.x(this.node.x0) + "~" + this.x(this.node.x1) );
+	console.log("new y: "+ this.y(this.node.y0) + "~" + this.y(this.node.y1) );
+    console.log('new width:', this.x(this.node.x1 - this.node.x0));
+    console.log('new height:', this.y(this.node.y1 - this.node.y0));
+
+    // let id = this.node.data.id.replace(/:/g, '\\:');
     d3.selectAll('.cell')
-        .filter(d => d.data.id !== id)
+        .filter(d => d.data.id !== this.node.data.id)
         .remove();
-    let selectedCell = d3.select('#' + id);
+    let selectedCell = d3.selectAll('.cell')
+        .filter(d => d.data.id === this.node.data.id);
     selectedCell.transition()
         .duration(500)
         .attr('transform', 'translate(0, 0)')
       .select('rect').transition()
         .duration(500)
-        .attr('width', '100%')
-        .attr('height', '100%');
+        .attr('width', (this.x(this.node.x1 - this.node.x0)) + 'px')
+        .attr('height', (this.y(this.node.y1 - this.node.y0)) + 'px');
     selectedCell.transition()
         .duration(300)
         .delay(1000)
         .style('opacity', 0)
         .remove();
 
-    this.x.domain([d.x0, d.x1]);
-    this.y.domain([d.y0, d.y1]);
-
-	console.log("new x: "+ this.x(d.x0) + "-" + this.x(d.x1) );
-	console.log("new y: "+ this.y(d.y0) + "-" + this.y(d.y1) );
-
-    this.cellEnter.transition()
-        .duration(800)
-        .style('transform', 'translate(' + this.x(d.x0) + '%,' + this.y(d.y0) + '%)')
-        .select('rect')
-            .transition()
-            .duration(800)
-                .attr('width', d => this.x(Math.max(0, d.x1 - d.x0 - 1)) + '%')
-                .attr('height', d => this.y(Math.max(0, d.y1 - d.y0 - 1)) + '%');
+    this.update();
 };
 
 Treemap.prototype.update = function () {
@@ -162,21 +160,29 @@ Treemap.prototype.update = function () {
     }
 
     let cellData = this.treemapContent.selectAll('.cell')
-        .data(this.node.descendants(), d => d.data.id);
+        .data(descendantsNoRoot(this.node), d => d.data.id);
     cellData
         .transition()
             .duration(300)
-            .attr('transform', d => 'translate(' + this.x(d.x0) + 'vw,' + this.y(d.y0) + 'vh)');
+            .attr('transform', d => 'translate(' + this.x(d.x0) + ',' + this.y(d.y0) + ')');
 
     this.cellEnter = cellData.enter().append('g')
         .classed('cell', true)
         .attr('id', d => d.data.id)
-        .attr('transform', d => 'translate(' + this.x(d.x0) + 'vw,' + this.y(d.y0) + 'vh)');
+        .attr('transform', d => 'translate(' + this.x(d.x0) + ',' + this.y(d.y0) + ')');
 
     this.cellEnter.append('rect')
-        .attr('width', d => this.x(Math.max(0, d.x1 - d.x0 - 1)) + 'vw')
-        .attr('height', d => this.y(Math.max(0, d.y1 - d.y0 - 1)) + 'vh')
-        .attr('fill', d => this.color(d.parent.data.id))
+        .attr('width', d => this.x(d.x1 - d.x0) + 'px')
+        .attr('height', d => this.y(d.y1 - d.y0) + 'px')
+        .attr('fill', d => {
+            if (d.depth === 1 && d.data) {
+                return this.color(d.data.id);
+            } else if (d.depth > 1 && d.parent) {
+                return this.color(d.parent.data.id);
+            } else {
+                return this.color(d.data.id);
+            }
+        })
         .attr('stroke', d => {
             if (d._children) {
                 return 'magenta';
@@ -185,14 +191,14 @@ Treemap.prototype.update = function () {
             }
         })
         .style('opacity', d => {
-            if (d.data != null && d.data.isUnmodified()) {
-                return '0.3';
+            if (d.children) {
+                return '0.2';
             } else {
                 return '1';
             }
         })
         .on('click', d => {
-            if (d._children) {
+            if (d.children) {
                 this.lastNode = this.node;
                 this.node = d;
                 this.zoom();
@@ -202,8 +208,8 @@ Treemap.prototype.update = function () {
         });
 
     this.cellEnter.append('svg:text')
-        .attr('x', d => (d.x1 - d.x0) / 2)
-        .attr('y', d => (d.y1 - d.y0) / 2)
+        .attr('x', d => this.x((d.x1 - d.x0) / 2) + 'px')
+        .attr('y', d => this.y((d.y1 - d.y0) / 2) + 'px')
         .attr('text-anchor', 'middle')
         .text(d => d.data.name);
 
