@@ -38,20 +38,22 @@ function Treemap(container, width, height) {
         .attr('height', this.height + 'px')
         .attr('transform', 'translate(' + this.margin.left + ',' + (2 * this.margin.top + this.treemapLegendHeight + ')'));
     this.treemap = d3.treemap()
-        .size([this.width, this.height]);
-        //.tile(d3.treemapResquarify)
-        //.round(true)
+        .size([this.width, this.height])
+        // .tile(d3.treemapResquarify)
+        // .round(false)
+        // .paddingOuter(0);
     this.root = null;
     this.node = null;
     this.lastNode = null;
     this.color = d3.scaleOrdinal().range(d3.schemeCategory20c);
+    this.padding = d3.scaleOrdinal().domain([0, 2]);
     this.fillFileInfoFunction = null;
     this.foldLevel = 2;
     this.data = null;
 }
 
 function name(d) {
-    return d.parent ? name(d.parent) + ' / ' + d.name : '<Root>';
+    return d.parent ? name(d.parent) + ' / ' + d.data.name : '<Root>';
 }
 
 function fold(root, level) {
@@ -78,20 +80,6 @@ function descendantsNoRoot(node) {
     return d;
 }
 
-Treemap.prototype.layout = function (d) {
-    if (d.children) {
-        this.treemap.nodes({children: d.children});
-        d.children.forEach(c => {
-            c.x = d.x + c.x * d.dx;
-            c.y = d.y + c.y * d.dy;
-            c.dx *= d.dx;
-            c.dy *= d.dy;
-            c.parent = d;
-            this.layout(c);
-        });
-    }
-};
-
 Treemap.prototype.load = function (dataPath) {
     console.log('loading data from file:', dataPath);
     fs.readFile(dataPath, (err, contentBuffer) => {
@@ -105,20 +93,24 @@ Treemap.prototype.build = function (data) {
     console.log('building data treemap...');
     this.data = data || [];
 
-    this.root = d3.hierarchy(this.data, d => d.entries)
+    this.root = d3.hierarchy(this.data, d => d.entries);
+    this.root
         .sum(d => {
             if (d.statistic && !d.isUnmodified()) {
-                return 5 + d.statistic.added + d.statistic.deleted + d.statistic.modified;
+                return (5 + d.statistic.added + d.statistic.deleted + d.statistic.modified);
             } else {
                 return 1;
             }
         });
+    // this.padding.domain([0, this.root.height]);
+    // this.treemap.paddingInner(d => this.padding(d.depth));
     this.node = this.root;
     this.treemap(this.node);
     this.update();
 };
 
 Treemap.prototype.zoom = function () {
+
     console.log('clicked: ' + this.node.data.name + ', depth:' + this.node.depth);
 
     this.x.domain([this.node.x0, this.node.x1]);
@@ -126,54 +118,67 @@ Treemap.prototype.zoom = function () {
 
 	console.log("new x: "+ this.x(this.node.x0) + "~" + this.x(this.node.x1) );
 	console.log("new y: "+ this.y(this.node.y0) + "~" + this.y(this.node.y1) );
-    console.log('new width:', this.x(this.node.x1 - this.node.x0));
-    console.log('new height:', this.y(this.node.y1 - this.node.y0));
 
-    // let id = this.node.data.id.replace(/:/g, '\\:');
     d3.selectAll('.cell')
         .filter(d => d.data.id !== this.node.data.id)
-        .remove();
+        .transition()
+            .duration(300)
+            .style('opacity', 0)
+            .remove();
     let selectedCell = d3.selectAll('.cell')
         .filter(d => d.data.id === this.node.data.id);
     selectedCell.transition()
         .duration(500)
         .attr('transform', 'translate(0, 0)')
-      .select('rect').transition()
+    selectedCell.select('text').transition()
         .duration(500)
-        .attr('width', (this.x(this.node.x1 - this.node.x0)) + 'px')
-        .attr('height', (this.y(this.node.y1 - this.node.y0)) + 'px');
+        .attr('x', d => Math.max(0, this.x(this.node.x1) - this.x(this.node.x0)) / 2 + 'px')
+        .attr('y', d => Math.max(0, this.y(this.node.y1) - this.y(this.node.y0)) / 2 + 'px');
+    selectedCell.select('rect').transition()
+        .duration(500)
+        .attr('width', Math.max(0, this.x(this.node.x1) - this.x(this.node.x0)) + 'px')
+        .attr('height', Math.max(0, this.y(this.node.y1) - this.y(this.node.y0)) + 'px');
     selectedCell.transition()
         .duration(300)
-        .delay(1000)
+        .delay(500)
         .style('opacity', 0)
         .remove();
-
-    this.update();
+    if (selectedCell.size() > 0) {
+        setTimeout(this.update.bind(this), 800);
+    } else {
+        setTimeout(this.update.bind(this), 300);
+    }
 };
 
 Treemap.prototype.update = function () {
 
     if (this.node.parent) {
+        console.log('p:', this.node.parent);
         this.grandparent
-            .datum(this.node.parent);
-            //.on('click', d => this.unzoom(d));
+            .datum(this.node.parent)
+            .on('click', d => {
+                this.lastNode = this.node;
+                this.node = d;
+                this.zoom();
+            });
+    } else {
+        this.grandparent
+            .datum(null)
+            .on('click', null);
     }
 
     let cellData = this.treemapContent.selectAll('.cell')
-        .data(descendantsNoRoot(this.node), d => d.data.id);
-    cellData
-        .transition()
-            .duration(300)
-            .attr('transform', d => 'translate(' + this.x(d.x0) + ',' + this.y(d.y0) + ')');
+        .data(this.node.children, d => d.data.id);
 
+    // Enter
     this.cellEnter = cellData.enter().append('g')
         .classed('cell', true)
         .attr('id', d => d.data.id)
         .attr('transform', d => 'translate(' + this.x(d.x0) + ',' + this.y(d.y0) + ')');
 
     this.cellEnter.append('rect')
-        .attr('width', d => this.x(d.x1 - d.x0) + 'px')
-        .attr('height', d => this.y(d.y1 - d.y0) + 'px')
+        .attr('width', d => Math.max(0, this.x(d.x1) - this.x(d.x0)) + 'px')
+        .attr('height', d => Math.max(0, this.y(d.y1) - this.y(d.y0)) + 'px')
         .attr('fill', d => {
             if (d.depth === 1 && d.data) {
                 return this.color(d.data.id);
@@ -192,7 +197,7 @@ Treemap.prototype.update = function () {
         })
         .style('opacity', d => {
             if (d.children) {
-                return '0.2';
+                return '0.3';
             } else {
                 return '1';
             }
@@ -204,20 +209,38 @@ Treemap.prototype.update = function () {
                 this.zoom();
             } else {
                 console.log('clicked:', d);
+                if (this.fillFileInfoFunction != null) {
+                    this.fillFileInfoFunction(d.data);
+                }
             }
         });
 
     this.cellEnter.append('svg:text')
-        .attr('x', d => this.x((d.x1 - d.x0) / 2) + 'px')
-        .attr('y', d => this.y((d.y1 - d.y0) / 2) + 'px')
+        .attr('x', d => Math.max(0, this.x(d.x1) - this.x(d.x0)) / 2 + 'px')
+        .attr('y', d => Math.max(0, this.y(d.y1) - this.y(d.y0)) / 2 + 'px')
         .attr('text-anchor', 'middle')
         .text(d => d.data.name);
 
+    // Update
+    cellData.transition()
+        .duration(500)
+        .attr('transform', d => 'translate(' + this.x(d.x0) + ',' + this.y(d.y0) + ')');
+    cellData.select('rect').transition()
+        .duration(500)
+        .attr('width', d => Math.max(0, this.x(d.x1) - this.x(d.x0)) )
+        .attr('height', d => Math.max(0, this.y(d.y1) - this.y(d.y0)) );
+    cellData.select('text').transition()
+        .duration(500)
+            .attr('x', d => Math.max(0, this.x(d.x1) - this.x(d.x0)) / 2 + 'px')
+            .attr('y', d => Math.max(0, this.y(d.y1) - this.y(d.y0)) / 2 + 'px');
+
+    // Exit
     cellData.exit().transition()
         .duration(500)
         .style('opacity', 0)
         .remove();
 
+    // Update legend
     this.grandparent.select('text')
         .text(name(this.node));
         //.style('fill', this.color(0));
