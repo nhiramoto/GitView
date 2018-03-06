@@ -39,7 +39,7 @@ function Treemap(container, width, height) {
         .attr('transform', 'translate(' + this.margin.left + ',' + (2 * this.margin.top + this.treemapLegendHeight + ')'));
     this.treemap = d3.treemap()
         .size([this.width, this.height])
-        // .tile(d3.treemapResquarify)
+        // .tile(d3.treemapResquarify);
         // .round(false)
         // .paddingOuter(0);
     this.root = null;
@@ -48,7 +48,6 @@ function Treemap(container, width, height) {
     this.color = d3.scaleOrdinal().range(d3.schemeCategory20c);
     this.padding = d3.scaleOrdinal().domain([0, 2]);
     this.fillFileInfoFunction = null;
-    this.foldLevel = 2;
     this.data = null;
 }
 
@@ -92,6 +91,9 @@ Treemap.prototype.load = function (dataPath) {
 Treemap.prototype.build = function (data) {
     console.log('building data treemap...');
     this.data = data || [];
+    this.lastNode = null;
+    this.x.domain([0, this.width]);
+    this.y.domain([0, this.height]);
 
     this.root = d3.hierarchy(this.data, d => d.entries);
     this.root
@@ -104,6 +106,7 @@ Treemap.prototype.build = function (data) {
         });
     // this.padding.domain([0, this.root.height]);
     // this.treemap.paddingInner(d => this.padding(d.depth));
+    console.log('this.root:', this.root);
     this.node = this.root;
     this.treemap(this.node);
     this.update();
@@ -150,6 +153,36 @@ Treemap.prototype.zoom = function () {
     }
 };
 
+Treemap.prototype.stylize = function (d, i) {
+    let node = d3.select(this);
+    node.classed('cell-added', false);
+    node.classed('cell-deleted', false);
+    node.classed('cell-modified', false);
+    node.classed('cell-moved', false);
+    node.classed('cell-unmodified', false);
+    if (d.data && d.data.status != null) {
+        if (d.data.isAdded()) {
+            node.classed('cell-added');
+        } else if (d.data.isDeleted()) {
+            node.classed('cell-deleted', true);
+        } else if (d.data.isModified()) {
+            node.classed('cell-modified', true);
+        } else if (d.data.isMoved()) {
+            node.classed('cell-moved', true);
+        } else {
+            node.classed('cell-unmodified', true);
+        }
+    }
+};
+
+Treemap.prototype.opacity = function (d) {
+    let op = 1;
+    if (d.data != null && d.data.isUnmodified != null && d.data.isUnmodified()) {
+        op = 0.3;
+    }
+    return op;
+};
+
 Treemap.prototype.update = function () {
 
     if (this.node.parent) {
@@ -174,34 +207,13 @@ Treemap.prototype.update = function () {
     this.cellEnter = cellData.enter().append('g')
         .classed('cell', true)
         .attr('id', d => d.data.id)
-        .attr('transform', d => 'translate(' + this.x(d.x0) + ',' + this.y(d.y0) + ')');
+        .attr('transform', d => 'translate(' + this.x(d.x0) + ',' + this.y(d.y0) + ')')
+        .each(this.stylize)
+        .style('opacity', this.opacity);
 
     this.cellEnter.append('rect')
         .attr('width', d => Math.max(0, this.x(d.x1) - this.x(d.x0)) + 'px')
         .attr('height', d => Math.max(0, this.y(d.y1) - this.y(d.y0)) + 'px')
-        .attr('fill', d => {
-            if (d.depth === 1 && d.data) {
-                return this.color(d.data.id);
-            } else if (d.depth > 1 && d.parent) {
-                return this.color(d.parent.data.id);
-            } else {
-                return this.color(d.data.id);
-            }
-        })
-        .attr('stroke', d => {
-            if (d._children) {
-                return 'magenta';
-            } else {
-                return 'white';
-            }
-        })
-        .style('opacity', d => {
-            if (d.children) {
-                return '0.3';
-            } else {
-                return '1';
-            }
-        })
         .on('click', d => {
             if (d.children) {
                 this.lastNode = this.node;
@@ -224,11 +236,13 @@ Treemap.prototype.update = function () {
     // Update
     cellData.transition()
         .duration(500)
-        .attr('transform', d => 'translate(' + this.x(d.x0) + ',' + this.y(d.y0) + ')');
+        .attr('transform', d => 'translate(' + this.x(d.x0) + ',' + this.y(d.y0) + ')')
+        .each(this.stylize)
+        .style('opacity', this.opacity);
     cellData.select('rect').transition()
         .duration(500)
-        .attr('width', d => Math.max(0, this.x(d.x1) - this.x(d.x0)) )
-        .attr('height', d => Math.max(0, this.y(d.y1) - this.y(d.y0)) );
+        .attr('width', d => Math.max(0, this.x(d.x1) - this.x(d.x0)) + 'px')
+        .attr('height', d => Math.max(0, this.y(d.y1) - this.y(d.y0)) + 'px');
     cellData.select('text').transition()
         .duration(500)
             .attr('x', d => Math.max(0, this.x(d.x1) - this.x(d.x0)) / 2 + 'px')

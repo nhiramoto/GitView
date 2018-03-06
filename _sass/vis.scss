@@ -51,8 +51,13 @@
         pointer-events: none;
         opacity: 0;
         z-index: 30;
-        transition: opacity .5s ease;
-        -webkit-transition: opacity .5s ease;
+        transition: opacity .5s ease, box-shadow .5s ease;
+        -webkit-transition: opacity .5s ease, box-shadow .5s ease;
+    }
+    &:hover {
+        box-shadow: 0 0 5px gray;
+        transition: box-shadow .3s ease;
+        -webkit-transition: box-shadow .3s ease;
     }
     &:hover text {
         opacity: 1 !important;
@@ -61,7 +66,31 @@
     }
 }
 
-
+.cell-added {
+    rect {
+        fill: $added;
+    }
+}
+.cell-deleted {
+    rect {
+        fill: $deleted;
+    }
+}
+.cell-moved {
+    rect {
+        fill: $moved;
+    }
+}
+.cell-modified {
+    rect {
+        fill: $modified;
+    }
+}
+.cell-unmodified {
+    rect {
+        fill: $unmodified;
+    }
+}
 
 .svg-g {
     background: -webkit-radial-gradient(white, lightgray);
@@ -111,27 +140,27 @@
 }
 .node-added {
     circle {
-        fill: #2fe2a1;
+        fill: $added;
     }
 }
 .node-deleted {
     circle {
-        fill: #d15375;
+        fill: $deleted;
     }
 }
 .node-moved {
     circle {
-        fill: #7f58d3;
+        fill: $moved;
     }
 }
 .node-modified {
     circle {
-        fill: #dbd825;
+        fill: $modified;
     }
 }
 .node-unmodified {
     circle {
-        fill: #004EFF;
+        fill: $unmodified;
     }
 }
 

@@ -45,13 +45,38 @@
   pointer-events: none;
   opacity: 0;
   z-index: 30;
-  transition: opacity .5s ease;
-  -webkit-transition: opacity .5s ease;
+  transition: opacity .5s ease, box-shadow .5s ease;
+  -webkit-transition: opacity .5s ease, box-shadow .5s ease;
+}
+.cell:hover {
+  box-shadow: 0 0 5px gray;
+  transition: box-shadow .3s ease;
+  -webkit-transition: box-shadow .3s ease;
 }
 .cell:hover text {
   opacity: 1 !important;
   transition: opacity .3s ease;
   -webkit-transition: opacity .3s ease;
+}
+
+.cell-added rect {
+  fill: #2fe2a1;
+}
+
+.cell-deleted rect {
+  fill: #d15375;
+}
+
+.cell-moved rect {
+  fill: #7f58d3;
+}
+
+.cell-modified rect {
+  fill: #dbd825;
+}
+
+.cell-unmodified rect {
+  fill: #004EFF;
 }
 
 .svg-g {

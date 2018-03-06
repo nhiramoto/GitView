@@ -413,9 +413,10 @@ var diffCommit = function (commitId) {
             }
         }).then(diffDir => {
             if (selected) {
+                data = diffDir;
                 console.log('Selected commit diff tree got!');
-                console.log('diffDir:', diffDir);
-                treemap.build(diffDir);
+                console.log('data:', data);
+                treemap.build(data);
             }
         }).then(() => {
             hideLoadingScreen();
