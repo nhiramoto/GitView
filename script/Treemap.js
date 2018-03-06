@@ -38,7 +38,7 @@ function Treemap(container, width, height) {
         .attr('height', this.height + 'px')
         .attr('transform', 'translate(' + this.margin.left + ',' + (2 * this.margin.top + this.treemapLegendHeight + ')'));
     this.treemap = d3.treemap()
-        .size([this.width, this.height])
+        .size([this.width, this.height]);
         // .tile(d3.treemapResquarify);
         // .round(false)
         // .paddingOuter(0);
@@ -53,30 +53,6 @@ function Treemap(container, width, height) {
 
 function name(d) {
     return d.parent ? name(d.parent) + ' / ' + d.data.name : '<Root>';
-}
-
-function fold(root, level) {
-    if (root.children && root.depth <= level) {
-        if (root.depth === level) {
-            root._children = root.children;
-            root.children = null;
-        } else {
-            root.children.forEach(c => {
-                fold(c, level);
-            });
-        }
-    }
-}
-
-function descendantsNoRoot(node) {
-    let id = node.data.id;
-    let ind = null;
-    let d = node.descendants().slice(0);
-    for (ind = 0; ind < d.length; ind++) {
-        if (d[ind].data.id === id) break;
-    }
-    if (ind < d.length) d.splice(ind, 1);
-    return d;
 }
 
 Treemap.prototype.load = function (dataPath) {
@@ -119,8 +95,8 @@ Treemap.prototype.zoom = function () {
     this.x.domain([this.node.x0, this.node.x1]);
     this.y.domain([this.node.y0, this.node.y1]);
 
-	console.log("new x: "+ this.x(this.node.x0) + "~" + this.x(this.node.x1) );
-	console.log("new y: "+ this.y(this.node.y0) + "~" + this.y(this.node.y1) );
+    console.log("new x: "+ this.x(this.node.x0) + "~" + this.x(this.node.x1) );
+    console.log("new y: "+ this.y(this.node.y0) + "~" + this.y(this.node.y1) );
 
     d3.selectAll('.cell')
         .filter(d => d.data.id !== this.node.data.id)
@@ -132,7 +108,7 @@ Treemap.prototype.zoom = function () {
         .filter(d => d.data.id === this.node.data.id);
     selectedCell.transition()
         .duration(500)
-        .attr('transform', 'translate(0, 0)')
+        .attr('transform', 'translate(0, 0)');
     selectedCell.select('text').transition()
         .duration(500)
         .attr('x', d => Math.max(0, this.x(this.node.x1) - this.x(this.node.x0)) / 2 + 'px')
@@ -162,7 +138,7 @@ Treemap.prototype.stylize = function (d, i) {
     node.classed('cell-unmodified', false);
     if (d.data && d.data.status != null) {
         if (d.data.isAdded()) {
-            node.classed('cell-added');
+            node.classed('cell-added', true);
         } else if (d.data.isDeleted()) {
             node.classed('cell-deleted', true);
         } else if (d.data.isModified()) {

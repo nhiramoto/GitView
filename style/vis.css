@@ -27,6 +27,7 @@
 .cell rect {
   stroke: white;
   stroke-width: 1.5;
+  fill: #FFE297;
   overflow: hidden;
   user-select: none;
   cursor: pointer;
@@ -76,7 +77,7 @@
 }
 
 .cell-unmodified rect {
-  fill: #004EFF;
+  fill: #ADBDC9;
 }
 
 .svg-g {
@@ -138,7 +139,7 @@
 }
 
 .node-unmodified circle {
-  fill: #004EFF;
+  fill: #ADBDC9;
 }
 
 .node circle {
