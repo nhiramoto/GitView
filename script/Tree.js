@@ -3,21 +3,21 @@ const fs = require('fs');
 const JSONDatabase = require('./GitPipe/JSONDatabase');
 
 function Tree(container, width, height) {
+    this.container = container;
     this.width = width;
     this.height = height;
     this.nodeRadius = 8;
-    this.svg = container.append('svg')
-        //.attr('width', this.width)
-        //.attr('height', this.height)
+    this.svg = this.container.append('svg')
+        .attr('id', 'treeSvg')
         .attr('preserveAspectRatio', 'xMinYMin meet')
-        .attr('viewBox', '0 0 300 300')
+        .attr('viewBox', '0 0 ' + this.width + ' ' + this.height)
         .classed('svg-content', true)
         .call(d3.zoom().scaleExtent([0.2, 40]).on("zoom", () => this.zoomed()))
-      .append('g')
+    this.g = this.svg.append('g')
         .attr('class', 'svg-g');
         //.attr('transform', 'translate(' + this.width / 2 + ',' + this.height / 2 + ')');
-    this.linkLayer = this.svg.append('g');
-    this.nodeLayer = this.svg.append('g');
+    this.linkLayer = this.g.append('g');
+    this.nodeLayer = this.g.append('g');
     this.simulation = d3.forceSimulation();
     this.links = null;
     this.linkSvg = null;
@@ -49,18 +49,16 @@ function Tree(container, width, height) {
 
     // Text showing on node label
     this.labelAttribute = 'name';
-
     // Label show only on hover
     this.nodeHoverLabel = true;
-
     // Default depth to collapse nodes
     this.defaultDepth = 3;
-
     this.fillFileInfoFunction = null;
+    this.data = null;
 }
 
 Tree.prototype.zoomed = function () {
-    this.svg.attr('transform', d3.event.transform);
+    this.g.attr('transform', d3.event.transform);
 };
 
 Tree.prototype.ticked = function () {
@@ -315,7 +313,7 @@ Tree.prototype.load = function (dataPath) {
     console.log('loading data from file:', dataPath);
     //d3.json(dataPath, (err, data) => {
     fs.readFile(dataPath, (err, contentBuffer) => {
-        if (err) console.error('Error:', err);
+        if (err) console.error(err);
         let data = JSON.parse(contentBuffer.toString());
         this.build(data);
     });
@@ -327,9 +325,9 @@ Tree.prototype.load = function (dataPath) {
  */
 Tree.prototype.build = function (data) {
     console.log('building data tree..');
-    data = data || [];
-    console.log('  -> data:', data);
-    this.root = d3.hierarchy(data, d => d.entries);
+    this.data = data || [];
+    console.log('  -> data:', this.data);
+    this.root = d3.hierarchy(this.data, d => d.entries);
     this.moveChildren(this.root);
     this.radiusScale = d3.scalePow().exponent(0.5)
         .domain([0, 30])

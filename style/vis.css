@@ -1,3 +1,85 @@
+.svg-container {
+  background: white;
+}
+
+.grandparent rect {
+  user-select: none;
+  cursor: pointer;
+  stroke: white;
+  -webkit-transition: stroke .5s ease, filter .5s ease;
+}
+.grandparent rect:hover {
+  stroke: steelblue;
+  transition: stroke .3s ease;
+  -webkit-transition: stroke .3s ease;
+}
+.grandparent rect:active {
+  filter: brightness(80%);
+  transition: filter .3s ease;
+  -webkit-transition: filter .3s ease;
+}
+.grandparent text {
+  font-family: sans-serif;
+  font-size: 11px;
+  pointer-events: none;
+}
+
+.cell rect {
+  stroke: white;
+  stroke-width: 1.5;
+  fill: #FFE297;
+  overflow: hidden;
+  user-select: none;
+  cursor: pointer;
+  z-index: 10;
+  -webkit-transition: stroke .5s ease, opacity .5s ease;
+}
+.cell rect:hover {
+  stroke: steelblue;
+  transition: stroke .3s ease;
+  -webkit-transition: stroke .3s ease;
+}
+.cell text {
+  font-family: sans-serif;
+  font-size: 11px;
+  line-height: 12px;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 30;
+  transition: opacity .5s ease, box-shadow .5s ease;
+  -webkit-transition: opacity .5s ease, box-shadow .5s ease;
+}
+.cell:hover {
+  box-shadow: 0 0 5px gray;
+  transition: box-shadow .3s ease;
+  -webkit-transition: box-shadow .3s ease;
+}
+.cell:hover text {
+  opacity: 1 !important;
+  transition: opacity .3s ease;
+  -webkit-transition: opacity .3s ease;
+}
+
+.cell-added rect {
+  fill: #2fe2a1;
+}
+
+.cell-deleted rect {
+  fill: #d15375;
+}
+
+.cell-moved rect {
+  fill: #7f58d3;
+}
+
+.cell-modified rect {
+  fill: #dbd825;
+}
+
+.cell-unmodified rect {
+  fill: #ADBDC9;
+}
+
 .svg-g {
   background: -webkit-radial-gradient(white, lightgray);
 }
@@ -6,6 +88,7 @@
   -webkit-transition: opacity .5s ease;
 }
 .node text {
+  transition: font-size .5s ease;
   -webkit-transition: font-size .5s ease;
 }
 .node.focused {
@@ -14,6 +97,7 @@
 }
 .node.focused text {
   font-size: 20px;
+  transition: font-size .3s ease;
   -webkit-transition: font-size .3s ease;
 }
 
@@ -55,7 +139,7 @@
 }
 
 .node-unmodified circle {
-  fill: #004EFF;
+  fill: #ADBDC9;
 }
 
 .node circle {

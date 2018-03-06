@@ -202,16 +202,17 @@ body {
 }
 
 #commitBar {
-    position: fixed;
-    left: 0;
-    top: $headerHeight;
-    bottom: 0;
+    //position: fixed;
+    //left: 0;
+    //top: $headerHeight;
+    //bottom: 0;
     margin: 0;
     padding: 5px;
     background: white;
     opacity: .9;
     border: 1px solid $lightBorder;
     width: $commitBarWidth;
+    height: 100%;
     overflow: scroll;
     z-index: 1;
     -webkit-transition: opacity .5s ease;
@@ -246,72 +247,66 @@ body {
         }
         &:hover {
             background: #EFEFEF;
+            transition: all .3s ease;
             -webkit-transition: all .3s ease;
         }
         &:active {
             background: #DFDFDF;
             box-shadow: inset 0 2px 3px rgba(10, 10, 10, 0.6);
+            transition: all .3s ease;
             -webkit-transition: all .3s ease;
         }
     }
     .commitItem.selected {
         box-shadow: 0 0 5px rgba(0, 0, 255, .8);
         border: 1px solid blue;
+        transition: all .3s ease;
         -webkit-transition: all .3s ease;
     }
-}
-
-#commitBar.disabled {
-    opacity: 0.3;
-    -webkit-transition: opacity .3s ease;
-    .commitItem {
-        pointer-events: none;
+    &.disabled {
+        opacity: 0.3;
+        -webkit-transition: opacity .3s ease;
+        .commitItem {
+            pointer-events: none;
+        }
     }
 }
 
 #view {
+    position: absolute;
+    box-sizing: border-box;
     left: $commitBarWidth;
-}
-
-.svg-container {
-    position: relative;
-    display: inline-block;
+    right: 0;
+    top: 0;
+    bottom: 0;
     margin: 0;
     padding: 0;
-    //left: $sidebarWidth;
-    //padding-bottom: 100%;
-    height: 100%;
-    width: 100%;
-    vertical-align: top;
-    overflow: hidden;
-    background: white;
     z-index: 0;
-    .svg-content {
-        position: absolute;
-        display: inline-block;
-        box-shadow: inset 0 0 3px rgba(10, 10, 10, 0.6);
-        border-radius: 3px;
-        margin: 0;
-    }
+    overflow: hidden;
 }
 
 $infoBarWidth: 400px;
 
 #infoBar {
-    position: fixed;
-    top: $headerHeight;
-    bottom: 0;
+    position: absolute;
     right: -$infoBarWidth - 5px;
     width: $infoBarWidth;
     min-width: 0;
+    top: 0;
+    bottom: 0;
     padding: 10px;
     border-radius: 3px;
-    box-shadow: -1px 0 8px rgba(10, 10, 10, 0.5); 
+    box-shadow: -1px 0 8px rgba(10, 10, 10, 0.5);
     background: white;
-    opacity: 0.9;
+    opacity: 0.95;
     z-index: 10;
-    overflow: scroll;
+    overflow: visible;
     -webkit-transition: right .5s ease;
+    .cards {
+        width: 100%;
+        height: 100%;
+        overflow-y: scroll;
+    }
     .infoCard {
         margin-bottom: 20px;
         box-shadow: 0 3px 3px rgba(0, 0, 0, .3);
@@ -331,10 +326,12 @@ $infoBarWidth: 400px;
         -webkit-transition: background .5s ease;
         &:hover {
             background: #DFDFDF;
+            transition: background .3s ease;
             -webkit-transition: background .3s ease;
         }
         &:active {
             background: #ADADAD;
+            transition: background .3s ease;
             -webkit-transition: background .3s ease;
         }
         .infoTitle {
@@ -398,10 +395,67 @@ $infoBarWidth: 400px;
         //    width: 100%;
         //}
     }
+    .actionBtn {
+        position: absolute;
+        bottom: 10%;
+        left: -130px;
+        width: 60px;
+        height: 60px;
+        line-height: 60px;
+        color: white;
+        font-size: 22px;
+        text-align: center;
+        background: #206454;
+        border-radius: 50%;
+        border: 1px solid white;
+        z-index: 30;
+        overflow: hidden;
+        box-shadow: 0 2px 3px gray;
+        cursor: pointer;
+        transition: filter .5s ease, border .5s ease, opacity .5s ease;
+        -webkit-transition: filter .5s ease, border .5s ease, opacity .5s ease;
+        &:hover {
+            filter: brightness(90%);
+            border: 2px solid darkgray;
+            transition: filter .3s ease, border .3s ease;
+            -webkit-transition: filter .3s ease, border .3s ease;
+        }
+        &.disabled {
+            opacity: .3;
+            pointer-events: none;
+            transition: opacity .3s ease;
+            -webkit-transition: opacity .3s ease;
+        }
+    }
+    #changeVisTooltip {
+        position: absolute;
+        width: 300px;
+        height: 30px;
+        bottom: 12%;
+        left: -450px;
+        background: #FFF3AA;
+        color: black;
+        border-radius: 3px;
+        border: 1px solid white;
+        opacity: 0;
+        font-size: 18px;
+        line-height: 30px;
+        text-indent: 3px;
+        z-index: 31;
+        box-shadow: 0 2px 5px gray;
+        transition: opacity .5s ease;
+        -webkit-transition: opacity .5s ease;
+    }
+    #changeVisTooltip.visible {
+        opacity: 1;
+        transition: opacity .3s ease;
+        -webkit-transition: opacity .3s ease;
+    }
 }
 
 #infoBar.visible {
     right: 0;
+    transition: right .3s ease;
     -webkit-transition: right .3s ease;
 }
 
@@ -439,6 +493,7 @@ $legendHeight: 400px;
         -webkit-transition: transform .8s ease;
         &:hover {
             transform: rotate(360deg);
+            transition: transform .5s ease;
             -webkit-transition: transform .5s ease;
         }
     }
@@ -463,7 +518,17 @@ $legendHeight: 400px;
 
 #legend.visible {
     top: 50%;
+    transition: top .3s ease;
     -webkit-transition: top .3s ease;
+}
+
+@keyframes loader {
+    from {
+        -webkit-transform: rotate(0deg);
+    }
+    to {
+        -webkit-transform: rotate(360deg);
+    }
 }
 
 @-webkit-keyframes loader {
@@ -492,6 +557,7 @@ $legendHeight: 400px;
     line-height: 150px;
     text-align: center;
     text-shadow: 1px 0 2px white, -1px 0 2px white, 0 1px 2px white, 0 -1px 2px white;
+    transition: visibility 3s ease;
     -webkit-transition: visibility 3s ease;
 }
 
@@ -510,6 +576,7 @@ $legendHeight: 400px;
     border-radius: 50%;
     border-top-color: goldenrod;
     border-bottom-color: goldenrod;
+    animation: loader 2s linear infinite;
     -webkit-animation: loader 2s linear infinite;
 }
 
@@ -524,6 +591,7 @@ $legendHeight: 400px;
     border-radius: 50%;
     border-top-color: darkred;
     border-bottom-color: darkred;
+    animation: loader 1s linear infinite;
     -webkit-animation: loader 1s linear infinite;
 }
 
@@ -538,5 +606,6 @@ $legendHeight: 400px;
     border-radius: 50%;
     border-left-color: #4D658D;
     border-right-color: #4D658D;
+    animation: loader 1.5s linear infinite;
     -webkit-animation: loader 1.5s linear infinite;
 }

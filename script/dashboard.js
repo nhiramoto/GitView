@@ -5,12 +5,16 @@ const main = remote.require('./main');
 const globals = require('./globals');
 const GitPipe = require('./GitPipe/GitPipe');
 const Tree = require('./Tree');
+const Treemap = require('./Treemap');
 const dateFormat = require('dateformat');
 
 var repoPath = null;
-var svgWidth = 800, svgHeight = 600;
+var width = 500, height = 400;
 var container = null;
 var tree = null;
+var treemap = null;
+var isTreemapVis = true;
+var data = null;
 var gitPipe = null;
 var dbPath = null;
 var repoRec = null;
@@ -122,6 +126,44 @@ $(document).ready(() => {
         isFileInfoHide = !isFileInfoHide;
     });
 
+    $('#changeVisBtn').mouseover(e => {
+        $('#changeVisTooltip').removeClass('visible');
+        $('#changeVisTooltip').addClass('visible');
+    });
+
+    $('#changeVisBtn').mouseout(e => {
+        $('#changeVisTooltip').removeClass('visible');
+    });
+
+    $('#changeVisBtn').click(e => {
+        if (isTreemapVis) {
+            $('#view #treemapSvg').fadeOut('fast', () => {
+                if (tree == null) {
+                    tree = new Tree(container, width, height);
+                    tree.fillFileInfoFunction = fillFileInfo;
+                } else {
+                    $('#view #treeSvg').fadeIn('slow');
+                }
+                if (tree.data !== data) {
+                    tree.build(data);
+                }
+            });
+        } else {
+            $('#view #treeSvg').fadeOut('fast', () => {
+                if (treemap == null) {
+                    treemap = new Treemap(container, width, height);
+                    treemap.fillFileInfoFunction = fillFileInfo;
+                } else {
+                    $('#view #treemapSvg').fadeIn('slow');
+                }
+                if (treemap.data !== data) {
+                    treemap.build(data);
+                }
+            });
+        }
+        isTreemapVis = !isTreemapVis;
+    });
+
     initLegend();
 
     let isLegendHide = $('#legend').hasClass('visible');
@@ -151,6 +193,8 @@ $(document).ready(() => {
 var showLoadingScreen = function() {
     $('#commitBar').removeClass('disabled');
     $('#commitBar').addClass('disabled');
+    $('#changeVisBtn').removeClass('disabled');
+    $('#changeVisBtn').addClass('disabled');
     $('#loadingScreen').fadeIn();
 };
 
@@ -158,6 +202,7 @@ var hideLoadingScreen = function () {
     $('#loadingScreen').fadeOut(1000);
     setTimeout(() => {
         $('#commitBar').removeClass('disabled');
+        $('#changeVisBtn').removeClass('disabled');
     }, 1000);
 };
 
@@ -262,12 +307,14 @@ var initViz = function (repoPath) {
                 return new Promise(resolve => resolve(null));
             }
         }).then(diffDir => {
+            data = diffDir;
             console.log('-> last diff tree got!');
-            console.log('-> diffDir:', diffDir);
+            console.log('-> data:', data);
             container = d3.select('#view');
-            tree = new Tree(container);
-            tree.fillFileInfoFunction = fillFileInfo;
-            tree.build(diffDir);
+            treemap = new Treemap(container, width, height);
+            treemap.fillFileInfoFunction = fillFileInfo;
+            treemap.build(data);
+            // d3.select('#changeVisTooltip').text('Graph');
         }).then(() => {
             // Limpa lista de commits
             $('#commitBar').children('.commitItem').remove();
@@ -366,9 +413,10 @@ var diffCommit = function (commitId) {
             }
         }).then(diffDir => {
             if (selected) {
+                data = diffDir;
                 console.log('Selected commit diff tree got!');
-                console.log('diffDir:', diffDir);
-                tree.build(diffDir);
+                console.log('data:', data);
+                treemap.build(data);
             }
         }).then(() => {
             hideLoadingScreen();
