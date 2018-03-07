@@ -1,6 +1,5 @@
 const d3 = require('d3');
 const fs = require('fs');
-const JSONDatabase = require('./GitPipe/JSONDatabase');
 
 function Tree(container, width, height) {
     this.container = container;
@@ -12,7 +11,7 @@ function Tree(container, width, height) {
         .attr('preserveAspectRatio', 'xMinYMin meet')
         .attr('viewBox', '0 0 ' + this.width + ' ' + this.height)
         .classed('svg-content', true)
-        .call(d3.zoom().scaleExtent([0.2, 40]).on("zoom", () => this.zoomed()))
+        .call(d3.zoom().scaleExtent([0.2, 40]).on("zoom", () => this.zoomed()));
     this.g = this.svg.append('g')
         .attr('class', 'svg-g');
         //.attr('transform', 'translate(' + this.width / 2 + ',' + this.height / 2 + ')');
@@ -55,6 +54,7 @@ function Tree(container, width, height) {
     this.defaultDepth = 3;
     this.fillFileInfoFunction = null;
     this.data = null;
+    this.path = null;
 }
 
 Tree.prototype.zoomed = function () {
@@ -104,11 +104,11 @@ Tree.prototype.biggerNode = function (root) {
     let biggerWeight = 0;
     function searchBigger (node) {
         if (node.data && node.data.statistic) {
-            let nodeWeight = node.data.statistic.added
-                + node.data.statistic.deleted
-                + node.data.statistic.modified;
-            if ((bigger != null && nodeWeight > biggerWeight)
-                || bigger == null) {
+            let nodeWeight = node.data.statistic.added +
+                node.data.statistic.deleted +
+                node.data.statistic.modified;
+            if ((bigger != null && nodeWeight > biggerWeight) ||
+                bigger == null) {
                 bigger = node;
                 biggerWeight = nodeWeight;
             }
@@ -214,7 +214,7 @@ Tree.prototype.handleMouseOver = function (d, i) {
         tooltip.select('hr').style('display', 'none');
     }
     if (addedLabel != null && deletedLabel != null && modifiedLabel != null) {
-        tooltip.select('hr').style('display', 'block')
+        tooltip.select('hr').style('display', 'block');
         tooltip.select('#added').style('display', 'inline');
         tooltip.select('#deleted').style('display', 'inline');
         tooltip.select('#modified').style('display', 'inline');
@@ -222,7 +222,7 @@ Tree.prototype.handleMouseOver = function (d, i) {
         tooltip.select('#deleted').text(deletedLabel);
         tooltip.select('#modified').text(modifiedLabel);
     } else {
-        tooltip.select('hr').style('display', 'none')
+        tooltip.select('hr').style('display', 'none');
         tooltip.select('#added').style('display', 'none');
         tooltip.select('#deleted').style('display', 'none');
         tooltip.select('#modified').style('display', 'none');
@@ -235,13 +235,13 @@ Tree.prototype.handleMouseOver = function (d, i) {
 Tree.prototype.handleMouseMove = function (d, i) {
     let x = d3.event.pageX + 20;
     let y = d3.event.pageY + 20;
-    let tooltip = d3.select('#nodeTooltip')
+    d3.select('#nodeTooltip')
         .style('left', x + 'px')
         .style('top', y + 'px');
 };
 
 Tree.prototype.handleMouseOut = function (d, i) {
-    d3.select(this).classed('focused', false)
+    d3.select(this).classed('focused', false);
     d3.select('#nodeTooltip').transition()
         .duration(300)
         .style('opacity', 0);
@@ -286,9 +286,9 @@ Tree.prototype.stylize = function (d, i) {
 
 Tree.prototype.radius = function (d) {
     if (d.data && d.data.statistic) {
-        let weight = d.data.statistic.added
-            + d.data.statistic.deleted
-            + d.data.statistic.modified;
+        let weight = d.data.statistic.added +
+            d.data.statistic.deleted +
+            d.data.statistic.modified;
         return this.radiusScale(weight);
     } else {
         return this.radiusScale(0);

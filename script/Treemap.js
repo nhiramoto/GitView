@@ -41,7 +41,7 @@ function Treemap(container, width, height) {
         .size([this.width, this.height])
         .tile(d3.treemapSquarify)
         .round(false)
-        .padding(2);
+        .padding(1);
         // .paddingOuter(0);
     this.root = null;
     this.node = null;
@@ -50,96 +50,42 @@ function Treemap(container, width, height) {
     this.padding = d3.scaleOrdinal().domain([0, 2]);
     this.fillFileInfoFunction = null;
     this.data = null;
+    this.path = null;
+    this.dirScale = d3.scalePow().exponent(0.5).range([5, 50]);
+    this.fileScale = d3.scalePow().exponent(0.5).range([5, 50]);
 }
 
 function name(d) {
     return d.parent ? name(d.parent) + ' / ' + d.data.name : '<Root>';
 }
 
-Treemap.prototype.load = function (dataPath) {
-    console.log('loading data from file:', dataPath);
-    fs.readFile(dataPath, (err, contentBuffer) => {
-        if (err) console.error(err);
-        let data = JSON.parse(contentBuffer.toString());
-        this.build(data);
-    });
-};
-
-Treemap.prototype.build = function (data) {
-    console.log('building data treemap...');
-    this.data = data || [];
-    this.lastNode = null;
-    this.x.domain([0, this.width]);
-    this.y.domain([0, this.height]);
-
-    this.root = d3.hierarchy(this.data, d => d.entries)
-        .sum(d => {
-            if (d.statistic && !d.isUnmodified()) {
-                return 5 + d.statistic.added + d.statistic.deleted + d.statistic.modified;
-            } else {
-                return 5;
-            }
-        })
-        .sort((a, b) => {
-            if (a.statistic && b.statistic) {
-                let as = a.statistic.added + a.statistic.deleted + a.statistic.modified;
-                let bs = b.statistic.added + b.statistic.deleted + b.statistic.modified;
-                return bs - as;
-            } else if (a.statistic) {
-                return -1;
-            } else if (b.statistic) {
-                return 1;
-            } else {
-                return 0;
-            }
-        });
-    // this.padding.domain([0, this.root.height]);
-    // this.treemap.paddingInner(d => this.padding(d.depth));
-    this.node = this.root;
-    this.treemap(this.node);
-    this.update();
-};
-
-Treemap.prototype.zoom = function () {
-
-    console.log('clicked: ' + this.node.data.name + ', depth:' + this.node.depth);
-
-    this.x.domain([this.node.x0, this.node.x1]);
-    this.y.domain([this.node.y0, this.node.y1]);
-
-    console.log("new x: "+ this.x(this.node.x0) + "~" + this.x(this.node.x1) );
-    console.log("new y: "+ this.y(this.node.y0) + "~" + this.y(this.node.y1) );
-
-    d3.selectAll('.cell')
-        .filter(d => d.data.id !== this.node.data.id)
-        .transition()
-            .duration(300)
-            .style('opacity', 0)
-            .remove();
-    let selectedCell = d3.selectAll('.cell')
-        .filter(d => d.data.id === this.node.data.id);
-    selectedCell.transition()
-        .duration(500)
-        .attr('transform', 'translate(0, 0)');
-    selectedCell.select('text').transition()
-        .duration(500)
-        .attr('x', d => Math.max(0, this.x(this.node.x1) - this.x(this.node.x0)) / 2 + 'px')
-        .attr('y', d => Math.max(0, this.y(this.node.y1) - this.y(this.node.y0)) / 2 + 'px');
-    selectedCell.select('rect').transition()
-        .duration(500)
-        .attr('width', Math.max(0, this.x(this.node.x1) - this.x(this.node.x0)) + 'px')
-        .attr('height', Math.max(0, this.y(this.node.y1) - this.y(this.node.y0)) + 'px');
-    selectedCell.transition()
-        .duration(300)
-        .delay(500)
-        .style('opacity', 0)
-        .remove();
-    if (selectedCell.size() > 0) {
-        setTimeout(this.update.bind(this), 800);
+function searchNode(root, path) {
+    if (root) {
+        path = path.replace(/\/+$/, '');
+        if (path === '.' || root.data.path === path) return root;
+        else if (root.children) {
+            let names = path.split('/');
+            names.forEach(name => {
+                let found = null;
+                root.children.forEach(c => {
+                    if (c.data.name === name) {
+                        found = c;
+                    }
+                });
+                if (found) {
+                    root = found;
+                } else {
+                    return null;
+                }
+            });
+            return root;
+        } else {
+            return null;
+        }
     } else {
-        setTimeout(this.update.bind(this), 300);
+        return null;
     }
-};
+}
 
 Treemap.prototype.stylize = function (d, i) {
     let node = d3.select(this);
@@ -169,6 +115,78 @@ Treemap.prototype.opacity = function (d) {
         op = 0.3;
     }
     return op;
+};
+
+Treemap.prototype.load = function (dataPath) {
+    console.log('loading data from file:', dataPath);
+    fs.readFile(dataPath, (err, contentBuffer) => {
+        if (err) console.error(err);
+        let data = JSON.parse(contentBuffer.toString());
+        this.build(data);
+    });
+};
+
+Treemap.prototype.build = function (data) {
+    console.log('building data treemap...');
+    this.data = data || [];
+    this.lastNode = null;
+    this.x.domain([0, this.width]);
+    this.y.domain([0, this.height]);
+
+    this.root = d3.hierarchy(this.data, d => d.entries);
+    let maxSum = this.root.data.statistic.added + this.root.data.statistic.deleted + this.root.data.statistic.modified;
+    this.dirScale.domain([0, maxSum]);
+    this.root.sum(d => {
+            if (d.statistic && !d.isUnmodified()) {
+                return this.dirScale( d.statistic.added + d.statistic.deleted + d.statistic.modified );
+            } else {
+                return this.dirScale(0);
+            }
+        })
+        .sort((a, b) => {
+            if (a.statistic && b.statistic) {
+                let as = a.statistic.added + a.statistic.deleted + a.statistic.modified;
+                let bs = b.statistic.added + b.statistic.deleted + b.statistic.modified;
+                return bs - as;
+            } else if (a.statistic) {
+                return -1;
+            } else if (b.statistic) {
+                return 1;
+            } else {
+                return 0;
+            }
+        });
+
+    this.node = this.root;
+    this.treemap(this.node);
+    // Restore previous visualization selected folder
+    if (this.path != null) {
+        this.node = searchNode(this.root, this.path);
+        console.log('searchNode:', this.node);
+        this.zoom();
+    } else {
+        this.update();
+    }
+};
+
+Treemap.prototype.zoom = function () {
+
+    console.log('clicked: ' + this.node.data.name + ', depth:' + this.node.depth);
+
+    this.x.domain([this.node.x0, this.node.x1]);
+    this.y.domain([this.node.y0, this.node.y1]);
+
+    console.log("new x: "+ this.x(this.node.x0) + "~" + this.x(this.node.x1) );
+    console.log("new y: "+ this.y(this.node.y0) + "~" + this.y(this.node.y1) );
+
+    let selectedCell = d3.selectAll('.cell')
+        .filter(d => d.data.id === this.node.data.id);
+
+    if (selectedCell.size() > 0) {
+        setTimeout(this.update.bind(this), 800);
+    } else {
+        setTimeout(this.update.bind(this), 300);
+    }
 };
 
 Treemap.prototype.update = function () {
@@ -206,6 +224,30 @@ Treemap.prototype.update = function () {
             if (d.children) {
                 this.lastNode = this.node;
                 this.node = d;
+                d3.selectAll('.cell')
+                    .filter(d => d.data.id !== this.node.data.id)
+                    .transition()
+                        .duration(300)
+                        .style('opacity', 0)
+                        .remove();
+                let selectedCell = d3.selectAll('.cell')
+                    .filter(d => d.data.id === this.node.data.id);
+                selectedCell.transition()
+                    .duration(500)
+                    .attr('transform', 'translate(0, 0)');
+                selectedCell.select('text').transition()
+                    .duration(500)
+                    .attr('x', d => (this.width / 2) + 'px')
+                    .attr('y', d => (this.height / 2) + 'px');
+                selectedCell.select('rect').transition()
+                    .duration(500)
+                    .attr('width', this.width + 'px')
+                    .attr('height', this.height + 'px');
+                selectedCell.transition()
+                    .duration(300)
+                    .delay(500)
+                    .style('opacity', 0)
+                    .remove();
                 this.zoom();
             } else {
                 console.log('clicked:', d);
@@ -246,6 +288,15 @@ Treemap.prototype.update = function () {
     this.grandparent.select('text')
         .text(name(this.node));
         //.style('fill', this.color(0));
+
+    // Update current path
+    if (this.node.data) {
+        if (this.node.data.path === '.') {
+            this.path = null;
+        } else {
+            this.path = this.node.data.path;
+        }
+    }
 };
 
 module.exports = Treemap;
