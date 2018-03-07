@@ -1,10 +1,20 @@
 # GitView
 
-GitView is a [Electron](https://electronjs.org/) based tool that represents graphically Git repositories data using [D3.js](https://d3js.org).
+GitView is a [Electron](https://electronjs.org) based tool that represents graphically data from Git repositories using [D3.js](https://d3js.org).
 
-Using a graph based visualization technique, the repository directory structure is shown with the changes made in the selected *commit*.
+This tool uses information visualization techniques to represent the changes made in a specific commit.
 
-![preview](https://github.com/nhtoshiaki/GitView/blob/master/preview.png)
+## Graph based visualization
+
+In this visualization a graph based visualization is used to show the project tree with the changes made to the files in the selected commit.
+
+![preview-graph](https://github.com/nhtoshiaki/GitView/blob/master/preview-graph.png)
+
+## Treemap
+
+In the treemap, each directory is represented by clickable rectangles. By clicking the rectangle, the files contained in the directory are revealed. Also by clicking on the legend (that shows the current directory path) the parent directory is shown.
+
+![preview-treemap](https://github.com/nhtoshiaki/GitView/blob/master/preview-treemap.png)
 
 ## Usage
 

@@ -91,108 +91,114 @@
                                     </td>
                                 </tr>
                             </table>
+                        </div> <!-- repoInfoBody -->
+                    </div> <!--  repositoryInfo -->
+                    <hr>
+                    <div class="infoCard" id="commitInfo">
+                        <div class="infoHeader" id="commitInfoTitle">
+                            <span class="infoTitle"><i>Commit</i></span><span id="commitInfoArrow" class="infoArrow"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
                         </div>
-                    </div>
-                    <div class="infoBody visible" id="commitInfoBody">
-                        <table>
-                            <tr>
-                                <td>ID:</td>
-                                <td>
-                                    <span id="commitId"></span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Message:</td>
-                                <td>
-                                    <span id="commitMessage"></span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Author:</td>
-                                <td>
-                                    <span id="commitAuthor"></span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Date:</td>
-                                <td>
-                                    <span id="commitDate"></span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>ID do <i>Snapshot</i>:</td>
-                                <td>
-                                    <span id="commitSnapshotId"></span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Parents:</td>
-                                <td>
-                                    <span id="commitParents"></span>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-                <hr>
-                <div id="fileInfo" class="infoCard">
-                    <div class="infoHeader" id="fileInfoTitle">
-                        <span class="infoTitle">File</span><span id="fileInfoArrow" class="infoArrow"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
-                    </div>
-                    <div class="infoBody visible" id="fileInfoBody">
-                        <table>
-                            <tr>
-                                <td>ID:</td>
-                                <td colspan="2">
-                                    <span id="fileId"></span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Name:</td>
-                                <td colspan="2">
-                                    <span id="fileName"></span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Path:</td>
-                                <td colspan="2">
-                                    <span id="filePath"></span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Old file ID:</td>
-                                <td colspan="2">
-                                    <span id="oldFileId"></span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Is a binary file?</td>
-                                <td colspan="2">
-                                    <span id="fileIsBinary"></span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><i>Status</i>:</td>
-                                <td colspan="2">
-                                    <span id="fileStatus"></span>
-                                </td>
-                            </tr>
-                            <tr class="statisticRow">
-                                <td rowspan="3">Statistic:</td>
-                                <td align="right">Added lines:</td>
-                                <td><span id="fileStAdded"></span></td>
-                            </tr>
-                            <tr class="statisticRow">
-                                <td align="right">Deleted lines:</td>
-                                <td><span id="fileStDeleted"></span></td>
-                            </tr>
-                            <tr class="statisticRow">
-                                <td align="right">Modified lines:</td>
-                                <td><span id="fileStModified"></span></td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
+                        <div class="infoBody visible" id="commitInfoBody">
+                            <table>
+                                <tr>
+                                    <td>ID:</td>
+                                    <td>
+                                        <span id="commitId"></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Message:</td>
+                                    <td>
+                                        <span id="commitMessage"></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Author:</td>
+                                    <td>
+                                        <span id="commitAuthor"></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Date:</td>
+                                    <td>
+                                        <span id="commitDate"></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>ID do <i>Snapshot</i>:</td>
+                                    <td>
+                                        <span id="commitSnapshotId"></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Parents:</td>
+                                    <td>
+                                        <span id="commitParents"></span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div> <!-- commitInfoBody -->
+                    </div> <!-- commitInfo -->
+                    <hr>
+                    <div id="fileInfo" class="infoCard">
+                        <div class="infoHeader" id="fileInfoTitle">
+                            <span class="infoTitle">File</span><span id="fileInfoArrow" class="infoArrow"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
+                        </div>
+                        <div class="infoBody visible" id="fileInfoBody">
+                            <table>
+                                <tr>
+                                    <td>ID:</td>
+                                    <td colspan="2">
+                                        <span id="fileId"></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Name:</td>
+                                    <td colspan="2">
+                                        <span id="fileName"></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Path:</td>
+                                    <td colspan="2">
+                                        <span id="filePath"></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Old file ID:</td>
+                                    <td colspan="2">
+                                        <span id="oldFileId"></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Is a binary file?</td>
+                                    <td colspan="2">
+                                        <span id="fileIsBinary"></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><i>Status</i>:</td>
+                                    <td colspan="2">
+                                        <span id="fileStatus"></span>
+                                    </td>
+                                </tr>
+                                <tr class="statisticRow">
+                                    <td rowspan="3">Statistic:</td>
+                                    <td align="right">Added lines:</td>
+                                    <td><span id="fileStAdded"></span></td>
+                                </tr>
+                                <tr class="statisticRow">
+                                    <td align="right">Deleted lines:</td>
+                                    <td><span id="fileStDeleted"></span></td>
+                                </tr>
+                                <tr class="statisticRow">
+                                    <td align="right">Modified lines:</td>
+                                    <td><span id="fileStModified"></span></td>
+                                </tr>
+                            </table>
+                        </div> <!-- fileInfoBody -->
+                    </div> <!-- fileInfo -->
+                </div> <!-- cards -->
             </div>
         </div>
     </div>
