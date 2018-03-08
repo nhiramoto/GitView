@@ -12,7 +12,7 @@ In this visualization a graph based visualization is used to show the project tr
 
 ## Treemap
 
-In the treemap, each directory is represented by clickable rectangles. By clicking the rectangle, the files contained in the directory are revealed. Also by clicking on the legend (that shows the current directory path) the parent directory is shown.
+In the treemap, each directory is represented by a clickable rectangle. By clicking the rectangle, the files contained in the directory are revealed. Also by clicking on the legend (that shows the current directory path) the parent directory is shown.
 
 ![preview-treemap](https://github.com/nhtoshiaki/GitView/blob/master/preview-treemap.png)
 

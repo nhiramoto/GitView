@@ -51,8 +51,10 @@ function Treemap(container, width, height) {
     this.fillFileInfoFunction = null;
     this.data = null;
     this.path = null;
-    this.dirScale = d3.scalePow().exponenet(0.5).range([5, 50]);
-    this.fileScale = d3.scalePow().exponent(0.5).range([5, 50]);
+    this.fileScale = d3.scalePow()
+        .exponent(0.5)
+        .clamp(true)
+        .range([5, 50]);
 }
 
 function name(d) {
@@ -87,21 +89,35 @@ function searchNode(root, path) {
     }
 }
 
-function maxFileSum(node) {
+function maxValue(node) {
     if (node && node.data) {
         if (node.data.isDirectory()) {
-            console.assert(node.children != null, '[Treemap#maxFileSum] Empty directory.');
-            let max = 0;
+            console.assert(node.children != null, '[Treemap#calculateValue] Empty directory.');
+            let max = 0, sum;
             node.children.forEach(c => {
-                let sum = maxFileSum(c);
-                if (sum > max) max = sum;
+                max += maxValue(c);
             });
             return max;
         } else if (node.data.statistic) {
-            return node.data.statistic.added + node.data.statistic.deleted + node.data.statistic.modified;
+            return 1 + node.data.statistic.added + node.data.statistic.deleted + node.data.statistic.modified;
+        } else {
+            return 1;
         }
     } else {
         return null;
+    }
+}
+
+function calculateValue(node, scale) {
+    if (node && node.data) {
+        if (node.data.isDirectory()) {
+            node.value = 0;
+            node.children.forEach(c => calculateValue(c, scale));
+        } else if (node.data.statistic) {
+            node.value = scale(1 + node.data.statistic.added + node.data.statistic.deleted + node.data.statistic.modified);
+        } else {
+            node.value = scale(1);
+        }
     }
 }
 
@@ -152,18 +168,19 @@ Treemap.prototype.build = function (data) {
     this.y.domain([0, this.height]);
 
     this.root = d3.hierarchy(this.data, d => d.entries);
-    let maxDirSum = this.root.data.statistic.added + this.root.data.statistic.deleted + this.root.data.statistic.modified;
-    this.fileScale.domain([0, maxFileSum(this.root)]);
+    let max = maxValue(this.root);
+    console.log('max:', max);
+    this.fileScale.domain([0, max]);
+    calculateValue(this.root, this.fileScale);
     this.root.sum(d => {
-            if (d.statistic) {
-                if (d.isFile() && !d.isUnmodified()) {
-                    return this.fileScale(d.statistic.added + d.statistic.deleted + d.statistic.modified);
-                } else if (d.isDirectory()) {
-                    return this.dirScale(d.value + d.statistic.added + d.statistic.deleted + d.statistic.modified);
-                }
-            } else {
-                return 0;
-            }
+            // if (d.children) {
+            //     return 0;
+            // } else if (d.statistic) {
+            //     return this.fileScale(1 + d.statistic.added + d.statistic.deleted + d.statistic.modified);
+            // } else {
+            //     return this.fileScale(1);
+            // }
+            return d.children ? 0 : 1;
         })
         .sort((a, b) => {
             if (a.statistic && b.statistic) {
