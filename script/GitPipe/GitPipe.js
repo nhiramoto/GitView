@@ -21,10 +21,10 @@ function GitPipe(dbPath) {
         this.db = new JSONDatabase(dbPath);
     }
     this.diffOptions = new Git.DiffOptions();
-    this.diffOptions.flags = Git.Diff.OPTION.INCLUDE_UNMODIFIED
-        + Git.Diff.OPTION.IGNORE_SUBMODULES
-        + Git.Diff.OPTION.IGNORE_FILEMODE
-        + Git.Diff.OPTION.INCLUDE_UNTRACKED
+    this.diffOptions.flags = Git.Diff.OPTION.INCLUDE_UNMODIFIED +
+        Git.Diff.OPTION.IGNORE_SUBMODULES +
+        Git.Diff.OPTION.IGNORE_FILEMODE +
+        Git.Diff.OPTION.INCLUDE_UNTRACKED
         ;
 }
 

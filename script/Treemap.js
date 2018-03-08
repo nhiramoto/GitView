@@ -51,7 +51,7 @@ function Treemap(container, width, height) {
     this.fillFileInfoFunction = null;
     this.data = null;
     this.path = null;
-    this.dirScale = d3.scalePow().exponent(0.5).range([5, 50]);
+    this.dirScale = d3.scalePow().exponenet(0.5).range([5, 50]);
     this.fileScale = d3.scalePow().exponent(0.5).range([5, 50]);
 }
 
@@ -81,6 +81,24 @@ function searchNode(root, path) {
             return root;
         } else {
             return null;
+        }
+    } else {
+        return null;
+    }
+}
+
+function maxFileSum(node) {
+    if (node && node.data) {
+        if (node.data.isDirectory()) {
+            console.assert(node.children != null, '[Treemap#maxFileSum] Empty directory.');
+            let max = 0;
+            node.children.forEach(c => {
+                let sum = maxFileSum(c);
+                if (sum > max) max = sum;
+            });
+            return max;
+        } else if (node.data.statistic) {
+            return node.data.statistic.added + node.data.statistic.deleted + node.data.statistic.modified;
         }
     } else {
         return null;
@@ -134,13 +152,17 @@ Treemap.prototype.build = function (data) {
     this.y.domain([0, this.height]);
 
     this.root = d3.hierarchy(this.data, d => d.entries);
-    let maxSum = this.root.data.statistic.added + this.root.data.statistic.deleted + this.root.data.statistic.modified;
-    this.dirScale.domain([0, maxSum]);
+    let maxDirSum = this.root.data.statistic.added + this.root.data.statistic.deleted + this.root.data.statistic.modified;
+    this.fileScale.domain([0, maxFileSum(this.root)]);
     this.root.sum(d => {
-            if (d.statistic && !d.isUnmodified()) {
-                return this.dirScale( d.statistic.added + d.statistic.deleted + d.statistic.modified );
+            if (d.statistic) {
+                if (d.isFile() && !d.isUnmodified()) {
+                    return this.fileScale(d.statistic.added + d.statistic.deleted + d.statistic.modified);
+                } else if (d.isDirectory()) {
+                    return this.dirScale(d.value + d.statistic.added + d.statistic.deleted + d.statistic.modified);
+                }
             } else {
-                return this.dirScale(0);
+                return 0;
             }
         })
         .sort((a, b) => {
