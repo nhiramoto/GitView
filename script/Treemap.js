@@ -69,11 +69,13 @@ function searchNode(root, path) {
             let names = path.split('/');
             names.forEach(name => {
                 let found = null;
-                root.children.forEach(c => {
-                    if (c.data.name === name) {
-                        found = c;
-                    }
-                });
+                if (root.children) {
+                    root.children.forEach(c => {
+                        if (c.data.name === name) {
+                            found = c;
+                        }
+                    });
+                }
                 if (found) {
                     root = found;
                 } else {
@@ -92,8 +94,8 @@ function searchNode(root, path) {
 function maxValue(node) {
     if (node && node.data) {
         if (node.data.isDirectory()) {
-            console.assert(node.children != null, '[Treemap#calculateValue] Empty directory.');
-            let max = 0, sum;
+            console.assert(node.children != null, '[Treemap#maxValue] Empty directory.');
+            let max = 0;
             node.children.forEach(c => {
                 max += maxValue(c);
             });
@@ -110,7 +112,7 @@ function maxValue(node) {
 
 function calculateValue(node, scale) {
     if (node && node.data) {
-        if (node.data.isDirectory()) {
+        if (node.children) {
             node.value = 0;
             node.children.forEach(c => calculateValue(c, scale));
         } else if (node.data.statistic) {

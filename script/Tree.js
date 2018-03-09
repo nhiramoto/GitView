@@ -36,15 +36,10 @@ function Tree(container, width, height) {
     this.tooltip.append('span').attr('id', 'deleted');
     this.tooltip.append('br');
     this.tooltip.append('span').attr('id', 'modified');
-    //this.radius = null;
-    // Default radius scale
-    this.radiusScale = n => {
-        if (n) {
-            return Math.sqrt(n) * 3 + 5;
-        } else {
-            return 5;
-        }
-    };
+    this.radiusScale = d3.scalePow()
+        .exponent(0.5)
+        .clamp(true)
+        .range([3, 50]);
 
     // Text showing on node label
     this.labelAttribute = 'name';
@@ -89,6 +84,20 @@ Tree.prototype.flatten = function (root) {
     return nodes;
 };
 
+Tree.prototype.calculateValue = function (node) {
+    if (node && node.data) {
+        node.value = 0;
+        if (node.data.statistic) {
+            node.value = node.data.statistic.added + node.data.statistic.deleted + node.data.statistic.modified;
+        }
+        if (node.children) {
+            node.children.forEach(c => this.calculateValue(c));
+        } else if (node._children) {
+            node._children.forEach(_c => this.calculateValue(_c));
+        }
+    }
+};
+
 Tree.prototype.moveChildren = function (node) {
     if (node.children) {
         node.children.forEach(c => this.moveChildren(c));
@@ -99,28 +108,48 @@ Tree.prototype.moveChildren = function (node) {
     }
 };
 
-Tree.prototype.biggerNode = function (root) {
-    let bigger = null;
-    let biggerWeight = 0;
-    function searchBigger (node) {
-        if (node.data && node.data.statistic) {
-            let nodeWeight = node.data.statistic.added +
-                node.data.statistic.deleted +
-                node.data.statistic.modified;
-            if ((bigger != null && nodeWeight > biggerWeight) ||
-                bigger == null) {
-                bigger = node;
-                biggerWeight = nodeWeight;
-            }
-            if (node.children) {
-                node.children.forEach(searchBigger);
-            } else if (node._children) {
-                node._children.forEach(searchBigger);
-            }
+Tree.prototype.revealNode = function (root, path) {
+    if (root) {
+        path = path.replace(/\/+$/, '');
+        if (path !== '.' && path !== root.data.path && root.children) {
+            let names = path.split('/');
+            let node = root;
+            names.forEach(name => {
+                let found = null;
+                if (node._children && node.children == null) {
+                    node.children = node._children;
+                    node._children = null;
+                }
+                if (node.children) {
+                    node.children.forEach(c => {
+                        if (c.data.name === name) {
+                            found = c;
+                        }
+                    });
+                }
+                if (found) {
+                    node = found;
+                } else {
+                    return;
+                }
+            });
         }
     }
-    searchBigger(root);
-    return bigger;
+};
+
+Tree.prototype.maxLeafValue = function (node) {
+    if (node) {
+        let max = 0;
+        if (node.leaves) {
+            let lv = node.leaves();
+            lv.forEach(n => {
+                if (n.value > max) {
+                    max = n.value;
+                }
+            });
+        }
+        return max;
+    }
 };
 
 //================ Event Handlers ================
@@ -138,7 +167,10 @@ Tree.prototype.click = function (d) {
             this.fillFileInfoFunction(d.data);
         }
     }
-    console.log('d.data:', d.data);
+    if (d.data) {
+        this.path = d.data.path;
+    }
+    console.log('d:', d);
     this.update();
     this.simulation.restart();
 };
@@ -285,14 +317,7 @@ Tree.prototype.stylize = function (d, i) {
 };
 
 Tree.prototype.radius = function (d) {
-    if (d.data && d.data.statistic) {
-        let weight = d.data.statistic.added +
-            d.data.statistic.deleted +
-            d.data.statistic.modified;
-        return this.radiusScale(weight);
-    } else {
-        return this.radiusScale(0);
-    }
+    return this.radiusScale(d.value);
 };
 
 Tree.prototype.opacity = function (d) {
@@ -328,13 +353,15 @@ Tree.prototype.build = function (data) {
     this.data = data || [];
     console.log('  -> data:', this.data);
     this.root = d3.hierarchy(this.data, d => d.entries);
+    this.calculateValue(this.root);
+    let mdv = this.root.value;
+    let mfv = this.maxLeafValue(this.root);
+    let max = mfv > mdv ? mfv : mdv;
+    this.radiusScale.domain([0, max]);
+    console.log('max:', max);
     this.moveChildren(this.root);
-    this.radiusScale = d3.scalePow().exponent(0.5)
-        .domain([0, 30])
-        .range([3, 10]);
     this.simulation
         .force('link', d3.forceLink()
-                //.distance(d => this.radius(d.source) + this.radius(d.target))
                 .strength(0.8).id(d => d.id))
         .force('charge', d3.forceManyBody()
                 .strength(-100)
@@ -346,8 +373,11 @@ Tree.prototype.build = function (data) {
         .force('collide', d3.forceCollide()
                 .radius(d => this.radius(d) + 2))
         .on('tick', () => this.ticked());
-    this.update();
+    if (this.path) {
+        this.revealNode(this.root, this.path);
+    }
     this.simulation.restart();
+    this.update();
 };
 
 Tree.prototype.update = function () {
@@ -366,7 +396,7 @@ Tree.prototype.update = function () {
         .links(this.links);
 
     this.linkSvg = this.linkLayer.selectAll('.link')
-        .data(this.links, d => d.target.data.id);
+        .data(this.links, d => d.target.data.path);
     this.linkSvg
         .style('stroke-opacity', d => this.opacity(d.target));
     this.linkSvg.exit()
@@ -387,23 +417,19 @@ Tree.prototype.update = function () {
     this.linkSvg = this.linkEnter.merge(this.linkSvg);
 
     this.nodeSvg = this.nodeLayer.selectAll('.node')
-        .data(this.nodes, d => d.data.id);
+        .data(this.nodes, d => d.data.path);
     this.nodeSvg
         .each(this.stylize)
         .transition()
-            .duration(100)
-            .style('opacity', d => this.opacity(d));
-    //this.nodeSvg
-    //    .select('circle')
-    //        .attr('r', 0)
-    //        .transition()
-    //            .duration(300)
-    //            .attr('r', d => this.radius(d));
+            .duration(300)
+            .style('opacity', d => this.opacity(d))
+      .select('circle').transition()
+        .duration(300)
+        .attr('r', d => this.radius(d));
     this.nodeSvg.exit()
-        .style('opacity', 0)
-        //.transition()
-        //    .duration(300)
-        //    .attr('r', 0)
+        .transition()
+            .duration(300)
+            .style('opacity', 0)
             .remove();
 
     this.nodeEnter = this.nodeSvg.enter()

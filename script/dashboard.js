@@ -144,6 +144,9 @@ $(document).ready(() => {
                 } else {
                     $('#view #treeSvg').fadeIn('slow');
                 }
+                if (treemap != null && treemap.path != null) {
+                    tree.path = treemap.path;
+                }
                 if (tree.data !== data) {
                     tree.build(data);
                 }
@@ -416,7 +419,11 @@ var diffCommit = function (commitId) {
                 data = diffDir;
                 console.log('Selected commit diff tree got!');
                 console.log('data:', data);
-                treemap.build(data);
+                if (isTreemapVis) {
+                    treemap.build(data);
+                } else {
+                    tree.build(data);
+                }
             }
         }).then(() => {
             hideLoadingScreen();
