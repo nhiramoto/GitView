@@ -365,7 +365,7 @@ Tree.prototype.build = function (data) {
         .force('link', d3.forceLink()
                 .strength(0.8).id(d => d.data.path))
         .force('charge', d3.forceManyBody()
-                .strength(-50)
+                .strength(-100)
                 //.distanceMax(400)
                 //.distanceMin(1)
         )
@@ -389,12 +389,6 @@ Tree.prototype.update = function () {
 
     this.nodes = this.flatten(this.root);
     this.links = this.root.links();
-
-    this.simulation
-        .nodes(this.nodes);
-
-    this.simulation.force('link')
-        .links(this.links);
 
     this.linkSvg = this.linkLayer.selectAll('.link')
         .data(this.links, d => d.target.data.path);
@@ -445,7 +439,7 @@ Tree.prototype.update = function () {
         .each(this.stylize)
         .style('opacity', 0)
         .transition()
-            .duration(100)
+            .duration(300)
             .style('opacity', d => this.opacity(d));
     this.nodeEnter.append('text')
         .attr('class', 'node-label')
@@ -466,6 +460,11 @@ Tree.prototype.update = function () {
 
     this.nodeSvg = this.nodeEnter.merge(this.nodeSvg);
 
+
+    this.simulation
+        .nodes(this.nodes)
+        .force('link')
+        .links(this.links);
     this.simulation.alphaTarget(0.3).restart();
 };
 
