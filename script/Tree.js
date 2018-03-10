@@ -38,8 +38,9 @@ function Tree(container, width, height) {
     this.tooltip.append('span').attr('id', 'modified');
     this.radiusScale = d3.scalePow()
         .exponent(0.5)
-        .clamp(true)
-        .range([3, 50]);
+        .domain([0, 100000])
+        .range([3, 40])
+        .clamp(true);
 
     // Text showing on node label
     this.labelAttribute = 'name';
@@ -171,8 +172,8 @@ Tree.prototype.click = function (d) {
         this.path = d.data.path;
     }
     console.log('d:', d);
+    //this.simulation.restart();
     this.update();
-    this.simulation.restart();
 };
 
 Tree.prototype.dragstarted = function (d) {
@@ -357,14 +358,14 @@ Tree.prototype.build = function (data) {
     let mdv = this.root.value;
     let mfv = this.maxLeafValue(this.root);
     let max = mfv > mdv ? mfv : mdv;
-    this.radiusScale.domain([0, max]);
+    //this.radiusScale.domain([0, max]);
     console.log('max:', max);
     this.moveChildren(this.root);
     this.simulation
         .force('link', d3.forceLink()
-                .strength(0.8).id(d => d.id))
+                .strength(0.8).id(d => d.data.path))
         .force('charge', d3.forceManyBody()
-                .strength(-100)
+                .strength(-50)
                 //.distanceMax(400)
                 //.distanceMin(1)
         )
@@ -372,19 +373,19 @@ Tree.prototype.build = function (data) {
         .force('center', d3.forceCenter(100, 100))
         .force('collide', d3.forceCollide()
                 .radius(d => this.radius(d) + 2))
-        .on('tick', () => this.ticked());
+        .on('tick', this.ticked.bind(this));
     if (this.path) {
         this.revealNode(this.root, this.path);
     }
-    this.simulation.restart();
+    //this.simulation.restart();
     this.update();
 };
 
 Tree.prototype.update = function () {
     var drag = d3.drag()
-        .on('start', d => this.dragstarted(d))
-        .on('drag', d => this.dragged(d))
-        .on('end', d => this.dragended(d));
+        .on('start', this.dragstarted.bind(this))
+        .on('drag', this.dragged.bind(this))
+        .on('end', this.dragended.bind(this));
 
     this.nodes = this.flatten(this.root);
     this.links = this.root.links();
@@ -422,7 +423,7 @@ Tree.prototype.update = function () {
         .each(this.stylize)
         .transition()
             .duration(300)
-            .style('opacity', d => this.opacity(d))
+            .style('opacity', this.opacity.bind(this))
       .select('circle').transition()
         .duration(300)
         .attr('r', d => this.radius(d));
@@ -435,7 +436,7 @@ Tree.prototype.update = function () {
     this.nodeEnter = this.nodeSvg.enter()
         .append('g')
             .classed('node', true)
-            .on('click', d => this.click(d))
+            .on('click', this.click.bind(this))
             .on('mouseover', this.handleMouseOver)
             .on('mousemove', this.handleMouseMove)
             .on('mouseout', this.handleMouseOut)
@@ -464,6 +465,8 @@ Tree.prototype.update = function () {
             .attr('r', d => this.radius(d));
 
     this.nodeSvg = this.nodeEnter.merge(this.nodeSvg);
+
+    this.simulation.alphaTarget(0.3).restart();
 };
 
 module.exports = Tree;
