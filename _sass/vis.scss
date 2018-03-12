@@ -93,6 +93,13 @@
     }
 }
 
+.legend-cell-label {
+    font-family: sans-serif;
+    font-size: 14px;
+    text-anchor: start;
+    pointer-events: none;
+}
+
 .svg-g {
     background: -webkit-radial-gradient(white, lightgray);
 }

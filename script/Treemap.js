@@ -62,7 +62,7 @@ function name(d) {
 }
 
 function searchNode(root, path) {
-    if (root) {
+    if (root && path) {
         path = path.replace(/\/+$/, '');
         if (path === '.' || root.data.path === path) return root;
         else if (root.children) {
@@ -198,21 +198,31 @@ Treemap.prototype.build = function (data) {
             }
         });
 
+    this.treemap(this.root);
     this.node = this.root;
-    this.treemap(this.node);
     // Restore previous visualization selected folder
+    if (this.path != null) {
+        this.revealNodes();
+    } else {
+        this.update();
+    }
+};
+
+Treemap.prototype.revealNodes = function () {
     if (this.path != null) {
         this.node = searchNode(this.root, this.path);
         console.log('searchNode:', this.node);
         this.zoom();
-    } else {
-        this.update();
     }
 };
 
 Treemap.prototype.zoom = function () {
 
     console.log('clicked: ' + this.node.data.name + ', depth:' + this.node.depth);
+
+    if (this.node.children == null) { // If node is leaf, select parent node.
+        this.node = this.node.parent;
+    }
 
     this.x.domain([this.node.x0, this.node.x1]);
     this.y.domain([this.node.y0, this.node.y1]);

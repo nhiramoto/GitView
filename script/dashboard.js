@@ -138,6 +138,9 @@ $(document).ready(() => {
     $('#changeVisBtn').click(e => {
         if (isTreemapVis) {
             $('#view #treemapSvg').fadeOut('fast', () => {
+                $('#legendBody #treemapLeg').fadeOut('fast', () => {
+                    $('#legendBody #treeLeg').fadeIn('slow');
+                });
                 if (tree == null) {
                     tree = new Tree(container, width, height);
                     tree.fillFileInfoFunction = fillFileInfo;
@@ -149,18 +152,28 @@ $(document).ready(() => {
                 }
                 if (tree.data !== data) {
                     tree.build(data);
+                } else if (tree.path != null) {
+                    tree.revealNodes();
                 }
             });
         } else {
             $('#view #treeSvg').fadeOut('fast', () => {
+                $('#legendBody #treeLeg').fadeOut('fast', () => {
+                    $('#legendBody #treemapLeg').fadeIn('slow');
+                });
                 if (treemap == null) {
                     treemap = new Treemap(container, width, height);
                     treemap.fillFileInfoFunction = fillFileInfo;
                 } else {
                     $('#view #treemapSvg').fadeIn('slow');
                 }
+                if (tree != null && tree.path != null) {
+                    treemap.path = tree.path;
+                }
                 if (treemap.data !== data) {
                     treemap.build(data);
+                } else if (treemap.path != null) {
+                    treemap.revealNodes();
                 }
             });
         }
@@ -317,6 +330,9 @@ var initViz = function (repoPath) {
             treemap = new Treemap(container, width, height);
             treemap.fillFileInfoFunction = fillFileInfo;
             treemap.build(data);
+            $('#legendBody #treeLeg').hide(0, () => {
+                $('#legendBody #treemapLeg').fadeIn('slow');
+            });
             // d3.select('#changeVisTooltip').text('Graph');
         }).then(() => {
             // Limpa lista de commits
@@ -437,6 +453,7 @@ var initLegend = function () {
     console.log('initializing legend...');
     console.log('d3 selection:', d3.select('#legendBody'));
     let lsvg = d3.select('#legendBody').append('svg')
+            .attr('id', 'treeLeg')
             .attr('width', '400px')
             .attr('height', '372px')
         .append('g')
@@ -542,4 +559,70 @@ var initLegend = function () {
         .text('Unmodified file')
         .attr('dx', '15px')
         .attr('dy', '5px');
+    let treemapLegSvg = d3.select('#legendBody').append('svg')
+        .attr('id', 'treemapLeg')
+        .attr('width', '400px')
+        .attr('height', '372px')
+      .append('g')
+        .classed('legend-elem', true);
+    let cellAdded = treemapLegSvg.append('g')
+        .classed('cell', true)
+        .classed('cell-added', true)
+        .style('transform', 'translate(30px, 30px)');
+    cellAdded.append('rect')
+        .attr('width', '30px')
+        .attr('height', '20px');
+    cellAdded.append('text')
+        .classed('legend-cell-label', true)
+        .text('Added File/Directory with added files.')
+        .attr('dx', '40px')
+        .attr('dy', '15px');
+    let cellDeleted = treemapLegSvg.append('g')
+        .classed('cell', true)
+        .classed('cell-deleted', true)
+        .style('transform', 'translate(30px, 70px)');
+    cellDeleted.append('rect')
+        .attr('width', '30px')
+        .attr('height', '20px');
+    cellDeleted.append('text')
+        .classed('legend-cell-label', true)
+        .text('Deleted File/Directory with deleted files.')
+        .attr('dx', '40px')
+        .attr('dy', '15px');
+    let cellMoved = treemapLegSvg.append('g')
+        .classed('cell', true)
+        .classed('cell-moved', true)
+        .style('transform', 'translate(30px, 110px)');
+    cellMoved.append('rect')
+        .attr('width', '30px')
+        .attr('height', '20px');
+    cellMoved.append('text')
+        .classed('legend-cell-label', true)
+        .text('Moved File/Directory with moved files.')
+        .attr('dx', '40px')
+        .attr('dy', '15px');
+    let cellModified = treemapLegSvg.append('g')
+        .classed('cell', true)
+        .classed('cell-modified', true)
+        .style('transform', 'translate(30px, 150px)');
+    cellModified.append('rect')
+        .attr('width', '30px')
+        .attr('height', '20px');
+    cellModified.append('text')
+        .classed('legend-cell-label', true)
+        .text('Modified File/Directory.')
+        .attr('dx', '40px')
+        .attr('dy', '15px');
+    let cellUnmodified = treemapLegSvg.append('g')
+        .classed('cell', true)
+        .classed('cell-unmodified', true)
+        .style('transform', 'translate(30px, 190px)');
+    cellUnmodified.append('rect')
+        .attr('width', '30px')
+        .attr('height', '20px');
+    cellUnmodified.append('text')
+        .classed('legend-cell-label', true)
+        .text('Unmodified File/Directory.')
+        .attr('dx', '40px')
+        .attr('dy', '15px');
 };

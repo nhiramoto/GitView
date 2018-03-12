@@ -109,12 +109,12 @@ Tree.prototype.moveChildren = function (node) {
     }
 };
 
-Tree.prototype.revealNode = function (root, path) {
-    if (root) {
-        path = path.replace(/\/+$/, '');
-        if (path !== '.' && path !== root.data.path && root.children) {
-            let names = path.split('/');
-            let node = root;
+Tree.prototype.revealNodes = function () {
+    if (this.root) {
+        currentPath = this.path.replace(/\/+$/, '');
+        if (currentPath !== '.' && currentPath !== this.root.data.path && this.root.children) {
+            let names = currentPath.split('/');
+            let node = this.root;
             names.forEach(name => {
                 let found = null;
                 if (node._children && node.children == null) {
@@ -134,6 +134,10 @@ Tree.prototype.revealNode = function (root, path) {
                     return;
                 }
             });
+            if (node._children && node.children == null) {
+                node.children = node._children;
+                node._children = null;
+            }
         }
     }
 };
@@ -168,7 +172,7 @@ Tree.prototype.click = function (d) {
             this.fillFileInfoFunction(d.data);
         }
     }
-    if (d.data) {
+    if (d.data && d.data.path) {
         this.path = d.data.path;
     }
     console.log('d:', d);
@@ -375,7 +379,7 @@ Tree.prototype.build = function (data) {
                 .radius(d => this.radius(d) + 2))
         .on('tick', this.ticked.bind(this));
     if (this.path) {
-        this.revealNode(this.root, this.path);
+        this.revealNodes();
     }
     //this.simulation.restart();
     this.update();
