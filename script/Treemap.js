@@ -231,7 +231,13 @@ Treemap.prototype.zoom = function () {
     console.log("new y: "+ this.y(this.node.y0) + "~" + this.y(this.node.y1) );
 
     let selectedCell = d3.selectAll('.cell')
-        .filter(d => d.data.id === this.node.data.id);
+        .filter(d => {
+            if (d && d.data && this.node && this.node.data) {
+                return d.data.id === this.node.data.id;
+            } else {
+                return false;
+            }
+        });
 
     if (selectedCell.size() > 0) {
         setTimeout(this.update.bind(this), 800);
@@ -271,18 +277,31 @@ Treemap.prototype.update = function () {
     this.cellEnter.append('rect')
         .attr('width', d => (this.x(d.x1) - this.x(d.x0)) + 'px')
         .attr('height', d => (this.y(d.y1) - this.y(d.y0)) + 'px')
-        .on('click', d => {
-            if (d.children) {
-                this.lastNode = this.node;
-                this.node = d;
+        .on('click', newNode => {
+            if (newNode.children) {
+                this.node = newNode;
                 d3.selectAll('.cell')
-                    .filter(d => d.data.id !== this.node.data.id)
+                    .filter(d => {
+                        console.log('d:', d);
+                        console.log('this.node:', this.node);
+                        if (d && d.data && this.node && this.node.data) {
+                            return d.data.id !== this.node.data.id;
+                        } else {
+                            return true;
+                        }
+                    })
                     .transition()
                         .duration(300)
                         .style('opacity', 0)
                         .remove();
                 let selectedCell = d3.selectAll('.cell')
-                    .filter(d => d.data.id === this.node.data.id);
+                    .filter(d1 => {
+                        if (d1 && d1.data && this.node && this.node.data) {
+                            return d1.data.id === this.node.data.id;
+                        } else {
+                            return false;
+                        }
+                    });
                 selectedCell.transition()
                     .duration(500)
                     .attr('transform', 'translate(0, 0)');
@@ -301,9 +320,9 @@ Treemap.prototype.update = function () {
                     .remove();
                 this.zoom();
             } else {
-                console.log('clicked:', d);
+                console.log('clicked:', newNode);
                 if (this.fillFileInfoFunction != null) {
-                    this.fillFileInfoFunction(d.data);
+                    this.fillFileInfoFunction(newNode.data);
                 }
             }
         });
