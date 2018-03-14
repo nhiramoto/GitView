@@ -330,9 +330,8 @@ var initViz = function (repoPath) {
             treemap = new Treemap(container, width, height);
             treemap.fillFileInfoFunction = fillFileInfo;
             treemap.build(data);
-            $('#legendBody #treeLeg').fadeOut('fast', () => {
-                $('#legendBody #treemapLeg').fadeIn('slow');
-            });
+            $('#legendBody #treeLeg').hide();
+            $('#legendBody #treemapLeg').fadeIn('slow');
             // d3.select('#changeVisTooltip').text('Graph');
         }).then(() => {
             // Limpa lista de commits

@@ -377,6 +377,8 @@ GitPipe.prototype.createFile = function (oldCommit, recentCommit, patch) {
                     //console.log('  Submodule...');
                     //return Git.Submodule.lookup(this.gitRepo, entry.name());
                     return null;
+                } else {
+                    fileExists = false;
                 }
             } else {
                 fileExists = false;
@@ -406,7 +408,7 @@ GitPipe.prototype.createFile = function (oldCommit, recentCommit, patch) {
                     fileRec.status = patchStatus;
                     //console.log('  submodule url:', fileRec.url);
                 }
-                console.assert(fileRec != null, '[GitPipe#createFile] Error: Failed to create file.');
+                console.assert(fileRec != null, '[GitPipe#createFile] Error: Failed to create file:', newPath);
                 return patch.hunks();
             }
         }).then(hunks => {

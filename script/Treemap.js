@@ -280,7 +280,7 @@ Treemap.prototype.update = function () {
         .on('click', newNode => {
             if (newNode.children) {
                 this.node = newNode;
-                d3.selectAll('.cell')
+                this.treemapContent.selectAll('.cell')
                     .filter(d => {
                         console.log('d:', d);
                         console.log('this.node:', this.node);
@@ -294,7 +294,7 @@ Treemap.prototype.update = function () {
                         .duration(300)
                         .style('opacity', 0)
                         .remove();
-                let selectedCell = d3.selectAll('.cell')
+                let selectedCell = this.treemapContent.selectAll('.cell')
                     .filter(d1 => {
                         if (d1 && d1.data && this.node && this.node.data) {
                             return d1.data.id === this.node.data.id;
