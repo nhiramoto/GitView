@@ -17,7 +17,19 @@ function Tree(container, width, height) {
         //.attr('transform', 'translate(' + this.width / 2 + ',' + this.height / 2 + ')');
     this.linkLayer = this.g.append('g');
     this.nodeLayer = this.g.append('g');
-    this.simulation = d3.forceSimulation();
+    this.simulation = d3.forceSimulation()
+        .force('charge', d3.forceManyBody()
+                .strength(-200)
+                .distanceMax(400)
+                .distanceMin(10)
+        )
+        //.force('center', d3.forceCenter(this.width / 2, this.height / 2))
+        .force('center', d3.forceCenter(100, 100))
+        .force('link', d3.forceLink()
+            .strength(0.8))
+        .force('collide', d3.forceCollide()
+            .radius(d => this.radius(d) + 2))
+        .on('tick', this.ticked.bind(this));
     this.links = null;
     this.linkSvg = null;
     this.linkEnter = null;
@@ -365,19 +377,6 @@ Tree.prototype.build = function (data) {
     //this.radiusScale.domain([0, max]);
     console.log('max:', max);
     this.moveChildren(this.root);
-    this.simulation
-        .force('link', d3.forceLink()
-                .strength(0.8).id(d => d.data.path))
-        .force('charge', d3.forceManyBody()
-                .strength(-100)
-                //.distanceMax(400)
-                //.distanceMin(1)
-        )
-        //.force('center', d3.forceCenter(this.width / 2, this.height / 2))
-        .force('center', d3.forceCenter(100, 100))
-        .force('collide', d3.forceCollide()
-                .radius(d => this.radius(d) + 2))
-        .on('tick', this.ticked.bind(this));
     if (this.path) {
         this.revealNodes();
     }
@@ -464,12 +463,11 @@ Tree.prototype.update = function () {
 
     this.nodeSvg = this.nodeEnter.merge(this.nodeSvg);
 
-
     this.simulation
         .nodes(this.nodes)
         .force('link')
         .links(this.links);
-    this.simulation.alphaTarget(0.3).restart();
+    this.simulation.alpha(0.3).restart();
 };
 
 module.exports = Tree;

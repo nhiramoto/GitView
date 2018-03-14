@@ -330,7 +330,7 @@ var initViz = function (repoPath) {
             treemap = new Treemap(container, width, height);
             treemap.fillFileInfoFunction = fillFileInfo;
             treemap.build(data);
-            $('#legendBody #treeLeg').hide(0, () => {
+            $('#legendBody #treeLeg').fadeOut('fast', () => {
                 $('#legendBody #treemapLeg').fadeIn('slow');
             });
             // d3.select('#changeVisTooltip').text('Graph');
@@ -455,9 +455,7 @@ var initLegend = function () {
     let lsvg = d3.select('#legendBody').append('svg')
             .attr('id', 'treeLeg')
             .attr('width', '400px')
-            .attr('height', '372px')
-        .append('g')
-            .classed('legend-elem', true);
+            .attr('height', '372px');
     console.log('lsvg:', lsvg);
     let nodeRoot = lsvg.append('g')
         .classed('node', true)
@@ -562,9 +560,7 @@ var initLegend = function () {
     let treemapLegSvg = d3.select('#legendBody').append('svg')
         .attr('id', 'treemapLeg')
         .attr('width', '400px')
-        .attr('height', '372px')
-      .append('g')
-        .classed('legend-elem', true);
+        .attr('height', '372px');
     let cellAdded = treemapLegSvg.append('g')
         .classed('cell', true)
         .classed('cell-added', true)
