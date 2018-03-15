@@ -411,7 +411,9 @@ JSONDatabase.prototype.mergeDirectories = function (dir1, dir2) {
             } else {
                 mergedDir.status = JSONDatabase.STATUS.MODIFIED;
             }
-            mergedDir.entries = dir1.entries.filter(e1 => !toMergeDir1.includes(e1)).concat(dir2.entries.filter(e2 => !toMergeDir2.includes(e2) && !toMergeDir1.includes(e2) && !dir1.entriesId.includes(e2.id)));
+            mergedDir.entries = dir1.entries
+                .filter(e1 => !toMergeDir1.includes(e1))
+                .concat(dir2.entries.filter(e2 => !toMergeDir2.includes(e2) && !toMergeDir1.includes(e2) && !dir1.entries.map(d1e => d1e.name).includes(e2.name)));
             toMergeDir1.forEach(e1 => {
                 let e2 = toMergeDir2.find(v => v.name === e1.name);
                 console.assert(e1.isDirectory() && e2.isDirectory(), '[JSONDatabase#mergeDirectories] Error: Entries is not directories.');
