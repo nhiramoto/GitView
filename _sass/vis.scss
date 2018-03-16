@@ -30,9 +30,10 @@
 
 
 .cell {
+    overflow: hidden;
     rect {
-        stroke: white;
-        stroke-width: 1.5;
+        stroke: gray;
+        stroke-width: 1;
         fill: #FFE297;
         overflow: hidden;
         user-select: none;
@@ -69,52 +70,62 @@
 
 .cell-dir-added {
     rect {
-        fill: darken( $added, 20% );
+        fill: lighten( $added, 20% );
+        stroke: $added-border;
     }
 }
 .cell-dir-deleted {
     rect {
-        fill: darken( $deleted, 20%);
+        fill: lighten( $deleted, 20%);
+        stroke: $deleted-border;
     }
 }
 .cell-dir-moved {
     rect {
-        fill: darken( $moved, 20% );
+        fill: lighten( $moved, 20% );
+        stroke: $moved-border;
     }
 }
 .cell-dir-modified {
     rect {
-        fill: darken( $modified, 20% );
+        fill: lighten( $modified, 20% );
+        stroke: $modified-border;
     }
 }
 .cell-dir-unmodified {
     rect {
-        fill: darken( $unmodified, 20% );
+        fill: lighten( $unmodified, 20% );
+        stroke: $unmodified-border;
     }
 }
 .cell-added {
     rect {
         fill: $added;
+        stroke: $added-border;
     }
 }
 .cell-deleted {
     rect {
         fill: $deleted;
+        stroke: $deleted-border;
     }
 }
 .cell-moved {
     rect {
         fill: $moved;
+        stroke: $moved-border;
     }
 }
 .cell-modified {
     rect {
         fill: $modified;
+        stroke: $modified-border;
     }
 }
 .cell-unmodified {
     rect {
         fill: $unmodified;
+        stroke: $unmodified-border;
     }
 }
 

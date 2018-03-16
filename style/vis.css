@@ -24,9 +24,12 @@
   pointer-events: none;
 }
 
+.cell {
+  overflow: hidden;
+}
 .cell rect {
-  stroke: white;
-  stroke-width: 1.5;
+  stroke: gray;
+  stroke-width: 1;
   fill: #FFE297;
   overflow: hidden;
   user-select: none;
@@ -60,43 +63,53 @@
 }
 
 .cell-dir-added rect {
-  fill: #159667;
+  fill: #89eec9;
+  stroke: #1B7600;
 }
 
 .cell-dir-deleted rect {
-  fill: #962846;
+  fill: #e7a3b6;
+  stroke: #69001C;
 }
 
 .cell-dir-moved rect {
-  fill: #4d299c;
+  fill: #bda9e8;
+  stroke: #1A0053;
 }
 
 .cell-dir-modified rect {
-  fill: #848216;
+  fill: #e9e87d;
+  stroke: #764C00;
 }
 
 .cell-dir-unmodified rect {
-  fill: #708ca1;
+  fill: #ebeff2;
+  stroke: #003053;
 }
 
 .cell-added rect {
   fill: #2fe2a1;
+  stroke: #1B7600;
 }
 
 .cell-deleted rect {
   fill: #d15375;
+  stroke: #69001C;
 }
 
 .cell-moved rect {
   fill: #7f58d3;
+  stroke: #1A0053;
 }
 
 .cell-modified rect {
   fill: #dbd825;
+  stroke: #764C00;
 }
 
 .cell-unmodified rect {
   fill: #ADBDC9;
+  stroke: #003053;
 }
 
 .legend-cell-label {

@@ -41,8 +41,8 @@ function Treemap(container, width, height) {
         .size([this.width, this.height])
         .tile(d3.treemapSquarify)
         .round(false)
-        .padding(1)
-        .paddingTop(10);
+        .padding(2)
+        .paddingTop(15);
         // .paddingOuter(0);
     this.root = null;
     this.node = null;
@@ -54,8 +54,7 @@ function Treemap(container, width, height) {
     this.path = null;
     this.fileScale = d3.scalePow()
         .exponent(0.5)
-        .clamp(true)
-        .range([5, 50]);
+        .range([5, 500]);
 }
 
 function name(d) {
@@ -108,19 +107,6 @@ function maxValue(node) {
         }
     } else {
         return null;
-    }
-}
-
-function calculateValue(node, scale) {
-    if (node && node.data) {
-        if (node.children) {
-            node.value = 0;
-            node.children.forEach(c => calculateValue(c, scale));
-        } else if (node.data.statistic) {
-            node.value = scale(1 + node.data.statistic.added + node.data.statistic.deleted + node.data.statistic.modified);
-        } else {
-            node.value = scale(1);
-        }
     }
 }
 
@@ -191,30 +177,14 @@ Treemap.prototype.build = function (data) {
 
     this.root = d3.hierarchy(this.data, d => d.entries);
     let max = maxValue(this.root);
-    console.log('max:', max);
     this.fileScale.domain([0, max]);
-    calculateValue(this.root, this.fileScale);
     this.root.sum(d => {
-            // if (d.children) {
-            //     return 0;
-            // } else if (d.statistic) {
-            //     return this.fileScale(1 + d.statistic.added + d.statistic.deleted + d.statistic.modified);
-            // } else {
-            //     return this.fileScale(1);
-            // }
-            return d.children ? 0 : 1;
-        })
-        .sort((a, b) => {
-            if (a.statistic && b.statistic) {
-                let as = a.statistic.added + a.statistic.deleted + a.statistic.modified;
-                let bs = b.statistic.added + b.statistic.deleted + b.statistic.modified;
-                return bs - as;
-            } else if (a.statistic) {
-                return -1;
-            } else if (b.statistic) {
-                return 1;
-            } else {
+            if (d.children) {
                 return 0;
+            } else if (d.statistic) {
+                return this.fileScale( d.statistic.added + d.statistic.deleted + d.statistic.modified );
+            } else {
+                return this.fileScale(0);
             }
         });
 
@@ -231,14 +201,11 @@ Treemap.prototype.build = function (data) {
 Treemap.prototype.revealNodes = function () {
     if (this.path != null) {
         this.node = searchNode(this.root, this.path);
-        console.log('searchNode:', this.node);
         this.zoom();
     }
 };
 
 Treemap.prototype.zoom = function () {
-
-    console.log('clicked: ' + this.node.data.name + ', depth:' + this.node.depth);
 
     if (this.node.children == null) { // If node is leaf, select parent node.
         this.node = this.node.parent;
@@ -246,9 +213,6 @@ Treemap.prototype.zoom = function () {
 
     this.x.domain([this.node.x0, this.node.x1]);
     this.y.domain([this.node.y0, this.node.y1]);
-
-    console.log("new x: "+ this.x(this.node.x0) + "~" + this.x(this.node.x1) );
-    console.log("new y: "+ this.y(this.node.y0) + "~" + this.y(this.node.y1) );
 
     let selectedCell = d3.selectAll('.cell')
         .filter(d => {
@@ -265,6 +229,54 @@ Treemap.prototype.zoom = function () {
         setTimeout(this.update.bind(this), 300);
     }
 };
+
+function cellClick (d) {
+    if (d.children) {
+        this.node = d;
+        this.treemapContent.selectAll('.cell')
+            .filter(d => {
+                if (d && d.data && this.node && this.node.data) {
+                    return d.data.id !== this.node.data.id;
+                } else {
+                    return true;
+                }
+            })
+            .transition()
+                .duration(300)
+                .style('opacity', 0)
+                .remove();
+        let selectedCell = this.treemapContent.selectAll('.cell')
+            .filter(d1 => {
+                if (d1 && d1.data && this.node && this.node.data) {
+                    return d1.data.id === this.node.data.id;
+                } else {
+                    return false;
+                }
+            });
+        selectedCell.transition()
+            .duration(500)
+            .attr('transform', 'translate(0, 0)');
+        selectedCell.select('text').transition()
+            .duration(500)
+            .attr('x', d => (this.width / 2) + 'px')
+            .attr('y', 10);
+        selectedCell.select('rect').transition()
+            .duration(500)
+            .attr('width', this.width + 'px')
+            .attr('height', this.height + 'px');
+        selectedCell.transition()
+            .duration(300)
+            .delay(500)
+            .style('opacity', 0)
+            .remove();
+        this.zoom();
+    } else {
+        console.log('clicked:', d);
+        if (this.fillFileInfoFunction != null) {
+            this.fillFileInfoFunction(d.data);
+        }
+    }
+}
 
 Treemap.prototype.update = function () {
 
@@ -297,55 +309,10 @@ Treemap.prototype.update = function () {
     this.cellEnter.append('rect')
         .attr('width', d => (this.x(d.x1) - this.x(d.x0)) + 'px')
         .attr('height', d => (this.y(d.y1) - this.y(d.y0)) + 'px')
-        .on('click', newNode => {
-            if (newNode.children) {
-                this.node = newNode;
-                this.treemapContent.selectAll('.cell')
-                    .filter(d => {
-                        console.log('d:', d);
-                        console.log('this.node:', this.node);
-                        if (d && d.data && this.node && this.node.data) {
-                            return d.data.id !== this.node.data.id;
-                        } else {
-                            return true;
-                        }
-                    })
-                    .transition()
-                        .duration(300)
-                        .style('opacity', 0)
-                        .remove();
-                let selectedCell = this.treemapContent.selectAll('.cell')
-                    .filter(d1 => {
-                        if (d1 && d1.data && this.node && this.node.data) {
-                            return d1.data.id === this.node.data.id;
-                        } else {
-                            return false;
-                        }
-                    });
-                selectedCell.transition()
-                    .duration(500)
-                    .attr('transform', 'translate(0, 0)');
-                selectedCell.select('text').transition()
-                    .duration(500)
-                    .attr('x', d => (this.width / 2) + 'px')
-                    .attr('y', d => (this.height / 2) + 'px');
-                selectedCell.select('rect').transition()
-                    .duration(500)
-                    .attr('width', this.width + 'px')
-                    .attr('height', this.height + 'px');
-                selectedCell.transition()
-                    .duration(300)
-                    .delay(500)
-                    .style('opacity', 0)
-                    .remove();
-                this.zoom();
-            } else {
-                console.log('clicked:', newNode);
-                if (this.fillFileInfoFunction != null) {
-                    this.fillFileInfoFunction(newNode.data);
-                }
-            }
-        });
+        .on('click', cellClick.bind(this));
+
+    this.cellEnter.append('title')
+        .text(d => d.data.name);
 
     this.cellEnter.append('svg:text')
         .attr('x', d => Math.max(0, this.x(d.x1) - this.x(d.x0)) / 2 + 'px')
@@ -368,7 +335,7 @@ Treemap.prototype.update = function () {
     cellData.select('text').transition()
         .duration(500)
             .attr('x', d => Math.max(0, this.x(d.x1) - this.x(d.x0)) / 2 + 'px')
-            .attr('y', d => Math.max(0, this.y(d.y1) - this.y(d.y0)) / 2 + 'px');
+            .attr('y', 10);
 
     // Exit
     cellData.exit().transition()
