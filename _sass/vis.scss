@@ -47,10 +47,10 @@
     }
     text {
         font-family: sans-serif;
-        font-size: 11px;
+        font-size: 9px;
         line-height: 12px;
         pointer-events: none;
-        opacity: 0;
+        //opacity: 0;
         z-index: 30;
         transition: opacity .5s ease, box-shadow .5s ease;
         -webkit-transition: opacity .5s ease, box-shadow .5s ease;
@@ -67,6 +67,31 @@
     }
 }
 
+.cell-dir-added {
+    rect {
+        fill: darken( $added, 20% );
+    }
+}
+.cell-dir-deleted {
+    rect {
+        fill: darken( $deleted, 20%);
+    }
+}
+.cell-dir-moved {
+    rect {
+        fill: darken( $moved, 20% );
+    }
+}
+.cell-dir-modified {
+    rect {
+        fill: darken( $modified, 20% );
+    }
+}
+.cell-dir-unmodified {
+    rect {
+        fill: darken( $unmodified, 20% );
+    }
+}
 .cell-added {
     rect {
         fill: $added;

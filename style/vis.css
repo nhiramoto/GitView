@@ -41,10 +41,9 @@
 }
 .cell text {
   font-family: sans-serif;
-  font-size: 11px;
+  font-size: 9px;
   line-height: 12px;
   pointer-events: none;
-  opacity: 0;
   z-index: 30;
   transition: opacity .5s ease, box-shadow .5s ease;
   -webkit-transition: opacity .5s ease, box-shadow .5s ease;
@@ -58,6 +57,26 @@
   opacity: 1 !important;
   transition: opacity .3s ease;
   -webkit-transition: opacity .3s ease;
+}
+
+.cell-dir-added rect {
+  fill: #159667;
+}
+
+.cell-dir-deleted rect {
+  fill: #962846;
+}
+
+.cell-dir-moved rect {
+  fill: #4d299c;
+}
+
+.cell-dir-modified rect {
+  fill: #848216;
+}
+
+.cell-dir-unmodified rect {
+  fill: #708ca1;
 }
 
 .cell-added rect {

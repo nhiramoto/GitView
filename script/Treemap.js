@@ -41,7 +41,8 @@ function Treemap(container, width, height) {
         .size([this.width, this.height])
         .tile(d3.treemapSquarify)
         .round(false)
-        .padding(1);
+        .padding(1)
+        .paddingTop(10);
         // .paddingOuter(0);
     this.root = null;
     this.node = null;
@@ -125,22 +126,41 @@ function calculateValue(node, scale) {
 
 Treemap.prototype.stylize = function (d, i) {
     let node = d3.select(this);
+    node.classed('cell-dir-added', false);
+    node.classed('cell-dir-deleted', false);
+    node.classed('cell-dir-modified', false);
+    node.classed('cell-dir-moved', false);
+    node.classed('cell-dir-unmodified', false);
     node.classed('cell-added', false);
     node.classed('cell-deleted', false);
     node.classed('cell-modified', false);
     node.classed('cell-moved', false);
     node.classed('cell-unmodified', false);
     if (d.data && d.data.status != null) {
-        if (d.data.isAdded()) {
-            node.classed('cell-added', true);
-        } else if (d.data.isDeleted()) {
-            node.classed('cell-deleted', true);
-        } else if (d.data.isModified()) {
-            node.classed('cell-modified', true);
-        } else if (d.data.isMoved()) {
-            node.classed('cell-moved', true);
+        if (d.children) {
+            if (d.data.isAdded()) {
+                node.classed('cell-dir-added', true);
+            } else if (d.data.isDeleted()) {
+                node.classed('cell-dir-deleted', true);
+            } else if (d.data.isModified()) {
+                node.classed('cell-dir-modified', true);
+            } else if (d.data.isMoved()) {
+                node.classed('cell-dir-moved', true);
+            } else {
+                node.classed('cell-dir-unmodified', true);
+            }
         } else {
-            node.classed('cell-unmodified', true);
+            if (d.data.isAdded()) {
+                node.classed('cell-added', true);
+            } else if (d.data.isDeleted()) {
+                node.classed('cell-deleted', true);
+            } else if (d.data.isModified()) {
+                node.classed('cell-modified', true);
+            } else if (d.data.isMoved()) {
+                node.classed('cell-moved', true);
+            } else {
+                node.classed('cell-unmodified', true);
+            }
         }
     }
 };
@@ -264,7 +284,7 @@ Treemap.prototype.update = function () {
     }
 
     let cellData = this.treemapContent.selectAll('.cell')
-        .data(this.node.children, d => d.data.id);
+        .data(this.node.descendants(), d => d.data.id);
 
     // Enter
     this.cellEnter = cellData.enter().append('g')
@@ -329,8 +349,10 @@ Treemap.prototype.update = function () {
 
     this.cellEnter.append('svg:text')
         .attr('x', d => Math.max(0, this.x(d.x1) - this.x(d.x0)) / 2 + 'px')
-        .attr('y', d => Math.max(0, this.y(d.y1) - this.y(d.y0)) / 2 + 'px')
+        //.attr('y', d => Math.max(0, this.y(d.y1) - this.y(d.y0)) / 2 + 'px')
+        .attr('y', 10)
         .attr('text-anchor', 'middle')
+        .style('opacity', d => (d.children ? 1 : 0))
         .text(d => d.data.name);
 
     // Update

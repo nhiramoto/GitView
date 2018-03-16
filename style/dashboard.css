@@ -451,7 +451,6 @@ body {
   background: white;
   border-radius: 5px;
   box-shadow: 0 3px 5px rgba(0, 0, 0, 0.5);
-  overflow: hidden;
   z-index: 20;
   -webkit-transition: top .5s ease;
 }
@@ -491,6 +490,7 @@ body {
   top: 33px;
   bottom: 0;
   padding: 5px;
+  overflow: hidden;
 }
 
 #legend.visible {
