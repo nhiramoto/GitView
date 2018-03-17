@@ -279,6 +279,7 @@ function cellClick (d) {
 }
 
 Treemap.prototype.update = function () {
+    let self = this;
 
     if (this.node.parent) {
         console.log('p:', this.node.parent);
@@ -314,13 +315,22 @@ Treemap.prototype.update = function () {
     this.cellEnter.append('title')
         .text(d => d.data.name);
 
-    this.cellEnter.append('svg:text')
+    this.cellEnter.append('text')
         .attr('x', d => Math.max(0, this.x(d.x1) - this.x(d.x0)) / 2 + 'px')
         //.attr('y', d => Math.max(0, this.y(d.y1) - this.y(d.y0)) / 2 + 'px')
         .attr('y', 10)
         .attr('text-anchor', 'middle')
-        .style('opacity', d => (d.children ? 1 : 0))
-        .text(d => d.data.name);
+        .text(d => d.data.name)
+        .style('opacity', function(d) {
+            let w = this.getBBox().width;
+            let h = this.getBBox().height;
+            if (w > (self.x(d.x1) - self.x(d.x0)) ||
+                h > (self.y(d.y1) - self.y(d.y0)) ) {
+                return 0;
+            } else {
+                return 1;
+            }
+        });
 
     // Update
     cellData.transition()
@@ -335,7 +345,17 @@ Treemap.prototype.update = function () {
     cellData.select('text').transition()
         .duration(500)
             .attr('x', d => Math.max(0, this.x(d.x1) - this.x(d.x0)) / 2 + 'px')
-            .attr('y', 10);
+            .attr('y', 10)
+            .style('opacity', function(d) {
+                let w = this.getBBox().width;
+                let h = this.getBBox().height;
+                if (w > (self.x(d.x1) - self.x(d.x0)) ||
+                    h > (self.y(d.y1) - self.y(d.y0)) ) {
+                    return 0;
+                } else {
+                    return 1;
+                }
+            });
 
     // Exit
     cellData.exit().transition()
