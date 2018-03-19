@@ -20,6 +20,7 @@ var dbPath = null;
 var repoRec = null;
 var commits = null;
 var headCommit = null;
+var branch = null;
 var pulseInfoButton = () => {};
 
 $(document).ready(() => {
@@ -338,6 +339,8 @@ var initViz = function (repoPath) {
             $('#commitBar').children('.commitItem').remove();
             // Adiciona lista de commits na commitBar
             commits = gitPipe.getCommits();
+            let container = d3.select('#commitBar');
+            branch = new Branch(container);
             commits.forEach(commit => {
                 let commitItem = document.createElement('div');
                 let title = document.createElement('span');
