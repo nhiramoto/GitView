@@ -1,5 +1,4 @@
 const d3 = require('d3');
-const fs = require('fs');
 
 function Branch(container, width, height) {
     this.container = container;
@@ -8,17 +7,15 @@ function Branch(container, width, height) {
     this.nodeRadius = 8;
     this.svg = this.container.append('svg')
         .attr('id', 'branchSvg')
-        .classed('svg-content', true)
+        .attr('width', this.width + 'px')
+        .attr('height', this.height + 'px')
       .append('g');
     this.linkLayer = this.svg.append('g');
     this.nodeLayer = this.svg.append('g');
     this.gapX = 50; this.gapY = 80;
     this.dx = 0; this.dy = 0;
     this.minScrollY = 0; this.maxScrollY = 999999;
-    this.simulation = d3.forceSimulation()
-        .force('link', d3.forceLink().id(d => d.id).strength(0.1))
-        .force('x', d3.forceX(d => 30 + d.pos[0] * gapX).strength(1))
-        .force('y', d3.forceY(d => 30 + d.pos[1] * gapY).strength(1));
+    this.simulation = null;
     this.selectionCircle = this.svg.append('circle')
         .attr('id', 'selectionCircle')
         .attr('r', '15px')
@@ -72,7 +69,7 @@ Branch.prototype.click = function (d) {
     }
 };
 
-Branch.prototype.parseCommmits = function (commitData) {
+Branch.prototype.parseCommits = function (commitData) {
     let branch = {};
     let count = 1;
     let index = 0;
@@ -115,25 +112,25 @@ Branch.prototype.parseCommmits = function (commitData) {
     return newData;
 };
 
-Branch.prototype.positionLink = function (d) {
-    let distX = d.target.x - d.source.x;
+var positionLink = function (link) {
+    let distX = link.target.x - link.source.x;
     if (distX < 0) distX = -distX;
     let radius = Math.min(30, distX);
-    if (Math.round( d.source.x ) == Math.round( d.target.x )) {
-        return 'M ' + d.source.x + ' ' + d.source.y + ' ' +
-               'L ' + d.target.x + ' ' + d.target.y;
-    } else if (d.source.x > d.target.x) {
-        return 'M ' + d.source.x + ' ' + d.source.y + ' ' +
-               'V ' + ( d.target.y + radius ) + ' ' +
-               'Q ' + d.source.x + ' ' + d.target.y + ' ' +
-               ( d.source.x - radius ) + ' ' + d.target.y + ' ' +
-               'H ' + d.target.x;
+    if (Math.round( link.source.x ) == Math.round( link.target.x )) {
+        return 'M ' + link.source.x + ' ' + link.source.y + ' ' +
+               'L ' + link.target.x + ' ' + link.target.y;
+    } else if (link.source.x > link.target.x) {
+        return 'M ' + link.source.x + ' ' + link.source.y + ' ' +
+               'V ' + ( link.target.y + radius ) + ' ' +
+               'Q ' + link.source.x + ' ' + link.target.y + ' ' +
+               ( link.source.x - radius ) + ' ' + link.target.y + ' ' +
+               'H ' + link.target.x;
     } else {
-        return 'M ' + d.source.x + ' ' + d.source.y + ' ' +
-               'H ' + ( d.target.x - radius ) + ' ' +
-               'Q ' + d.target.x + ' ' + d.source.y + ' ' +
-               d.target.x + ' ' + ( d.source.y - radius ) + ' ' +
-               'V ' + d.target.y;
+        return 'M ' + link.source.x + ' ' + link.source.y + ' ' +
+               'H ' + ( link.target.x - radius ) + ' ' +
+               'Q ' + link.target.x + ' ' + link.source.y + ' ' +
+               link.target.x + ' ' + ( link.source.y - radius ) + ' ' +
+               'V ' + link.target.y;
     }
 };
 
@@ -144,7 +141,7 @@ Branch.prototype.ticked = function () {
         //.attr('y1', d => d.source.y)
         //.attr('x2', d => d.target.x)
         //.attr('y2', d => d.target.y);
-            .attr('d', this.positionLink.bind(this));
+            .attr('d', d => positionLink(d));
     }
     if (this.node) {
         this.node.attr('transform', d => 'translate(' + d.x + ',' + d.y + ')');
@@ -153,12 +150,25 @@ Branch.prototype.ticked = function () {
 
 Branch.prototype.build = function (commitData) {
     this.data = this.parseCommits(commitData);
+    this.simulation = d3.forceSimulation()
+        .force('link', d3.forceLink().id(d => d.id).strength(0.1))
+        .force('x', d3.forceX(d => 30 + d.pos[1] * this.gapX).strength(1))
+        .force('y', d3.forceY(d => 30 + d.pos[0] * this.gapY).strength(1));
+    this.selectionCircle.transition()
+        .duration(500)
+        .attr('transform', 'translate(30, 30)');
+    this.update();
+};
+
+Branch.prototype.update = function () {
     this.link = this.svg.selectAll('.link')
         .data(this.data.links)
         .enter().append('g')
             .classed('link', true)
         .append('path')
-            .attr('d', this.positionLink.bind(this));
+            .attr('d', d => {
+                positionLink(d);
+            });
     
     this.node = this.svg.selectAll('.node')
         .data(this.data.nodes, d => d.id)

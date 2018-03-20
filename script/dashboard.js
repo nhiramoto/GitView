@@ -1,12 +1,13 @@
 const $ = require('jquery');
 const d3 = require('d3');
 const {remote, ipcRenderer} = require('electron');
+const dateFormat = require('dateformat');
 const main = remote.require('./main');
 const globals = require('./globals');
 const GitPipe = require('./GitPipe/GitPipe');
 const Tree = require('./Tree');
 const Treemap = require('./Treemap');
-const dateFormat = require('dateformat');
+const Branch = require('./Branch');
 
 var repoPath = null;
 var width = 500, height = 400;
@@ -340,31 +341,15 @@ var initViz = function (repoPath) {
             // Adiciona lista de commits na commitBar
             commits = gitPipe.getCommits();
             let container = d3.select('#commitBar');
-            branch = new Branch(container);
-            commits.forEach(commit => {
-                let commitItem = document.createElement('div');
-                let title = document.createElement('span');
-                let content = document.createElement('span');
-                let commitId = commit.id;
-                let commitMsg = null;
-                if (commit.message.length >= 23) {
-                    commitMsg = commit.message.substring(0, 23) + '...';
-                } else {
-                    commitMsg = commit.message;
-                }
-                $(title).addClass('title').text(commitMsg);
-                $(content).addClass('content').text(commit.authorEmail);
-                $(commitItem).addClass('commitItem').attr('id', commitId).append(title).append(content);
-                $(commitItem).click(event => {
-                    $('#commitBar .selected').removeClass('selected');
-                    $(commitItem).addClass('selected');
-                    let commitId = $(commitItem).attr('id');
-                    console.log('commitId:', commitId);
-                    diffCommit(commitId);
-                });
-                $('#commitBar').append(commitItem);
-            });
-            $('#commitBar #' + headCommit.id).addClass('selected');
+            let commitWidth = 230;
+            let commitHeight = 570;
+            branch = new Branch(container, commitWidth, commitHeight);
+            branch.clickCallback = d => {
+                console.log('click commit.');
+                let commitId = d.id;
+                diffCommit(commitId);
+            };
+            branch.build(commits);
         }).then(() => {
             hideLoadingScreen();
         }).catch(err => {
