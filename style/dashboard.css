@@ -200,7 +200,7 @@ body {
   border: 1px solid #DDD;
   width: 250px;
   height: 100%;
-  overflow: scroll;
+  overflow: hidden;
   z-index: 1;
   -webkit-transition: opacity .5s ease;
 }
@@ -230,14 +230,13 @@ body {
   fill: steelblue;
   cursor: pointer;
 }
+#commitBar #branchSvg .node circle.selected {
+  stroke: darkgray;
+  stroke-width: 2px;
+  fill: yellow;
+}
 #commitBar #branchSvg .node text {
   font-size: 12px;
-}
-#commitBar #branchSvg #selectionCircle {
-  stroke: #CCC;
-  stroke-width: 2px;
-  stroke-style: dashed;
-  fill: #F9FD7E;
 }
 
 #view {

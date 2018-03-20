@@ -20,6 +20,7 @@ var gitPipe = null;
 var dbPath = null;
 var repoRec = null;
 var commits = null;
+var selectedCommitId = null;
 var headCommit = null;
 var branch = null;
 var pulseInfoButton = () => {};
@@ -340,16 +341,19 @@ var initViz = function (repoPath) {
             $('#commitBar').children('.commitItem').remove();
             // Adiciona lista de commits na commitBar
             commits = gitPipe.getCommits();
+            let lastCommitId = commits[0].id;
             let container = d3.select('#commitBar');
             let commitWidth = 230;
             let commitHeight = 570;
             branch = new Branch(container, commitWidth, commitHeight);
             branch.clickCallback = d => {
-                console.log('click commit.');
-                let commitId = d.id;
-                diffCommit(commitId);
+                if (d.id !== selectedCommitId) {
+                    selectedCommitId = d.id;
+                    diffCommit(selectedCommitId);
+                }
             };
             branch.build(commits);
+            branch.select(lastCommitId);
         }).then(() => {
             hideLoadingScreen();
         }).catch(err => {

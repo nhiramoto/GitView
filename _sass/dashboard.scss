@@ -213,7 +213,7 @@ body {
     border: 1px solid $lightBorder;
     width: $commitBarWidth;
     height: 100%;
-    overflow: scroll;
+    overflow: hidden;
     z-index: 1;
     -webkit-transition: opacity .5s ease;
     .commitBarTitle {
@@ -243,14 +243,13 @@ body {
             fill: steelblue;
             cursor: pointer;
         }
+        .node circle.selected {
+            stroke: darkgray;
+            stroke-width: 2px;
+            fill: yellow;
+        }
         .node text {
             font-size: 12px;
-        }
-        #selectionCircle {
-            stroke: #CCC;
-            stroke-width: 2px;
-            stroke-style: dashed;
-            fill: #F9FD7E;
         }
     }
 }

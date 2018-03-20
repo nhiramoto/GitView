@@ -9,17 +9,15 @@ function Branch(container, width, height) {
         .attr('id', 'branchSvg')
         .attr('width', this.width + 'px')
         .attr('height', this.height + 'px')
+        .on('wheel', this.scrolled.bind(this))
       .append('g');
     this.linkLayer = this.svg.append('g');
     this.nodeLayer = this.svg.append('g');
     this.gapX = 50; this.gapY = 80;
     this.dx = 0; this.dy = 0;
+    this.minScrollX = 0; this.maxScrollX = 300;
     this.minScrollY = 0; this.maxScrollY = 999999;
     this.simulation = null;
-    this.selectionCircle = this.svg.append('circle')
-        .attr('id', 'selectionCircle')
-        .attr('r', '15px')
-        .attr('transform', 'translate(-100, -100)');
     this.color = d3.scaleOrdinal(d3.schemeCategory20);
     this.data = null;
     this.link = null;
@@ -28,10 +26,13 @@ function Branch(container, width, height) {
 }
 
 Branch.prototype.scrolled = function () {
-    let newX = this.dx - 10 * d3.event.deltaX;
-    let newY = this.dy - 10 * d3.event.deltaY;
+    let newX = this.dx - 5 * d3.event.deltaX;
+    let newY = this.dy - 5 * d3.event.deltaY;
     if (newY > -this.minScrollY || newY < -this.maxScrollY) {
         newY = this.dy;
+    }
+    if (newX > -this.minScrollX || newX < -this.maxScrollX) {
+        newX = this.dx;
     }
     if (newX != this.dx || newY != this.dy) {
         this.dx = newX;
@@ -60,10 +61,8 @@ Branch.prototype.dragended = function (d) {
 };
 
 Branch.prototype.click = function (d) {
-    console.log('d:', d);
-    this.selectionCircle.transition()
-        .duration(500)
-        .attr('transform', 'translate(' + d.x + ',' + d.y + ')');
+    this.svg.select('.selected').classed('selected', false);
+    d3.select(d3.event.target).classed('selected', true);
     if (this.clickCallback) {
         this.clickCallback(d);
     }
@@ -78,7 +77,6 @@ Branch.prototype.parseCommits = function (commitData) {
         links: []
     };
     commitData.forEach(commit => {
-        console.log('-');
         // pos [History Index, Branch Index]
         branch[commit.id] = branch[commit.id] != undefined ? branch[commit.id] : 0;
         commit.pos = [
@@ -148,15 +146,21 @@ Branch.prototype.ticked = function () {
     }
 };
 
+Branch.prototype.select = function (commitId) {
+    this.svg.select('.selected').classed('selected', false);
+    this.svg.selectAll('.node')
+        .filter(d => d.id === commitId)
+        .select('circle')
+            .classed('selected', true);
+};
+
 Branch.prototype.build = function (commitData) {
     this.data = this.parseCommits(commitData);
     this.simulation = d3.forceSimulation()
         .force('link', d3.forceLink().id(d => d.id).strength(0.1))
         .force('x', d3.forceX(d => 30 + d.pos[1] * this.gapX).strength(1))
         .force('y', d3.forceY(d => 30 + d.pos[0] * this.gapY).strength(1));
-    this.selectionCircle.transition()
-        .duration(500)
-        .attr('transform', 'translate(30, 30)');
+    this.maxScrollY = 30 + ( commitData.length - 1 ) * this.gapY;
     this.update();
 };
 
@@ -173,6 +177,7 @@ Branch.prototype.update = function () {
     this.node = this.svg.selectAll('.node')
         .data(this.data.nodes, d => d.id)
         .enter().append('g')
+            .attr('id', d => d.id)
             .classed('node', true)
             .on('click', this.click.bind(this))
             .call(d3.drag()
