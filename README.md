@@ -6,13 +6,13 @@ This tool uses information visualization techniques to represent the changes mad
 
 ## Graph based visualization
 
-In this visualization a graph based visualization is used to show the project tree with the changes made to the files in the selected commit.
+In this visualization a graph based visualization is used to show the project tree with the changes made to the files in the selected commit. Each directory or file is represented by a clickable node. By clicking a directory, it is expanded or collapsed and by clicking a file, your information is shown in the right side panel.
 
 ![preview-graph](https://github.com/nhtoshiaki/GitView/blob/master/preview-graph.png)
 
 ## Treemap
 
-In the treemap, each directory is represented by a clickable rectangle. By clicking the rectangle, the files contained in the directory are revealed. Also by clicking on the legend (that shows the current directory path) the parent directory is shown.
+In the treemap, each directory and file are represented by clickable rectangle. By clicking it, if it is a directory it is expanded or if it is a file, as in the graph based visualization, its information is shown in the right side panel. Also by clicking on the legend (that shows the current directory path) the parent directory is shown.
 
 ![preview-treemap](https://github.com/nhtoshiaki/GitView/blob/master/preview-treemap.png)
 
