@@ -200,7 +200,7 @@ body {
   border: 1px solid #DDD;
   width: 250px;
   height: 100%;
-  overflow: hidden;
+  overflow: auto;
   z-index: 1;
   -webkit-transition: opacity .5s ease;
 }
@@ -235,8 +235,15 @@ body {
   stroke-width: 2px;
   fill: yellow;
 }
-#commitBar #branchSvg .node text {
+#commitBar #branchSvg .commitText {
   font-size: 12px;
+  overflow: hidden;
+}
+#commitBar #branchSvg .commitText p {
+  margin: 0;
+  padding: 5px;
+  text-indent: 10px;
+  text-shadow: -1px 0 10px white, 1px 0 10px white, 0 -1px 10px white, 0 1px 10px white;
 }
 
 #view {

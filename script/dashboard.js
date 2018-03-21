@@ -442,12 +442,10 @@ var diffCommit = function (commitId) {
 
 var initLegend = function () {
     console.log('initializing legend...');
-    console.log('d3 selection:', d3.select('#legendBody'));
     let lsvg = d3.select('#legendBody').append('svg')
             .attr('id', 'treeLeg')
             .attr('width', '400px')
             .attr('height', '372px');
-    console.log('lsvg:', lsvg);
     let nodeRoot = lsvg.append('g')
         .classed('node', true)
         .classed('node-root', true)

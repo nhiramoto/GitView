@@ -7,8 +7,7 @@ function Branch(container, width, height) {
     this.nodeRadius = 8;
     this.svg = this.container.append('svg')
         .attr('id', 'branchSvg')
-        .attr('width', this.width + 'px')
-        .attr('height', this.height + 'px')
+        .attr('viewBox', '0 0 ' + this.width + ' ' + this.height)
         .on('wheel', this.scrolled.bind(this))
       .append('g');
     this.linkLayer = this.svg.append('g');
@@ -52,6 +51,7 @@ Branch.prototype.dragstarted = function (d) {
 Branch.prototype.dragged = function (d) {
     d.fx = d3.event.x;
     d.fy = d3.event.y;
+    this.link.attr('d', positionLink.bind(this));
 };
 
 Branch.prototype.dragended = function (d) {
@@ -69,35 +69,12 @@ Branch.prototype.click = function (d) {
 };
 
 Branch.prototype.parseCommits = function (commitData) {
-    let branch = {};
-    let count = 1;
-    let index = 0;
     let newData = {
         nodes: [],
         links: []
     };
     commitData.forEach(commit => {
-        // pos [History Index, Branch Index]
-        branch[commit.id] = branch[commit.id] != undefined ? branch[commit.id] : 0;
-        commit.pos = [
-            index++,
-            branch[commit.id]
-        ];
-        let firstParentId = commit.parents[0];
-        if (firstParentId) {
-            if (branch[firstParentId] == undefined || branch[commit.id] <= branch[firstParentId]) {
-                branch[firstParentId] = branch[commit.id];
-            } else {
-                count--;
-            }
-            // create links
-            newData.links.push({
-                source: firstParentId,
-                target: commit.id
-            });
-        }
-        commit.parents.splice(1).forEach(parId => {
-            branch[parId] = count++;
+        commit.parents.forEach(parId => {
             // create links
             newData.links.push({
                 source: parId,
@@ -135,10 +112,10 @@ var positionLink = function (link) {
 Branch.prototype.ticked = function () {
     if (this.link) {
         this.link
-        //.attr('x1', d => d.source.x)
-        //.attr('y1', d => d.source.y)
-        //.attr('x2', d => d.target.x)
-        //.attr('y2', d => d.target.y);
+    //    //.attr('x1', d => d.source.x)
+    //    //.attr('y1', d => d.source.y)
+    //    //.attr('x2', d => d.target.x)
+    //    //.attr('y2', d => d.target.y);
             .attr('d', d => positionLink(d));
     }
     if (this.node) {
@@ -157,7 +134,7 @@ Branch.prototype.select = function (commitId) {
 Branch.prototype.build = function (commitData) {
     this.data = this.parseCommits(commitData);
     this.simulation = d3.forceSimulation()
-        .force('link', d3.forceLink().id(d => d.id).strength(0.1))
+        .force('link', d3.forceLink().id(d => d.id).strength(0.001))
         .force('x', d3.forceX(d => 30 + d.pos[1] * this.gapX).strength(1))
         .force('y', d3.forceY(d => 30 + d.pos[0] * this.gapY).strength(1));
     this.maxScrollY = 30 + ( commitData.length - 1 ) * this.gapY;
@@ -173,6 +150,9 @@ Branch.prototype.update = function () {
             .attr('d', d => {
                 positionLink(d);
             });
+    this.simulation.on('end', () => {
+        this.link.attr('d', positionLink.bind(this));
+    });
     
     this.node = this.svg.selectAll('.node')
         .data(this.data.nodes, d => d.id)
@@ -191,10 +171,16 @@ Branch.prototype.update = function () {
     this.node.append('title')
         .text(d => d.id);
 
-    this.node.append('text')
-        .attr('dx', 20)
-        .attr('dy', 5)
-        .text(d => d.message);
+    this.node.append('foreignObject')
+        .attr('width', (this.width - 30) + 'px')
+        //.attr('dx', 20)
+        //.attr('dy', 5)
+        .style('border', '1px solid red')
+      .append('xhtml:div')
+      .append('div')
+        .classed('commitText', true)
+      .append('p')
+        .html(d => d.message);
 
     this.simulation.nodes(this.data.nodes)
         .on('tick', this.ticked.bind(this));

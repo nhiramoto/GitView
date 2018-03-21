@@ -213,7 +213,7 @@ body {
     border: 1px solid $lightBorder;
     width: $commitBarWidth;
     height: 100%;
-    overflow: hidden;
+    overflow: auto;
     z-index: 1;
     -webkit-transition: opacity .5s ease;
     .commitBarTitle {
@@ -248,8 +248,18 @@ body {
             stroke-width: 2px;
             fill: yellow;
         }
-        .node text {
+        .commitText {
             font-size: 12px;
+            overflow: hidden;
+            p {
+                margin: 0;
+                padding: 5px;
+                text-indent: 10px;
+                text-shadow: -1px 0 10px white,
+                             1px 0 10px white,
+                             0 -1px 10px white,
+                             0 1px 10px white;
+            }
         }
     }
 }

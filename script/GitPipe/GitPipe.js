@@ -95,8 +95,29 @@ GitPipe.prototype.parseCommitsHistory = function () {
     return this.gitRepo.getHeadCommit().then(commit => {
         let history = commit.history();
         let parseCommitsPromises = [];
+        let branch = {};
+        let count = 1;
+        let index = 0;
         history.on('commit', commit => {
-            parseCommitsPromises.push(this.parseCommit(commit));
+            parseCommitsPromises.push(this.parseCommit(commit).then(commitRec => {
+                branch[commitRec.id] = branch[commitRec.id] != undefined ? branch[commitRec.id] : 0;
+                // pos [History Index, Branch Index]
+                commitRec.pos = [
+                    index++,
+                    branch[commitRec.id]
+                ];
+                let firstParentId = commitRec.parents[0];
+                if (firstParentId) {
+                    if (branch[firstParentId] == undefined || branch[commitRec.id] <= branch[firstParentId]) {
+                        branch[firstParentId] = branch[commitRec.id];
+                    } else {
+                        count--;
+                    }
+                }
+                commitRec.parents.slice(1).forEach(parId => {
+                    branch[parId] = count++;
+                });
+            }));
         });
         history.on('error', err => {
             console.error(err);
@@ -120,13 +141,16 @@ GitPipe.prototype.parseCommitsHistory = function () {
  * @param {Git.Commit} commit
  */
 GitPipe.prototype.parseCommit = function (commit) {
-    let commitRec = new JSONDatabase.CommitRecord(commit);
-    let authorSign = commit.author();
-    let authorRec = new JSONDatabase.AuthorRecord(authorSign);
-    let authorEmail = authorRec.email;
-    commitRec.authorEmail = authorEmail;
-    this.db.addCommit(commitRec);
-    this.db.addAuthor(authorRec);
+    return new Promise(resolve => {
+        let commitRec = new JSONDatabase.CommitRecord(commit);
+        let authorSign = commit.author();
+        let authorRec = new JSONDatabase.AuthorRecord(authorSign);
+        let authorEmail = authorRec.email;
+        commitRec.authorEmail = authorEmail;
+        this.db.addCommit(commitRec);
+        this.db.addAuthor(authorRec);
+        resolve(commitRec);
+    });
 };
 
 /**

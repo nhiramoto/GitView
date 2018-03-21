@@ -394,9 +394,6 @@ JSONDatabase.prototype.mergeDirectories = function (dir1, dir2) {
     } else if (dir1.entries == undefined || dir2.entries == undefined) {
         console.error('[JSONDatabase#mergeDirectories] Error: The directories must be hierarchized.');
     } else {
-        console.log('> mergeDirectories()');
-        console.log('dir1:', dir1);
-        console.log('dir2:', dir2);
         if (dir1.name.trim() === dir2.name.trim()) {
             let mergedDir = new JSONDatabase.DirectoryRecord();
             let toMergeDir1 = dir1.entries.filter(e1 => e1.isDirectory() && dir2.entries.filter(ef2 => ef2.isDirectory).map(e2 => e2.name).includes(e1.name));
@@ -422,7 +419,7 @@ JSONDatabase.prototype.mergeDirectories = function (dir1, dir2) {
             });
             return mergedDir;
         } else {
-            console.error('[JSONDatabase#mergeDirectories] Error: To merge, the directories names must be the same.')
+            console.error('[JSONDatabase#mergeDirectories] Error: To merge, the directories names must be the same.');
             return null;
         }
     }
