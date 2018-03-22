@@ -258,6 +258,9 @@ body {
   stroke-width: 2px;
   fill: yellow;
 }
+#commitBar #branchSvg foreignObject {
+  overflow: hidden;
+}
 #commitBar #branchSvg .commitText {
   font-size: 12px;
   overflow: hidden;

@@ -271,6 +271,9 @@ body {
             stroke-width: 2px;
             fill: yellow;
         }
+        foreignObject {
+            overflow: hidden;
+        }
         .commitText {
             font-size: 12px;
             overflow: hidden;

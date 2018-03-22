@@ -74,11 +74,14 @@ Branch.prototype.parseCommits = function (commitData) {
         links: []
     };
     commitData.forEach(commit => {
+        commit.x = 30 + commit.pos[1] * this.gapX;
+        commit.y = 30 + commit.pos[0] * this.gapY;
         commit.parents.forEach(parId => {
+            let par = commitData.find(c => c.id === parId);
             // create links
             newData.links.push({
-                source: parId,
-                target: commit.id
+                source: par,
+                target: commit
             });
         });
         // create node
@@ -133,37 +136,27 @@ Branch.prototype.select = function (commitId) {
 
 Branch.prototype.build = function (commitData) {
     this.data = this.parseCommits(commitData);
-    this.simulation = d3.forceSimulation()
-        .force('link', d3.forceLink().id(d => d.id).strength(0.001))
-        .force('x', d3.forceX(d => 30 + d.pos[1] * this.gapX).strength(1))
-        .force('y', d3.forceY(d => 30 + d.pos[0] * this.gapY).strength(1));
+    //this.simulation = d3.forceSimulation()
+    //    .force('link', d3.forceLink().id(d => d.id).strength(0.001))
+    //    .force('x', d3.forceX(d => 30 + d.pos[1] * this.gapX).strength(1))
+    //    .force('y', d3.forceY(d => 30 + d.pos[0] * this.gapY).strength(1));
     this.maxScrollY = 30 + ( commitData.length - 1 ) * this.gapY;
     this.update();
 };
 
 Branch.prototype.update = function () {
-    this.link = this.svg.selectAll('.link')
-        .data(this.data.links)
-        .enter().append('g')
-            .classed('link', true)
-        .append('path')
-            .attr('d', d => {
-                positionLink(d);
-            });
-    this.simulation.on('end', () => {
-        this.link.attr('d', positionLink.bind(this));
-    });
     
-    this.node = this.svg.selectAll('.node')
+    this.node = this.nodeLayer.selectAll('.node')
         .data(this.data.nodes, d => d.id)
         .enter().append('g')
             .attr('id', d => d.id)
             .classed('node', true)
-            .on('click', this.click.bind(this))
-            .call(d3.drag()
-                .on('start', this.dragstarted.bind(this))
-                .on('drag', this.dragged.bind(this))
-                .on('end', this.dragended.bind(this)));
+            .attr('transform', d => 'translate(' + d.x + ',' + d.y + ')')
+            .on('click', this.click.bind(this));
+            //.call(d3.drag()
+            //    .on('start', this.dragstarted.bind(this))
+            //    .on('drag', this.dragged.bind(this))
+            //    .on('end', this.dragended.bind(this)));
 
     this.node.append('circle')
         .attr('r', 10);
@@ -173,20 +166,25 @@ Branch.prototype.update = function () {
 
     this.node.append('foreignObject')
         .attr('width', (this.width - 30) + 'px')
-        //.attr('dx', 20)
-        //.attr('dy', 5)
-        .style('border', '1px solid red')
+        .attr('height', (this.gapY - 10) + 'px')
       .append('xhtml:div')
       .append('div')
         .classed('commitText', true)
       .append('p')
         .html(d => d.message);
 
-    this.simulation.nodes(this.data.nodes)
-        .on('tick', this.ticked.bind(this));
+    this.link = this.linkLayer.selectAll('.link')
+        .data(this.data.links)
+        .enter().append('g')
+            .classed('link', true)
+        .append('path')
+            .attr('d', d => positionLink(d));
 
-    this.simulation.force('link')
-        .links(this.data.links);
+    //this.simulation.nodes(this.data.nodes)
+    //    .on('tick', this.ticked.bind(this));
+    //
+    //this.simulation.force('link')
+    //    .links(this.data.links);
 };
 
 module.exports = Branch;
