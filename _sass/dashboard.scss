@@ -51,16 +51,38 @@ body {
     }
     #legendButton {
         position: absolute;
+        right: 130px;
+        top: 15px;
+        font-size: 26px;
+        line-height: 26px;
+        color: white;
+        cursor: pointer;
+        transition: color .5s ease;
+        -webkit-transition: color .5s ease;
+        &:hover {
+            color: rgb(45, 148, 214);
+            -webkit-transition: color .3s ease;
+        }
+    }
+    #changeVisBtn {
+        position: absolute;
         right: 70px;
         top: 15px;
         font-size: 26px;
         line-height: 26px;
         color: white;
         cursor: pointer;
+        transition: color .5s ease;
         -webkit-transition: color .5s ease;
         &:hover {
             color: rgb(45, 148, 214);
             -webkit-transition: color .3s ease;
+        }
+        &.disabled {
+            opacity: .3;
+            pointer-events: none;
+            transition: opacity .3s ease;
+            -webkit-transition: opacity .3s ease;
         }
     }
     #infoButton {
@@ -70,6 +92,7 @@ body {
         font-size: 26px;
         color: white;
         cursor: pointer;
+        transition: color .5s ease;
         -webkit-transition: color .5s ease;
         &:hover {
             color: rgb(45, 148, 214);
@@ -386,62 +409,6 @@ $infoBarWidth: 400px;
         //table tr td:last-child {
         //    width: 100%;
         //}
-    }
-    .actionBtn {
-        position: absolute;
-        bottom: 10%;
-        left: -130px;
-        width: 60px;
-        height: 60px;
-        line-height: 60px;
-        color: white;
-        font-size: 22px;
-        text-align: center;
-        background: #206454;
-        border-radius: 50%;
-        border: 1px solid white;
-        z-index: 30;
-        overflow: hidden;
-        box-shadow: 0 2px 3px gray;
-        cursor: pointer;
-        transition: filter .5s ease, border .5s ease, opacity .5s ease;
-        -webkit-transition: filter .5s ease, border .5s ease, opacity .5s ease;
-        &:hover {
-            filter: brightness(90%);
-            border: 2px solid darkgray;
-            transition: filter .3s ease, border .3s ease;
-            -webkit-transition: filter .3s ease, border .3s ease;
-        }
-        &.disabled {
-            opacity: .3;
-            pointer-events: none;
-            transition: opacity .3s ease;
-            -webkit-transition: opacity .3s ease;
-        }
-    }
-    #changeVisTooltip {
-        position: absolute;
-        width: 300px;
-        height: 30px;
-        bottom: 12%;
-        left: -450px;
-        background: #FFF3AA;
-        color: black;
-        border-radius: 3px;
-        border: 1px solid white;
-        opacity: 0;
-        font-size: 18px;
-        line-height: 30px;
-        text-indent: 3px;
-        z-index: 31;
-        box-shadow: 0 2px 5px gray;
-        transition: opacity .5s ease;
-        -webkit-transition: opacity .5s ease;
-    }
-    #changeVisTooltip.visible {
-        opacity: 1;
-        transition: opacity .3s ease;
-        -webkit-transition: opacity .3s ease;
     }
 }
 

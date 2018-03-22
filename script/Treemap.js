@@ -318,7 +318,7 @@ Treemap.prototype.update = function () {
     this.cellEnter.append('text')
         .attr('x', d => Math.max(0, this.x(d.x1) - this.x(d.x0)) / 2 + 'px')
         //.attr('y', d => Math.max(0, this.y(d.y1) - this.y(d.y0)) / 2 + 'px')
-        .attr('y', 10)
+        .attr('y', d => Math.min(10, (this.y(d.y1) - this.y(d.y0)) / 2) + 'px')
         .attr('text-anchor', 'middle')
         .text(d => d.data.name)
         .style('opacity', function(d) {
