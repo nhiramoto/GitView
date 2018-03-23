@@ -13,32 +13,37 @@ function Branch(container, width, height) {
     this.linkLayer = this.svg.append('g');
     this.nodeLayer = this.svg.append('g');
     this.gapX = 50; this.gapY = 80;
-    this.dx = 0; this.dy = 0;
+    this.scrollX = 0; this.scrollY = 0;
     this.minScrollX = 0; this.maxScrollX = 300;
     this.minScrollY = 0; this.maxScrollY = 999999;
     this.simulation = null;
     this.color = d3.scaleOrdinal(d3.schemeCategory20);
     this.data = null;
+    this.newData = {};
     this.link = null;
+    this.linkEnter = null;
     this.node = null;
+    this.nodeEnter = null;
     this.clickCallback = null;
 }
 
 Branch.prototype.scrolled = function () {
-    let newX = this.dx - 5 * d3.event.deltaX;
-    let newY = this.dy - 5 * d3.event.deltaY;
+    let newX = this.scrollX - 5 * d3.event.deltaX;
+    let newY = this.scrollY - 5 * d3.event.deltaY;
     if (newY > -this.minScrollY || newY < -this.maxScrollY) {
-        newY = this.dy;
+        newY = this.scrollY;
     }
     if (newX > -this.minScrollX || newX < -this.maxScrollX) {
-        newX = this.dx;
+        newX = this.scrollX;
     }
-    if (newX != this.dx || newY != this.dy) {
-        this.dx = newX;
-        this.dy = newY;
+    if (newX != this.scrollX || newY != this.scrollY) {
+        this.scrollX = newX;
+        this.scrollY = newY;
         this.svg.transition()
             .duration(50)
-            .attr('transform', 'translate(' + this.dx + ',' + this.dy + ')');
+            .attr('transform', 'translate(' + this.scrollX + ',' + this.scrollY + ')');
+        this.newData.nodes = this.data.nodes.filter(n => n.y >= this.scrollY && n.y <= this.scrollY + this.height);
+        this.newData.links = this.data.links.filter(l => this.data.nodes.includes(l.source) || this.data.nodes.includes(l.target));
     }
 };
 
@@ -51,7 +56,7 @@ Branch.prototype.dragstarted = function (d) {
 Branch.prototype.dragged = function (d) {
     d.fx = d3.event.x;
     d.fy = d3.event.y;
-    this.link.attr('d', positionLink.bind(this));
+    this.linkEnter.attr('d', positionLink.bind(this));
 };
 
 Branch.prototype.dragended = function (d) {
@@ -113,16 +118,16 @@ var positionLink = function (link) {
 };
 
 Branch.prototype.ticked = function () {
-    if (this.link) {
-        this.link
+    if (this.linkEnter) {
+        this.linkEnter
     //    //.attr('x1', d => d.source.x)
     //    //.attr('y1', d => d.source.y)
     //    //.attr('x2', d => d.target.x)
     //    //.attr('y2', d => d.target.y);
             .attr('d', d => positionLink(d));
     }
-    if (this.node) {
-        this.node.attr('transform', d => 'translate(' + d.x + ',' + d.y + ')');
+    if (this.nodeEnter) {
+        this.nodeEnter.attr('transform', d => 'translate(' + d.x + ',' + d.y + ')');
     }
 };
 
@@ -136,6 +141,8 @@ Branch.prototype.select = function (commitId) {
 
 Branch.prototype.build = function (commitData) {
     this.data = this.parseCommits(commitData);
+    this.newData.nodes = this.data.nodes.filter(n => n.y >= this.scrollY && n.y <= this.scrollY + this.height);
+    this.newData.links = this.data.links.filter(l => this.data.nodes.includes(l.source) || this.data.nodes.includes(l.target));
     //this.simulation = d3.forceSimulation()
     //    .force('link', d3.forceLink().id(d => d.id).strength(0.001))
     //    .force('x', d3.forceX(d => 30 + d.pos[1] * this.gapX).strength(1))
@@ -145,26 +152,32 @@ Branch.prototype.build = function (commitData) {
 };
 
 Branch.prototype.update = function () {
-    
+
     this.node = this.nodeLayer.selectAll('.node')
-        .data(this.data.nodes, d => d.id)
-        .enter().append('g')
+        .data(this.newData.nodes, d => d.id);
+    this.node.attr('transform', d => 'translate(' + d.x + ',' + d.y + ')');
+    
+    this.nodeEnter = this.node.enter().append('g')
             .attr('id', d => d.id)
             .classed('node', true)
             .attr('transform', d => 'translate(' + d.x + ',' + d.y + ')')
-            .on('click', this.click.bind(this));
+            .on('click', this.click.bind(this))
+            .style('opacity', 0)
+            .transition()
+                .duration(500)
+                .style('opacity', 1);
             //.call(d3.drag()
             //    .on('start', this.dragstarted.bind(this))
             //    .on('drag', this.dragged.bind(this))
             //    .on('end', this.dragended.bind(this)));
 
-    this.node.append('circle')
+    this.nodeEnter.append('circle')
         .attr('r', 10);
 
-    this.node.append('title')
+    this.nodeEnter.append('title')
         .text(d => d.id);
 
-    this.node.append('foreignObject')
+    this.nodeEnter.append('foreignObject')
         .attr('width', (this.width - 30) + 'px')
         .attr('height', (this.gapY - 10) + 'px')
       .append('xhtml:div')
@@ -173,8 +186,15 @@ Branch.prototype.update = function () {
       .append('p')
         .html(d => d.message);
 
+    this.node.exit().transition()
+        .duration(500)
+        .style('opacity', 0)
+        .remove();
+
     this.link = this.linkLayer.selectAll('.link')
-        .data(this.data.links)
+        .data(this.data.links);
+
+    this.linkEnter = this.link
         .enter().append('g')
             .classed('link', true)
         .append('path')
