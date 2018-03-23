@@ -43,8 +43,9 @@ Branch.prototype.scrolled = function () {
             .duration(50)
             .attr('transform', 'translate(' + this.scrollX + ',' + this.scrollY + ')');
         this.newData.nodes = this.data.nodes.filter(n => n.y >= this.scrollY && n.y <= this.scrollY + this.height);
-        this.newData.links = this.data.links.filter(l => this.data.nodes.includes(l.source) || this.data.nodes.includes(l.target));
+        this.newData.links = this.data.links.filter(l => this.newData.nodes.includes(l.source) || this.newData.nodes.includes(l.target));
     }
+    this.update();
 };
 
 Branch.prototype.dragstarted = function (d) {
@@ -142,7 +143,7 @@ Branch.prototype.select = function (commitId) {
 Branch.prototype.build = function (commitData) {
     this.data = this.parseCommits(commitData);
     this.newData.nodes = this.data.nodes.filter(n => n.y >= this.scrollY && n.y <= this.scrollY + this.height);
-    this.newData.links = this.data.links.filter(l => this.data.nodes.includes(l.source) || this.data.nodes.includes(l.target));
+    this.newData.links = this.data.links.filter(l => this.newData.nodes.includes(l.source) || this.newData.nodes.includes(l.target));
     //this.simulation = d3.forceSimulation()
     //    .force('link', d3.forceLink().id(d => d.id).strength(0.001))
     //    .force('x', d3.forceX(d => 30 + d.pos[1] * this.gapX).strength(1))
@@ -157,8 +158,8 @@ Branch.prototype.update = function () {
         .data(this.newData.nodes, d => d.id);
     this.node.attr('transform', d => 'translate(' + d.x + ',' + d.y + ')');
     
-    this.nodeEnter = this.node.enter().append('g')
-            .attr('id', d => d.id)
+    this.nodeEnter = this.node.enter().append('g');
+    this.nodeEnter.attr('id', d => d.id)
             .classed('node', true)
             .attr('transform', d => 'translate(' + d.x + ',' + d.y + ')')
             .on('click', this.click.bind(this))
@@ -192,13 +193,18 @@ Branch.prototype.update = function () {
         .remove();
 
     this.link = this.linkLayer.selectAll('.link')
-        .data(this.data.links);
+        .data(this.newData.links);
+    this.link.attr('d', d => positionLink(d));
 
-    this.linkEnter = this.link
-        .enter().append('g')
+    this.linkEnter = this.link.enter().append('g')
             .classed('link', true)
         .append('path')
             .attr('d', d => positionLink(d));
+
+    this.link.exit().transition()
+        .duration(500)
+        .style('opacity', 0)
+        .remove();
 
     //this.simulation.nodes(this.data.nodes)
     //    .on('tick', this.ticked.bind(this));
