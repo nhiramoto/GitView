@@ -264,6 +264,7 @@ body {
 #commitBar #branchSvg .commitText {
   font-size: 12px;
   overflow: hidden;
+  pointer-events: none;
 }
 #commitBar #branchSvg .commitText p {
   margin: 0;

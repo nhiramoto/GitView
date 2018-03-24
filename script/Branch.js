@@ -25,6 +25,7 @@ function Branch(container, width, height) {
     this.node = null;
     this.nodeEnter = null;
     this.clickCallback = null;
+    this.selected = null;
 }
 
 Branch.prototype.scrolled = function () {
@@ -40,12 +41,12 @@ Branch.prototype.scrolled = function () {
         this.scrollX = newX;
         this.scrollY = newY;
         this.svg.transition()
-            .duration(50)
+            .duration(100)
             .attr('transform', 'translate(' + this.scrollX + ',' + this.scrollY + ')');
-        this.newData.nodes = this.data.nodes.filter(n => n.y >= this.scrollY && n.y <= this.scrollY + this.height);
+        this.newData.nodes = this.data.nodes.filter(n => n.y >= -this.scrollY && n.y <= -this.scrollY + this.height);
         this.newData.links = this.data.links.filter(l => this.newData.nodes.includes(l.source) || this.newData.nodes.includes(l.target));
+        this.update();
     }
-    this.update();
 };
 
 Branch.prototype.dragstarted = function (d) {
@@ -66,9 +67,18 @@ Branch.prototype.dragended = function (d) {
     d.fy = null;
 };
 
-Branch.prototype.click = function (d) {
+Branch.prototype.select = function (commitId) {
+    this.selected = commitId;
     this.svg.select('.selected').classed('selected', false);
-    d3.select(d3.event.target).classed('selected', true);
+    this.svg.selectAll('.node')
+        .filter(d => d.id === commitId)
+        .select('circle')
+            .classed('selected', true);
+};
+
+Branch.prototype.click = function (d) {
+    console.log('clicked:', d);
+    this.select(d.id);
     if (this.clickCallback) {
         this.clickCallback(d);
     }
@@ -132,17 +142,9 @@ Branch.prototype.ticked = function () {
     }
 };
 
-Branch.prototype.select = function (commitId) {
-    this.svg.select('.selected').classed('selected', false);
-    this.svg.selectAll('.node')
-        .filter(d => d.id === commitId)
-        .select('circle')
-            .classed('selected', true);
-};
-
 Branch.prototype.build = function (commitData) {
     this.data = this.parseCommits(commitData);
-    this.newData.nodes = this.data.nodes.filter(n => n.y >= this.scrollY && n.y <= this.scrollY + this.height);
+    this.newData.nodes = this.data.nodes.filter(n => n.y >= -this.scrollY && n.y <= -this.scrollY + this.height);
     this.newData.links = this.data.links.filter(l => this.newData.nodes.includes(l.source) || this.newData.nodes.includes(l.target));
     //this.simulation = d3.forceSimulation()
     //    .force('link', d3.forceLink().id(d => d.id).strength(0.001))
@@ -156,7 +158,9 @@ Branch.prototype.update = function () {
 
     this.node = this.nodeLayer.selectAll('.node')
         .data(this.newData.nodes, d => d.id);
-    this.node.attr('transform', d => 'translate(' + d.x + ',' + d.y + ')');
+    this.node.transition()
+        .duration(300)
+        .attr('transform', d => 'translate(' + d.x + ',' + d.y + ')');
     
     this.nodeEnter = this.node.enter().append('g');
     this.nodeEnter.attr('id', d => d.id)
@@ -165,7 +169,8 @@ Branch.prototype.update = function () {
             .on('click', this.click.bind(this))
             .style('opacity', 0)
             .transition()
-                .duration(500)
+                //.delay(d => 0.3 * ( d.y + this.scrollY ))
+                .duration(10)
                 .style('opacity', 1);
             //.call(d3.drag()
             //    .on('start', this.dragstarted.bind(this))
@@ -173,6 +178,7 @@ Branch.prototype.update = function () {
             //    .on('end', this.dragended.bind(this)));
 
     this.nodeEnter.append('circle')
+        .classed('selected', d => d.id === this.selected)
         .attr('r', 10);
 
     this.nodeEnter.append('title')
@@ -187,23 +193,25 @@ Branch.prototype.update = function () {
       .append('p')
         .html(d => d.message);
 
-    this.node.exit().transition()
-        .duration(500)
-        .style('opacity', 0)
+    this.node.exit()
         .remove();
 
     this.link = this.linkLayer.selectAll('.link')
-        .data(this.newData.links);
-    this.link.attr('d', d => positionLink(d));
+        .data(this.newData.links, d => d.target.id);
+    this.link.transition()
+        .duration(300)
+        .attr('d', d => positionLink(d));
 
     this.linkEnter = this.link.enter().append('g')
             .classed('link', true)
         .append('path')
-            .attr('d', d => positionLink(d));
+            .attr('d', d => positionLink(d))
+            .style('opacity', 0)
+            .transition()
+                .duration(300)
+                .style('opacity', 1);
 
-    this.link.exit().transition()
-        .duration(500)
-        .style('opacity', 0)
+    this.link.exit()
         .remove();
 
     //this.simulation.nodes(this.data.nodes)
