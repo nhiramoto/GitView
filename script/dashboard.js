@@ -24,6 +24,8 @@ var selectedCommitId = null;
 var headCommit = null;
 var branch = null;
 var pulseInfoButton = () => {};
+var changeToTreeMsg = 'Change to Graph Based Visualization';
+var changeToTreemapMsg = 'Change to Treemap';
 
 $(document).ready(() => {
     $('body').fadeIn('slow');
@@ -158,6 +160,7 @@ $(document).ready(() => {
                 } else if (tree.path != null) {
                     tree.revealNodes();
                 }
+                $('#changeVisBtn').attr('title', changeToTreemapMsg);
             });
         } else {
             $('#view #treeSvg').fadeOut('fast', () => {
@@ -178,6 +181,7 @@ $(document).ready(() => {
                 } else if (treemap.path != null) {
                     treemap.revealNodes();
                 }
+                $('#changeVisBtn').attr('title', changeToTreeMsg);
             });
         }
         isTreemapVis = !isTreemapVis;
@@ -218,11 +222,10 @@ var showLoadingScreen = function() {
 };
 
 var hideLoadingScreen = function () {
-    $('#loadingScreen').fadeOut(1000);
-    setTimeout(() => {
+    $('#loadingScreen').fadeOut(1000, () => {
         $('#commitBar').removeClass('disabled');
         $('#changeVisBtn').removeClass('disabled');
-    }, 1000);
+    });
 };
 
 var fillFileInfo = function (data) {
@@ -335,6 +338,7 @@ var initViz = function (repoPath) {
             treemap.build(data);
             $('#legendBody #treeLeg').hide();
             $('#legendBody #treemapLeg').fadeIn('slow');
+            $('#changeVisBtn').attr('title', changeToTreeMsg);
             // d3.select('#changeVisTooltip').text('Graph');
         }).then(() => {
             // Limpa lista de commits

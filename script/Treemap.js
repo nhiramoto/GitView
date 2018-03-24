@@ -67,8 +67,9 @@ function searchNode(root, path) {
         if (path === '.' || root.data.path === path) return root;
         else if (root.children) {
             let names = path.split('/');
+            let found;
             names.forEach(name => {
-                let found = null;
+                found = null;
                 if (root.children) {
                     root.children.forEach(c => {
                         if (c.data.name === name) {
@@ -201,32 +202,36 @@ Treemap.prototype.build = function (data) {
 Treemap.prototype.revealNodes = function () {
     if (this.path != null) {
         this.node = searchNode(this.root, this.path);
+        if (this.node == null) {
+            this.node = this.root;
+        }
         this.zoom();
     }
 };
 
 Treemap.prototype.zoom = function () {
+    if (this.node) {
+        while (this.node.children == null) { // If node is leaf, select parent node.
+            this.node = this.node.parent;
+        }
 
-    if (this.node.children == null) { // If node is leaf, select parent node.
-        this.node = this.node.parent;
-    }
+        this.x.domain([this.node.x0, this.node.x1]);
+        this.y.domain([this.node.y0, this.node.y1]);
 
-    this.x.domain([this.node.x0, this.node.x1]);
-    this.y.domain([this.node.y0, this.node.y1]);
+        let selectedCell = d3.selectAll('.cell')
+            .filter(d => {
+                if (d && d.data && this.node && this.node.data) {
+                    return d.data.id === this.node.data.id;
+                } else {
+                    return false;
+                }
+            });
 
-    let selectedCell = d3.selectAll('.cell')
-        .filter(d => {
-            if (d && d.data && this.node && this.node.data) {
-                return d.data.id === this.node.data.id;
-            } else {
-                return false;
-            }
-        });
-
-    if (selectedCell.size() > 0) {
-        setTimeout(this.update.bind(this), 800);
-    } else {
-        setTimeout(this.update.bind(this), 300);
+        if (selectedCell.size() > 0) {
+            setTimeout(this.update.bind(this), 800);
+        } else {
+            setTimeout(this.update.bind(this), 300);
+        }
     }
 };
 

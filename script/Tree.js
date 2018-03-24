@@ -187,7 +187,6 @@ Tree.prototype.click = function (d) {
     if (d.data && d.data.path) {
         this.path = d.data.path;
     }
-    console.log('d:', d);
     //this.simulation.restart();
     this.update();
 };
