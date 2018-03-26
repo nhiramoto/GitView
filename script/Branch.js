@@ -8,13 +8,13 @@ function Branch(container, width, height) {
     this.svg = this.container.append('svg')
         .attr('id', 'branchSvg')
         .attr('viewBox', '0 0 ' + this.width + ' ' + this.height)
-        .on('wheel', this.scrolled.bind(this))
+        .on('wheel', this.scrolled.bind(this), {passive:true})
       .append('g');
     this.linkLayer = this.svg.append('g');
     this.nodeLayer = this.svg.append('g');
     this.gapX = 50; this.gapY = 80;
     this.scrollX = 0; this.scrollY = 0;
-    this.minScrollX = 0; this.maxScrollX = 300;
+    this.minScrollX = 0; this.maxScrollX = 999999;
     this.minScrollY = 0; this.maxScrollY = 999999;
     this.simulation = null;
     this.color = d3.scaleOrdinal(d3.schemeCategory20);
@@ -41,10 +41,10 @@ Branch.prototype.scrolled = function () {
         this.scrollX = newX;
         this.scrollY = newY;
         this.svg.transition()
-            .duration(100)
+            .duration(50)
             .attr('transform', 'translate(' + this.scrollX + ',' + this.scrollY + ')');
         this.newData.nodes = this.data.nodes.filter(n => n.y >= -this.scrollY && n.y <= -this.scrollY + this.height);
-        this.newData.links = this.data.links.filter(l => this.newData.nodes.includes(l.source) || this.newData.nodes.includes(l.target));
+        this.newData.links = this.data.links.filter(l => l.source.y >= -this.scrollY || l.target.y <= -this.scrollY + this.height);
         this.update();
     }
 };
@@ -187,10 +187,14 @@ Branch.prototype.update = function () {
     this.nodeEnter.append('foreignObject')
         .attr('width', (this.width - 30) + 'px')
         .attr('height', (this.gapY - 10) + 'px')
+        .style('pointer-events', 'none')
       .append('xhtml:div')
+        .style('pointer-events', 'none')
       .append('div')
+        .style('pointer-events', 'none')
         .classed('commitText', true)
       .append('p')
+        .style('pointer-events', 'none')
         .html(d => d.message);
 
     this.node.exit()

@@ -218,14 +218,13 @@ var showLoadingScreen = function() {
     $('#commitBar').addClass('disabled');
     $('#changeVisBtn').removeClass('disabled');
     $('#changeVisBtn').addClass('disabled');
-    $('#loadingScreen').fadeIn();
+    $('#loadingScreen').addClass('visible');
 };
 
 var hideLoadingScreen = function () {
-    $('#loadingScreen').fadeOut(1000, () => {
-        $('#commitBar').removeClass('disabled');
-        $('#changeVisBtn').removeClass('disabled');
-    });
+    $('#loadingScreen').removeClass('visible');
+    $('#commitBar').removeClass('disabled');
+    $('#changeVisBtn').removeClass('disabled');
 };
 
 var fillFileInfo = function (data) {

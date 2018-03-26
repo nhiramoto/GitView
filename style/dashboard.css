@@ -51,12 +51,13 @@ body {
   line-height: 26px;
   color: white;
   cursor: pointer;
-  transition: color .5s ease;
-  -webkit-transition: color .5s ease;
+  transition: color .3s ease;
+  -webkit-transition: color .3s ease;
 }
 #mainHeader #legendButton:hover {
   color: #2d94d6;
-  -webkit-transition: color .3s ease;
+  transition: color .1s ease;
+  -webkit-transition: color .1s ease;
 }
 #mainHeader #changeVisBtn {
   position: absolute;
@@ -66,18 +67,19 @@ body {
   line-height: 26px;
   color: white;
   cursor: pointer;
-  transition: color .5s ease;
-  -webkit-transition: color .5s ease;
+  transition: color .3s ease;
+  -webkit-transition: color .3s ease;
 }
 #mainHeader #changeVisBtn:hover {
   color: #2d94d6;
-  -webkit-transition: color .3s ease;
+  transition: color .1s ease;
+  -webkit-transition: color .1s ease;
 }
 #mainHeader #changeVisBtn.disabled {
   opacity: .3;
   pointer-events: none;
-  transition: opacity .3s ease;
-  -webkit-transition: opacity .3s ease;
+  transition: opacity .1s ease;
+  -webkit-transition: opacity .1s ease;
 }
 #mainHeader #infoButton {
   position: absolute;
@@ -86,12 +88,13 @@ body {
   font-size: 26px;
   color: white;
   cursor: pointer;
-  transition: color .5s ease;
-  -webkit-transition: color .5s ease;
+  transition: color .3s ease;
+  -webkit-transition: color .3s ease;
 }
 #mainHeader #infoButton:hover {
   color: #2d94d6;
-  -webkit-transition: color .3s ease;
+  transition: color .1s ease;
+  -webkit-transition: color .1s ease;
 }
 #mainHeader #infoButton.pulsing {
   animation-name: pulseColor;
@@ -139,7 +142,8 @@ body {
   border-left: 1px solid #DDD;
   border-right: 1px solid #DDD;
   border-bottom: 1px solid #DDD;
-  -webkit-transition: box-shadow .5s ease;
+  transition: box-shadow .3s ease;
+  -webkit-transition: box-shadow .3s ease;
   user-select: none;
 }
 #options ul.optionList li:first-child {
@@ -165,7 +169,8 @@ body {
 }
 #options ul.optionList li:active {
   box-shadow: inset 0 2px 5px #222;
-  -webkit-transition: box-shadow .3s ease;
+  transition: box-shadow .1s ease;
+  -webkit-transition: box-shadow .1s ease;
 }
 #options #optionButton {
   position: absolute;
@@ -183,18 +188,21 @@ body {
   height: 2px;
   background: white;
   border-radius: 1px;
-  -webkit-transition: background .5s ease, width .5s ease;
+  transition: background .3s ease, width .3s ease;
+  -webkit-transition: background .3s ease, width .3s ease;
 }
 #options #optionButton:hover {
   cursor: pointer;
 }
 #options #optionButton:hover span {
   background: #409FE4;
-  -webkit-transition: background .2s ease;
+  transition: background .1s ease;
+  -webkit-transition: background .1s ease;
 }
 #options #optionButton.active span {
   width: 50%;
-  -webkit-transition: width .3s ease;
+  transition: width .1s ease;
+  -webkit-transition: width .1s ease;
 }
 #options #optionButton.active span:first-child {
   width: 100%;
@@ -225,7 +233,8 @@ body {
   height: 100%;
   overflow: auto;
   z-index: 1;
-  -webkit-transition: opacity .5s ease;
+  transition: opacity .3s ease;
+  -webkit-transition: opacity .3s ease;
 }
 #commitBar .commitBarTitle {
   font-weight: bold;
@@ -237,7 +246,8 @@ body {
 }
 #commitBar.disabled {
   opacity: 0.3;
-  -webkit-transition: opacity .3s ease;
+  transition: opacity .1s ease;
+  -webkit-transition: opacity .1s ease;
 }
 #commitBar.disabled .commitItem {
   pointer-events: none;
@@ -321,17 +331,18 @@ body {
   cursor: pointer;
   border: 1px solid #DDD;
   background: white;
-  -webkit-transition: background .5s ease;
+  transition: background .3s ease;
+  -webkit-transition: background .3s ease;
 }
 #infoBar .infoHeader:hover {
   background: #DFDFDF;
-  transition: background .3s ease;
-  -webkit-transition: background .3s ease;
+  transition: background .1s ease;
+  -webkit-transition: background .1s ease;
 }
 #infoBar .infoHeader:active {
   background: #ADADAD;
-  transition: background .3s ease;
-  -webkit-transition: background .3s ease;
+  transition: background .1s ease;
+  -webkit-transition: background .1s ease;
 }
 #infoBar .infoHeader .infoTitle {
   display: inline-block;
@@ -410,7 +421,8 @@ body {
   border-radius: 5px;
   box-shadow: 0 3px 5px rgba(0, 0, 0, 0.5);
   z-index: 20;
-  -webkit-transition: top .5s ease;
+  transition: top .3s ease;
+  -webkit-transition: top .3s ease;
 }
 #legend #legendCloseBtn {
   position: absolute;
@@ -426,12 +438,13 @@ body {
   text-align: center;
   cursor: pointer;
   text-shadow: 0 -2px 1px white, 2px 0 1px white, -2px 0 1px white, 0 2px 1px white;
-  -webkit-transition: transform .8s ease;
+  transition: transform .5s ease;
+  -webkit-transition: transform .5s ease;
 }
 #legend #legendCloseBtn:hover {
   transform: rotate(360deg);
-  transition: transform .5s ease;
-  -webkit-transition: transform .5s ease;
+  transition: transform .3s ease;
+  -webkit-transition: transform .3s ease;
 }
 #legend #legendTitle {
   display: block;
@@ -475,6 +488,7 @@ body {
 }
 #loadingScreen {
   position: fixed;
+  visibility: hidden;
   width: 150px;
   height: 150px;
   top: 50%;
@@ -489,11 +503,17 @@ body {
   line-height: 150px;
   text-align: center;
   text-shadow: 1px 0 2px white, -1px 0 2px white, 0 1px 2px white, 0 -1px 2px white;
-  transition: visibility 3s ease;
-  -webkit-transition: visibility 3s ease;
+  transition: visibility .3s ease;
+  -webkit-transition: visibility .3s ease;
 }
 
-#loadingScreen #loading-content {
+#loadingScreen.visible {
+  visibility: visible;
+  transition: visibility .5s ease;
+  -webkit-transition: visibility .5s ease;
+}
+
+#loadingScreen.visible #loadingContent {
   position: absolute;
   top: -23px;
   left: -23px;
@@ -507,7 +527,7 @@ body {
   -webkit-animation: loader 2s linear infinite;
 }
 
-#loadingScreen:after {
+#loadingScreen.visible:after {
   content: "";
   position: absolute;
   top: -11px;
@@ -522,7 +542,7 @@ body {
   -webkit-animation: loader 1s linear infinite;
 }
 
-#loadingScreen:before {
+#loadingScreen.visible:before {
   content: "";
   position: absolute;
   top: 3px;

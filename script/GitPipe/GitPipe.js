@@ -96,6 +96,7 @@ GitPipe.prototype.parseCommitsHistory = function () {
         let history = commit.history();
         let parseCommitsPromises = [];
         let branch = {};
+        let childCount = {};
         let count = 1;
         let index = 0;
         history.on('commit', commit => {
@@ -107,14 +108,18 @@ GitPipe.prototype.parseCommitsHistory = function () {
                     branch[commitRec.id]
                 ];
                 let firstParentId = commitRec.parents[0];
+                childCount[firstParentId] = childCount[firstParentId] != undefined ? childCount[firstParentId] : 0;
+                childCount[firstParentId]++;
                 if (firstParentId) {
                     if (branch[firstParentId] == undefined || branch[commitRec.id] <= branch[firstParentId]) {
                         branch[firstParentId] = branch[commitRec.id];
                     } else {
-                        count--;
+                        count -= childCount[firstParentId] != undefined ? childCount[firstParentId] - 1 : 1;
                     }
                 }
                 commitRec.parents.slice(1).forEach(parId => {
+                    childCount[parId] = childCount[parId] != undefined ? childCount[parId] : 0;
+                    childCount[parId]++;
                     branch[parId] = count++;
                 });
             }));
