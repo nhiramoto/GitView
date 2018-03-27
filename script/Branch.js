@@ -44,7 +44,8 @@ Branch.prototype.scrolled = function () {
             .duration(50)
             .attr('transform', 'translate(' + this.scrollX + ',' + this.scrollY + ')');
         this.newData.nodes = this.data.nodes.filter(n => n.y >= -this.scrollY && n.y <= -this.scrollY + this.height);
-        this.newData.links = this.data.links.filter(l => l.source.y >= -this.scrollY || l.target.y <= -this.scrollY + this.height);
+        //this.newData.links = this.data.links.filter(l => l.source.y >= -this.scrollY || l.target.y <= -this.scrollY + this.height);
+        this.newData.links = this.data.links.filter(l => this.newData.nodes.includes(l.source) || this.newData.nodes.includes(l.target));
         this.update();
     }
 };
