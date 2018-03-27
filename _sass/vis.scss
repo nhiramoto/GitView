@@ -9,16 +9,17 @@
         user-select: none;
         cursor: pointer;
         stroke: white;
-        -webkit-transition: stroke .5s ease, filter .5s ease;
+        transition: stroke .3s ease, filter .3s ease, fill .3s ease;
+        -webkit-transition: stroke .3s ease, filter .3s ease, fill .3s ease;
         &:hover {
             stroke: steelblue;
-            transition: stroke .3s ease;
-            -webkit-transition: stroke .3s ease;
+            transition: stroke .1s ease;
+            -webkit-transition: stroke .1s ease;
         }
         &:active {
             filter: brightness(80%);
-            transition: filter .3s ease;
-            -webkit-transition: filter .3s ease;
+            transition: filter .1s ease;
+            -webkit-transition: filter .1s ease;
         }
     }
     text {
@@ -27,7 +28,6 @@
         pointer-events: none;
     }
 }
-
 
 .cell {
     overflow: hidden;
@@ -39,11 +39,11 @@
         user-select: none;
         cursor: pointer;
         z-index: 10;
-        -webkit-transition: stroke .5s ease, opacity .5s ease;
+        -webkit-transition: stroke .3s ease, opacity .3s ease;
         &:hover {
             stroke: steelblue;
-            transition: stroke .3s ease;
-            -webkit-transition: stroke .3s ease;
+            transition: stroke .1s ease;
+            -webkit-transition: stroke .1s ease;
         }
     }
     text {
@@ -53,18 +53,18 @@
         pointer-events: none;
         //opacity: 0;
         z-index: 30;
-        transition: opacity .5s ease, box-shadow .5s ease;
-        -webkit-transition: opacity .5s ease, box-shadow .5s ease;
+        transition: opacity .3s ease, box-shadow .3s ease;
+        -webkit-transition: opacity .3s ease, box-shadow .3s ease;
     }
     &:hover {
         box-shadow: 0 0 5px gray;
-        transition: box-shadow .3s ease;
-        -webkit-transition: box-shadow .3s ease;
+        transition: box-shadow .1s ease;
+        -webkit-transition: box-shadow .1s ease;
     }
     &:hover text {
         opacity: 1 !important;
-        transition: opacity .3s ease;
-        -webkit-transition: opacity .3s ease;
+        transition: opacity .1s ease;
+        -webkit-transition: opacity .1s ease;
     }
 }
 
@@ -142,18 +142,20 @@
 }
 
 .node {
-    -webkit-transition: opacity .5s ease;
+    transition: opacity .3s ease;
+    -webkit-transition: opacity .3s ease;
     text {
-        transition: font-size .5s ease;
-        -webkit-transition: font-size .5s ease;
+        transition: font-size .3s ease;
+        -webkit-transition: font-size .3s ease;
     }
     &.focused {
         opacity: 1 !important;
-        -webkit-transition: opacity .3s ease;
+        transition: opacity .1s ease;
+        -webkit-transition: opacity .1s ease;
         text {
             font-size: 20px;
-            transition: font-size .3s ease;
-            -webkit-transition: font-size .3s ease;
+            transition: font-size .1s ease;
+            -webkit-transition: font-size .1s ease;
         }
     }
 }
@@ -212,13 +214,15 @@
 .node circle {
     stroke: #505050;
     stroke-width: 1.5px;
-    -webkit-transition: stroke .5s ease, stroke-width .5s ease, transform .5s ease;
+    transition: stroke .3s ease, stroke-width .3s ease, transform .3s ease;
+    -webkit-transition: stroke .3s ease, stroke-width .3s ease, transform .3s ease;
     cursor: pointer;
     &:hover {
         stroke: steelblue;
         //stroke-width: 2.5px;
         //transform: scale(1.4);
-        -webkit-transition: stroke .3s ease, stroke-width .3s ease, transform .3s ease;
+        transition: stroke .1s ease, stroke-width .1s ease, transform .1s ease;
+        -webkit-transition: stroke .1s ease, stroke-width .1s ease, transform .1s ease;
     }
 }
 

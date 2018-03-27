@@ -29,7 +29,7 @@ function Treemap(container, width, height) {
     this.grandparent
       .append('svg:text')
         .attr('x', (this.margin.left + 10) + 'px')
-        .attr('y', (this.margin.top + this.treemapLegendHeight - 5) + 'px')
+        .attr('y', (this.margin.top + this.treemapLegendHeight - 5.5) + 'px')
         .attr('font-size', '11px')
         .text('Treemap Legend');
     this.treemapContent = this.svg.append('g')
@@ -290,6 +290,7 @@ Treemap.prototype.update = function () {
         console.log('p:', this.node.parent);
         this.grandparent
             .datum(this.node.parent)
+            .classed('unclickable', false)
             .on('click', d => {
                 this.lastNode = this.node;
                 this.node = d;
@@ -298,6 +299,7 @@ Treemap.prototype.update = function () {
     } else {
         this.grandparent
             .datum(null)
+            .classed('unclickable', true)
             .on('click', null);
     }
 
@@ -372,6 +374,14 @@ Treemap.prototype.update = function () {
     this.grandparent.select('text')
         .text(name(this.node));
         //.style('fill', this.color(0));
+    
+    let nodeRect = this.treemapContent.selectAll('.cell')
+        .filter(d => d.data.id === this.node.data.id)
+        .select('rect');
+    console.log('nodeRect:', nodeRect);
+    this.grandparent.select('rect')
+        .style('fill', nodeRect.style('fill'))
+        .style('stroke', nodeRect.style('stroke'));
 
     // Update current path
     if (this.node.data) {
