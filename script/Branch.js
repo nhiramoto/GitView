@@ -202,7 +202,7 @@ Branch.prototype.update = function () {
         .remove();
 
     this.link = this.linkLayer.selectAll('.link')
-        .data(this.newData.links, d => d.target.id);
+        .data(this.newData.links, d => d.source.id + '-' + d.target.id);
     this.link.transition()
         .duration(300)
         .attr('d', d => positionLink(d));
