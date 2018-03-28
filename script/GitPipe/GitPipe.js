@@ -95,33 +95,40 @@ GitPipe.prototype.parseCommitsHistory = function () {
     return this.gitRepo.getHeadCommit().then(commit => {
         let history = commit.history();
         let parseCommitsPromises = [];
-        let branch = {};
-        //let childCount = {};
-        let count = 1;
-        let index = 0;
+        let branchIndex = {};
+        let branch = [];
+        let commitIndex = 0;
         history.on('commit', commit => {
             parseCommitsPromises.push(this.parseCommit(commit).then(commitRec => {
-                branch[commitRec.id] = branch[commitRec.id] != undefined ? branch[commitRec.id] : 0;
+                if (branchIndex[commitRec.id] === undefined) {
+                    branchIndex[commitRec.id] = 0;
+                }
+                if (branch[branchIndex[commitRec.id]] === undefined) {
+                    branch[branchIndex[commitRec.id]] = true;
+                }
                 // pos [History Index, Branch Index]
                 commitRec.pos = [
-                    index++,
-                    branch[commitRec.id]
+                    commitIndex++,
+                    branchIndex[commitRec.id]
                 ];
                 let firstParentId = commitRec.parents[0];
-                //childCount[firstParentId] = childCount[firstParentId] != undefined ? childCount[firstParentId] : 0;
-                //childCount[firstParentId]++;
                 if (firstParentId) {
-                    if (branch[firstParentId] == undefined || branch[commitRec.id] <= branch[firstParentId]) {
-                        branch[firstParentId] = branch[commitRec.id];
+                    if (branchIndex[firstParentId] === undefined) {
+                        branchIndex[firstParentId] = branchIndex[commitRec.id];
+                    } else if (branchIndex[commitRec.id] <= branchIndex[firstParentId]) {
+                        branch[branchIndex[firstParentId]] = false;
+                        branchIndex[firstParentId] = branchIndex[commitRec.id];
                     } else {
-                        //count -= childCount[firstParentId] != undefined ? childCount[firstParentId] - 1 : 1;
-                        count--;
+                        branch[branchIndex[commitRec.id]] = false;
                     }
                 }
+                let i = 0;
                 commitRec.parents.slice(1).forEach(parId => {
-                    //childCount[parId] = childCount[parId] != undefined ? childCount[parId] : 0;
-                    //childCount[parId]++;
-                    branch[parId] = count++;
+                    while (i < branch.length && branch[i] === true) {
+                        i++;
+                    }
+                    branchIndex[parId] = i;
+                    branch[i] = true;
                 });
             }));
         });
