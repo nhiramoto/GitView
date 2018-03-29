@@ -112,6 +112,7 @@ GitPipe.prototype.parseCommitsHistory = function () {
                     branchIndex[commitRec.id]
                 ];
                 let firstParentId = commitRec.parents[0];
+                let i = 0;
                 if (firstParentId) {
                     if (branchIndex[firstParentId] === undefined) {
                         branchIndex[firstParentId] = branchIndex[commitRec.id];
@@ -121,8 +122,8 @@ GitPipe.prototype.parseCommitsHistory = function () {
                     } else {
                         branch[branchIndex[commitRec.id]] = false;
                     }
+                    i = branchIndex[firstParentId];
                 }
-                let i = 0;
                 commitRec.parents.slice(1).forEach(parId => {
                     while (i < branch.length && branch[i] === true) {
                         i++;
