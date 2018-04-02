@@ -323,6 +323,7 @@ Treemap.prototype.update = function () {
         .text(d => d.data.name);
 
     this.cellEnter.append('text')
+        .classed('cell-label', true)
         .attr('x', d => Math.max(0, this.x(d.x1) - this.x(d.x0)) / 2 + 'px')
         //.attr('y', d => Math.max(0, this.y(d.y1) - this.y(d.y0)) / 2 + 'px')
         .attr('y', d => Math.min(10, (this.y(d.y1) - this.y(d.y0)) / 2) + 'px')

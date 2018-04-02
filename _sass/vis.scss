@@ -46,7 +46,7 @@
             -webkit-transition: stroke .1s ease;
         }
     }
-    text {
+    .cell-label {
         font-family: sans-serif;
         font-size: 9px;
         line-height: 12px;
@@ -132,7 +132,7 @@
 .legend-cell-label {
     opacity: 1 !important;
     font-family: sans-serif;
-    font-size: 16px;
+    font-size: 14px;
     text-anchor: start;
     pointer-events: none;
 }
