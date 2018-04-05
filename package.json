@@ -7,8 +7,10 @@
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "package-linux": "electron-packager . GitView --overwrite --platform=linux --arch=x64 --prune=true --out=release-builds",
-    "package-win": "electron-packager . GitView --overwrite --platform=win32 --arch=x64 --prune=true --out=release-builds --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName='GitView'"
+    "package-linux": "asar pack release-builds/GitView-linux-x64/resources/app release-builds/GitView-linux-x64/resources/app.asar",
+    "package-win": "asar pack release-builds/GitView-win32-x64/resources/app release-builds/GitView-win32-x64/resources/app.asar",
+    "build-linux": "electron-packager . GitView --overwrite --platform=linux --arch=x64 --prune=true --out=release-builds",
+    "build-win": "electron-packager . GitView --overwrite --platform=win32 --arch=x64 --prune=true --out=release-builds --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName='GitView'"
   },
   "repository": {
     "type": "git",
@@ -21,15 +23,16 @@
   },
   "homepage": "https://github.com/nhtoshiaki/GitView/Source#readme",
   "dependencies": {
+    "asar": "^0.14.3",
     "async": "^2.6.0",
     "d3": "^4.12.2",
     "dateformat": "^3.0.2",
+    "electron": "1.8.4",
     "font-awesome": "^4.7.0",
     "jquery": "^3.2.1",
     "nodegit": "^0.20.3"
   },
   "devDependencies": {
-    "electron": "1.8.4",
     "electron-packager": "^10.1.1",
     "electron-rebuild": "^1.7.3",
     "grunt": "^1.0.1",

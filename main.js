@@ -49,6 +49,7 @@ ipcMain.on('getRepoPath', (event, arg) => {
     event.sender.send('getRepoPath-reply', repoPath);
 });
 
+app.disableHardwareAcceleration();
 app.on('ready', () => {
     initWindow();
     // loadHtmlFile('html/welcome.html');
