@@ -8,7 +8,7 @@ function Branch(container, width, height) {
     this.svg = this.container.append('svg')
         .attr('id', 'branchSvg')
         .attr('viewBox', '0 0 ' + this.width + ' ' + this.height)
-        .on('wheel', this.scrolled.bind(this), {passive:true})
+        .on('wheel', this.scrolled.bind(this))
       .append('g');
     this.linkLayer = this.svg.append('g');
     this.nodeLayer = this.svg.append('g');

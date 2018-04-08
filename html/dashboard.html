@@ -29,7 +29,7 @@
     </div>
     <div class="background">
         <div id="mainHeader">
-            <span class="title">Repository: <span id="repoName">Name of repository</span></span>
+            <span class="title">Repository: <span id="repoName" title="Name of repository">Name of repository</span></span>
             <span id="legendButton" title="Show legend"><i class="fa fa-question" aria-hidden="true"></i></span>
             <span id="changeVisBtn" title="Change the Visualization Technique"><i class="fa fa-eye" aria-hidden="true"></i></span>
             <span id="infoButton" title="Show more information"><i class="fa fa-plus-square-o" aria-hidden="true"></i></span>
@@ -49,38 +49,38 @@
         </div>
         <div id="content">
             <div id="commitBar">
-                <div class="commitBarTitle"><i>Commits</i></div>
+                <div class="commitBarTitle" title="List of commits"><i>Commits</i></div>
             </div>
             <div id="view" class="svg-container">
             </div>
             <div id="infoBar">
                 <div class="cards">
                     <div id="repositoryInfo" class="infoCard">
-                        <div class="infoHeader" id="repoInfoTitle">
-                            <span class="infoTitle">Repositório</span><span id="repoInfoArrow" class="infoArrow"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
+                        <div class="infoHeader" id="repoInfoTitle" title="Repository infomations">
+                            <span class="infoTitle">Repository</span><span id="repoInfoArrow" class="infoArrow"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
                         </div>
                         <div class="infoBody visible" id="repoInfoBody">
                             <table>
-                                <tr>
-                                    <td>Nome:</td>
+                                <tr title="Name of repository">
+                                    <td>Name:</td>
                                     <td>
                                         <span id="repoInfoName"></span>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td>Local (Não remoto):</td>
+                                <tr title="Path to the repository (local clone)">
+                                    <td>Path:</td>
                                     <td>
                                         <span id="repoPath"></span>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td>Último <i>commit</i>:</td>
+                                <tr title="Date and time of last commit">
+                                    <td>Last <i>commit</i>:</td>
                                     <td>
                                         <span id="lastCommit"></span>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td>Quantidade de <i>commits</i></td>
+                                <tr title="Number of commits">
+                                    <td>Amount of <i>commits</i></td>
                                     <td>
                                         <span id="commitCount"></span>
                                     </td>
@@ -90,42 +90,42 @@
                     </div> <!--  repositoryInfo -->
                     <hr>
                     <div class="infoCard" id="commitInfo">
-                        <div class="infoHeader" id="commitInfoTitle">
+                        <div class="infoHeader" id="commitInfoTitle" title="Selected commit">
                             <span class="infoTitle"><i>Commit</i></span><span id="commitInfoArrow" class="infoArrow"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
                         </div>
                         <div class="infoBody visible" id="commitInfoBody">
                             <table>
-                                <tr>
+                                <tr title="ID of selected commit">
                                     <td>ID:</td>
                                     <td>
                                         <span id="commitId"></span>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr title="Message of commit">
                                     <td>Message:</td>
                                     <td>
                                         <span id="commitMessage"></span>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr title="Author of commit">
                                     <td>Author:</td>
                                     <td>
                                         <span id="commitAuthor"></span>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr title="Date and time of commit">
                                     <td>Date:</td>
                                     <td>
                                         <span id="commitDate"></span>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td>ID do <i>Snapshot</i>:</td>
+                                <tr title="ID of commit snapshot">
+                                    <td><i>Snapshot</i> ID:</td>
                                     <td>
                                         <span id="commitSnapshotId"></span>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr title="List of parents ID of commit">
                                     <td>Parents:</td>
                                     <td>
                                         <span id="commitParents"></span>
@@ -136,49 +136,49 @@
                     </div> <!-- commitInfo -->
                     <hr>
                     <div id="fileInfo" class="infoCard">
-                        <div class="infoHeader" id="fileInfoTitle">
+                        <div class="infoHeader" id="fileInfoTitle" title="Selected file or submodule">
                             <span class="infoTitle">File</span><span id="fileInfoArrow" class="infoArrow"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
                         </div>
                         <div class="infoBody visible" id="fileInfoBody">
                             <table>
-                                <tr>
+                                <tr title="ID of file/submodule">
                                     <td>ID:</td>
                                     <td colspan="2">
                                         <span id="fileId"></span>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr title="Name of file/submodule">
                                     <td>Name:</td>
                                     <td colspan="2">
                                         <span id="fileName"></span>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr title="Path to the file/submodule relatively to the repository root">
                                     <td>Path:</td>
                                     <td colspan="2">
                                         <span id="filePath"></span>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr title="ID of last version of file">
                                     <td>Old file ID:</td>
                                     <td colspan="2">
                                         <span id="oldFileId"></span>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr title="Is a binary file?">
                                     <td>Is a binary file?</td>
                                     <td colspan="2">
                                         <span id="fileIsBinary"></span>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr title="Current status of file/submodule">
                                     <td><i>Status</i>:</td>
                                     <td colspan="2">
                                         <span id="fileStatus"></span>
                                     </td>
                                 </tr>
                                 <tr class="statisticRow">
-                                    <td rowspan="3">Statistic:</td>
+                                    <td rowspan="3" title="Amount of changes made to the file">Statistic:</td>
                                     <td align="right">Added lines:</td>
                                     <td><span id="fileStAdded"></span></td>
                                 </tr>
