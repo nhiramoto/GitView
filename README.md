@@ -35,3 +35,5 @@ npm install
 # Run the tool
 npm start
 ```
+
+[See the wiki for more details](https://github.com/nhtoshiaki/GitView/wiki).
