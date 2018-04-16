@@ -16,6 +16,8 @@ In the treemap, each directory and file are represented by clickable rectangle. 
 
 ![preview-treemap](https://github.com/nhtoshiaki/GitView/blob/master/preview-treemap.png)
 
+[See the wiki for more details](https://github.com/nhtoshiaki/GitView/wiki).
+
 ## Usage
 
 You can download the lastest release as ZIP file from [here](https://github.com/nhtoshiaki/GitView/releases/latest).
@@ -35,5 +37,3 @@ npm install
 # Run the tool
 npm start
 ```
-
-[See the wiki for more details](https://github.com/nhtoshiaki/GitView/wiki).
