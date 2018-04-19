@@ -231,7 +231,7 @@ body {
   border: 1px solid #DDD;
   width: 250px;
   height: 100%;
-  overflow: auto;
+  overflow: hidden;
   z-index: 1;
   transition: opacity .3s ease;
   -webkit-transition: opacity .3s ease;
@@ -274,13 +274,18 @@ body {
 #commitBar #branchSvg .commitText {
   font-size: 12px;
   overflow: hidden;
+  padding: 5px;
   pointer-events: none;
 }
-#commitBar #branchSvg .commitText p {
-  margin: 0;
-  padding: 5px;
+#commitBar #branchSvg .commitText span {
+  display: block;
+  margin-bottom: 5px;
+  padding-left: 5px;
   text-indent: 10px;
   text-shadow: -1px 0 10px white, 1px 0 10px white, 0 -1px 10px white, 0 1px 10px white;
+}
+#commitBar #branchSvg .commitText span.bold {
+  font-weight: bold;
 }
 
 #view {

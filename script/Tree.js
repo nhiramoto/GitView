@@ -40,7 +40,7 @@ function Tree(container, width, height) {
     this.radiusScale = d3.scalePow()
         .exponent(0.5)
         .domain([0, 100000])
-        .range([3, 40])
+        .range([3, 80])
         .clamp(true);
 
     // Text showing on node label
@@ -453,8 +453,8 @@ Tree.prototype.update = function () {
                 return '<root>';
             }
         })
-        .attr('dx', d => 0)
-        .attr('dy', d => -this.radius(d) - 5);
+        .attr('dx', 0)
+        .attr('dy', d => (-this.radius(d) - 5) + 'px');
     this.nodeEnter.append('circle')
         .attr('r', 0)
         .transition()

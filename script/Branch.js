@@ -162,7 +162,7 @@ Branch.prototype.update = function () {
     this.node.transition()
         .duration(300)
         .attr('transform', d => 'translate(' + d.x + ',' + d.y + ')');
-    
+
     this.nodeEnter = this.node.enter().append('g');
     this.nodeEnter.attr('id', d => d.id)
             .classed('node', true)
@@ -185,7 +185,7 @@ Branch.prototype.update = function () {
     this.nodeEnter.append('title')
         .text(d => d.id);
 
-    this.nodeEnter.append('foreignObject')
+    let nodeText = this.nodeEnter.append('foreignObject')
         .attr('width', (this.width - 30) + 'px')
         .attr('height', (this.gapY - 10) + 'px')
         .style('pointer-events', 'none')
@@ -193,9 +193,11 @@ Branch.prototype.update = function () {
         .style('pointer-events', 'none')
       .append('div')
         .style('pointer-events', 'none')
-        .classed('commitText', true)
-      .append('p')
-        .style('pointer-events', 'none')
+        .classed('commitText', true);
+    nodeText.append('span')
+        .classed('bold', true)
+        .html(d => d.authorEmail);
+    nodeText.append('span')
         .html(d => d.message);
 
     this.node.exit()

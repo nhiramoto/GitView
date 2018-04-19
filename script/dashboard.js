@@ -347,7 +347,7 @@ var initViz = function (repoPath) {
             let lastCommitId = commits[0].id;
             let container = d3.select('#commitBar');
             let commitWidth = 230;
-            let commitHeight = 570;
+            let commitHeight = 550;
             branch = new Branch(container, commitWidth, commitHeight);
             branch.clickCallback = d => {
                 if (d.id !== selectedCommitId) {
