@@ -9,6 +9,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "package-linux": "asar pack release-builds/GitView-linux-x64/resources/app release-builds/GitView-linux-x64/resources/app.asar",
     "package-win": "asar pack release-builds/GitView-win32-x64/resources/app release-builds/GitView-win32-x64/resources/app.asar",
+    "package-mac": "asar pack release-builds/GitView-darwin-x64/GitView.app/Contents/Resources/app release-builds/GitView-darwin-x64/GitView.app/Contents/Resources/app.asar",
     "build-linux": "electron-packager . GitView --overwrite --platform=linux --arch=x64 --prune=true --out=release-builds",
     "build-win": "electron-packager . GitView --overwrite --platform=win32 --arch=x64 --prune=true --out=release-builds --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName='GitView'",
     "build-mac": "electron-packager . --platform=darwin --arch=x64 --prune=true --out=release-builds --overwrite"
