@@ -222,7 +222,7 @@
   fill: none;
 }
 
-#nodeTooltip {
+.tooltip {
   position: fixed;
   text-align: center;
   padding: 8px;
@@ -232,23 +232,23 @@
   border-radius: 3px;
   pointer-events: none;
 }
-#nodeTooltip #tooltipHeader {
+.tooltip #tooltipHeader {
   font: 14px sans-serif;
   text-shadow: 0 0 1px black;
 }
-#nodeTooltip #tooltipHeader.added {
+.tooltip #tooltipHeader.added {
   color: darkgreen;
 }
-#nodeTooltip #tooltipHeader.deleted {
+.tooltip #tooltipHeader.deleted {
   color: darkred;
 }
-#nodeTooltip #tooltipHeader.modified {
+.tooltip #tooltipHeader.modified {
   color: darkgoldenrod;
 }
-#nodeTooltip #tooltipHeader.unmodified {
+.tooltip #tooltipHeader.unmodified {
   color: #010021;
 }
-#nodeTooltip #tooltipHeader.moved {
+.tooltip #tooltipHeader.moved {
   color: purple;
 }
 

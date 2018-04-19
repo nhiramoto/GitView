@@ -55,6 +55,18 @@ function Treemap(container, width, height) {
     this.fileScale = d3.scalePow()
         .exponent(0.5)
         .range([5, 500]);
+    this.tooltip = d3.select('body')
+        .append('div')
+        .attr('id', 'tmTooltip')
+        .classed('tooltip', true)
+        .style('opacity', 0);
+    this.tooltip.append('span').attr('id', 'tooltipHeader');
+    this.tooltip.append('hr');
+    this.tooltip.append('span').attr('id', 'added');
+    this.tooltip.append('br');
+    this.tooltip.append('span').attr('id', 'deleted');
+    this.tooltip.append('br');
+    this.tooltip.append('span').attr('id', 'modified');
 }
 
 function name(d) {
@@ -110,6 +122,91 @@ function maxValue(node) {
         return null;
     }
 }
+
+Treemap.prototype.handleMouseOver = function (d, i) {
+    let tooltip = d3.select('#tmTooltip');
+    let tooltipStatus = null;
+    let tooltipClass = null;
+    let addedLabel = 'Added: 0';
+    let deletedLabel = 'Deleted: 0';
+    let modifiedLabel = 'Modified: 0';
+    if (d.data && d.data.status != null) {
+        if (d.data.isAdded()) {
+            tooltipStatus = 'Added';
+            tooltipClass = 'added';
+        } else if (d.data.isDeleted()) {
+            tooltipStatus = 'Deleted';
+            tooltipClass = 'deleted';
+        } else if (d.data.isUnmodified()) {
+            tooltipStatus = 'Unmodified';
+            tooltipClass = 'unmodified';
+        } else if (d.data.isMoved()) {
+            tooltipStatus = 'Moved';
+            tooltipClass = 'moved';
+        } else {
+            tooltipStatus = 'Modified';
+            tooltipClass = 'modified';
+        }
+        if (d.data.isFile() && !d.data.isBinary && d.data.statistic != null) {
+            addedLabel = 'Added Lines: ' + d.data.statistic.added;
+            deletedLabel = 'Deleted Lines: ' + d.data.statistic.deleted;
+            modifiedLabel = 'Modified Lines: ' + d.data.statistic.modified;
+        } else if (d.data.isDirectory() && d.data.statistic != null) {
+            addedLabel = 'Added Files: ' + d.data.statistic.added;
+            deletedLabel = 'Deleted Files: ' + d.data.statistic.deleted;
+            modifiedLabel = 'Modified Files: ' + d.data.statistic.modified;
+        } else {
+            addedLabel = null;
+            deletedLabel = null;
+            modifiedLabel = null;
+        }
+    }
+    let tooltipHeader = tooltip.select('#tooltipHeader');
+    tooltipHeader.classed('added', false);
+    tooltipHeader.classed('deleted', false);
+    tooltipHeader.classed('unmodified', false);
+    tooltipHeader.classed('moved', false);
+    tooltipHeader.classed('modified', false);
+    if (tooltipStatus != null) {
+        tooltipHeader
+            .classed(tooltipClass, true)
+            .text(tooltipStatus);
+    } else {
+        tooltip.select('#tooltipHeader').style('display', 'none');
+        tooltip.select('hr').style('display', 'none');
+    }
+    if (addedLabel != null && deletedLabel != null && modifiedLabel != null && tooltipClass !== 'unmodified') {
+        tooltip.select('hr').style('display', 'block');
+        tooltip.select('#added').style('display', 'inline');
+        tooltip.select('#deleted').style('display', 'inline');
+        tooltip.select('#modified').style('display', 'inline');
+        tooltip.select('#added').text(addedLabel);
+        tooltip.select('#deleted').text(deletedLabel);
+        tooltip.select('#modified').text(modifiedLabel);
+    } else {
+        tooltip.select('hr').style('display', 'none');
+        tooltip.select('#added').style('display', 'none');
+        tooltip.select('#deleted').style('display', 'none');
+        tooltip.select('#modified').style('display', 'none');
+    }
+    tooltip.transition()
+        .duration(300)
+        .style('opacity', 1);
+};
+
+Treemap.prototype.handleMouseMove = function (d, i) {
+    let x = d3.event.pageX + 20;
+    let y = d3.event.pageY + 20;
+    d3.select('#tmTooltip')
+        .style('left', x + 'px')
+        .style('top', y + 'px');
+};
+
+Treemap.prototype.handleMouseOut = function (d, i) {
+    d3.select('#tmTooltip').transition()
+        .duration(300)
+        .style('opacity', 0);
+};
 
 Treemap.prototype.stylize = function (d, i) {
     let node = d3.select(this);
@@ -309,6 +406,9 @@ Treemap.prototype.update = function () {
     // Enter
     this.cellEnter = cellData.enter().append('g')
         .classed('cell', true)
+        .on('mouseover', this.handleMouseOver.bind(this))
+        .on('mousemove', this.handleMouseMove.bind(this))
+        .on('mouseout', this.handleMouseOut.bind(this))
         .attr('id', d => d.data.id)
         .attr('transform', d => 'translate(' + this.x(d.x0) + ',' + this.y(d.y0) + ')')
         .each(this.stylize)
@@ -318,9 +418,6 @@ Treemap.prototype.update = function () {
         .attr('width', d => (this.x(d.x1) - this.x(d.x0)) + 'px')
         .attr('height', d => (this.y(d.y1) - this.y(d.y0)) + 'px')
         .on('click', cellClick.bind(this));
-
-    this.cellEnter.append('title')
-        .text(d => d.data.name);
 
     this.cellEnter.append('text')
         .classed('cell-label', true)
@@ -375,7 +472,7 @@ Treemap.prototype.update = function () {
     this.grandparent.select('text')
         .text(name(this.node));
         //.style('fill', this.color(0));
-    
+
     let nodeRect = this.treemapContent.selectAll('.cell')
         .filter(d => d.data.id === this.node.data.id)
         .select('rect');

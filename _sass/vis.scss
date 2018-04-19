@@ -249,14 +249,14 @@
     fill: none;
 }
 
-#nodeTooltip {
+.tooltip {
     position: fixed;
     text-align: center;
     //width: 100px;
     //height: 10px;
     padding: 8px;
     font: 14px sans-serif;
-    background: $nodeTooltipBackground;
+    background: $tooltipBg;
     border: 1px solid #aaa;
     border-radius: 3px;
     pointer-events: none;

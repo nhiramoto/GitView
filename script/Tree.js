@@ -37,17 +37,6 @@ function Tree(container, width, height) {
     this.nodeSvg = null;
     this.nodeEnter = null;
     this.root = null;
-    this.tooltip = d3.select('body')
-        .append('div')
-        .attr('id', 'nodeTooltip')
-        .style('opacity', 0);
-    this.tooltip.append('span').attr('id', 'tooltipHeader');
-    this.tooltip.append('hr');
-    this.tooltip.append('span').attr('id', 'added');
-    this.tooltip.append('br');
-    this.tooltip.append('span').attr('id', 'deleted');
-    this.tooltip.append('br');
-    this.tooltip.append('span').attr('id', 'modified');
     this.radiusScale = d3.scalePow()
         .exponent(0.5)
         .domain([0, 100000])
@@ -63,6 +52,18 @@ function Tree(container, width, height) {
     this.fillFileInfoFunction = null;
     this.data = null;
     this.path = null;
+    this.tooltip = d3.select('body')
+        .append('div')
+        .attr('id', 'nodeTooltip')
+        .classed('tooltip', true)
+        .style('opacity', 0);
+    this.tooltip.append('span').attr('id', 'tooltipHeader');
+    this.tooltip.append('hr');
+    this.tooltip.append('span').attr('id', 'added');
+    this.tooltip.append('br');
+    this.tooltip.append('span').attr('id', 'deleted');
+    this.tooltip.append('br');
+    this.tooltip.append('span').attr('id', 'modified');
 }
 
 Tree.prototype.zoomed = function () {
@@ -123,7 +124,7 @@ Tree.prototype.moveChildren = function (node) {
 
 Tree.prototype.revealNodes = function () {
     if (this.root) {
-        currentPath = this.path.replace(/\/+$/, '');
+        let currentPath = this.path.replace(/\/+$/, '');
         if (currentPath !== '.' && currentPath !== this.root.data.path && this.root.children) {
             let names = currentPath.split('/');
             let node = this.root;
@@ -234,13 +235,13 @@ Tree.prototype.handleMouseOver = function (d, i) {
             tooltipClass = 'modified';
         }
         if (d.data.isFile() && !d.data.isBinary && d.data.statistic != null) {
-            addedLabel = 'Added lines: ' + d.data.statistic.added;
-            deletedLabel = 'Deleted lines: ' + d.data.statistic.deleted;
-            modifiedLabel = 'Modified lines: ' + d.data.statistic.modified;
+            addedLabel = 'Added Lines: ' + d.data.statistic.added;
+            deletedLabel = 'Deleted Lines: ' + d.data.statistic.deleted;
+            modifiedLabel = 'Modified Lines: ' + d.data.statistic.modified;
         } else if (d.data.isDirectory() && d.data.statistic != null) {
-            addedLabel = 'Added lines: ' + d.data.statistic.added;
-            deletedLabel = 'Deleted lines: ' + d.data.statistic.deleted;
-            modifiedLabel = 'Modified lines: ' + d.data.statistic.modified;
+            addedLabel = 'Added Files: ' + d.data.statistic.added;
+            deletedLabel = 'Deleted Files: ' + d.data.statistic.deleted;
+            modifiedLabel = 'Modified Files: ' + d.data.statistic.modified;
         } else {
             addedLabel = null;
             deletedLabel = null;
@@ -254,14 +255,14 @@ Tree.prototype.handleMouseOver = function (d, i) {
     tooltipHeader.classed('moved', false);
     tooltipHeader.classed('modified', false);
     if (tooltipStatus != null) {
-        tooltip.select('#tooltipHeader')
+        tooltipHeader
             .classed(tooltipClass, true)
             .text(tooltipStatus);
     } else {
         tooltip.select('#tooltipHeader').style('display', 'none');
         tooltip.select('hr').style('display', 'none');
     }
-    if (addedLabel != null && deletedLabel != null && modifiedLabel != null) {
+    if (addedLabel != null && deletedLabel != null && modifiedLabel != null && tooltipClass !== 'unmodified') {
         tooltip.select('hr').style('display', 'block');
         tooltip.select('#added').style('display', 'inline');
         tooltip.select('#deleted').style('display', 'inline');

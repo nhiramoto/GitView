@@ -1,7 +1,7 @@
 {
   "name": "gitview",
   "productName": "GitView",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A visualization tool for Git repositories.",
   "main": "main.js",
   "scripts": {
