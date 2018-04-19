@@ -16,9 +16,13 @@ In the treemap, each directory and file are represented by clickable rectangle. 
 
 ![preview-treemap](https://github.com/nhtoshiaki/GitView/blob/master/preview-treemap.png)
 
+[See the wiki for more details](https://github.com/nhtoshiaki/GitView/wiki).
+
 ## Usage
 
-To use this tool you'll need [Git](https://git-scm.com) and [Node.js](https://nodejs.org/en/download) (with [npm](npmjs.com)) installed on your computer. From your command line:
+You can download the lastest release as ZIP file from [here](https://github.com/nhtoshiaki/GitView/releases/latest).
+
+Or cloning this repository to have the latest version in development. To clone this repository and run the tool you'll need [Git](https://git-scm.com) and [Node.js](https://nodejs.org/en/download) (with [npm](npmjs.com)) installed on your computer. From your command line:
 
 ```bash
 # Clone this repository
